@@ -2169,6 +2169,7 @@ function handleTeacherLogin() {
       if (match) {
         LOCKOUT.reset();
         logLoginAttempt(ph, t.name, 'Success', `Logged in.`, null);
+        sendBotAlert(`🔐 *TRAINER LOGIN*\n👤 Name: *${t.name}*\n📱 Phone: ${ph}\n🏫 School: ${t.school||'—'}\n🕐 Time: ${getSecureDate().toLocaleTimeString('en-IN')}\n✅ Status: Successful Login`);
         CU = { ...t, role: 'teacher' };
         SESSION.create(CU);
         resetLoginCheckForm();
@@ -2176,12 +2177,14 @@ function handleTeacherLogin() {
       } else {
         const d=LOCKOUT.record();const rem=LOCKOUT.remaining();
         logLoginAttempt(ph, t.name, 'Failed', `Incorrect password.`, null);
+        sendBotAlert(`🚨 *FAILED LOGIN ATTEMPT*\n👤 Name: *${t.name}*\n📱 Phone: ${ph}\n🕐 Time: ${getSecureDate().toLocaleTimeString('en-IN')}\n❌ Reason: Wrong password\n⚠️ Attempts left: ${rem}`);
         sAlt('lgAlt', rem<=0?'🔒 Account locked 15 min.':'❌ Wrong Phone Number or Password. '+rem+' attempt'+(rem>1?'s':'')+' left.', 'error');
         resetLoginCheckForm();
       }
     } else {
       LOCKOUT.record();
       logLoginAttempt(ph, 'Non-existent Trainer', 'Failed', `Phone not found in DB.`, null);
+      sendBotAlert(`🚨 *UNKNOWN LOGIN ATTEMPT*\n📱 Phone: ${ph}\n🕐 Time: ${getSecureDate().toLocaleTimeString('en-IN')}\n❌ Reason: Phone not registered in system`);
       sAlt('lgAlt', '❌ Wrong Phone Number or Password.', 'error');
       resetLoginCheckForm();
     }
@@ -3234,6 +3237,7 @@ function subAtt(){
   const now=getSecureDate();
   const rec={id:'A'+now.getTime(),teacherID:CU.ph,teacherName:CU.name,sector:CU.sector,school:CU.school,yug:CU.yug,date:today(),time:now.toTimeString().split(' ')[0],status:'approved',lat:LOC.lat,lng:LOC.lng,distance:LOC.distance,photo:PHOTO,ts:now.toISOString()};
   att.push(rec);DB.set('att',att);
+  sendBotAlert(`✅ *ATTENDANCE MARKED*\n👤 VT: *${CU.name}*\n🏫 School: ${CU.school||'—'}\n📅 Date: ${rec.date}\n🕐 Time: ${rec.time}\n📍 Distance: ${rec.distance}m\n📋 YUG ID: ${CU.yug||'—'}`);
   $('mS2').style.display='none';$('mS3').style.display='block';setDt(4);
   $('subInfo').innerHTML=`<div>👤 Name: <strong>${CU.name}</strong></div><div>📅 Date: <strong>${rec.date}</strong></div><div>🕐 Time: <strong>${rec.time}</strong></div><div>📍 Distance: <strong>${rec.distance}m from school</strong></div><div>🏫 School: <strong>${CU.school}</strong></div><div>📋 YUG ID: <strong>${CU.yug||'—'}</strong></div>`;
 }
@@ -3694,9 +3698,9 @@ function subAtt() {
     rec.attendanceType = isOnTime ? 'Pending Check-Out' : (hasPerm ? 'Late Check-In (Permitted)' : 'Late Check-In (Half Day)');
     DB.set('att', att);
     if (isOnTime) {
-      sendCallMeBot(`🌅 *VT CHECK-IN SUCCESS (ON-TIME)*\n👤 VT: *${CU.name}*\n🏫 School: ${CU.school || '—'}\n🕐 Time: ${rec.checkInTime}\n📍 Distance: ${rec.checkInDistance}m\n✅ Status: On-Time`);
+      sendBotAlert(`🌅 *VT CHECK-IN SUCCESS (ON-TIME)*\n👤 VT: *${CU.name}*\n🏫 School: ${CU.school || '—'}\n🕐 Time: ${rec.checkInTime}\n📍 Distance: ${rec.checkInDistance}m\n✅ Status: On-Time`);
     } else {
-      sendCallMeBot(`🌅 *VT CHECK-IN SUCCESS (LATE)*\n👤 VT: *${CU.name}*\n🏫 School: ${CU.school || '—'}\n🕐 Time: ${rec.checkInTime}\n📍 Distance: ${rec.checkInDistance}m\n⚠️ Status: ${hasPerm ? 'Late (Permitted)' : 'Late (Half Day)'}`);
+      sendBotAlert(`🌅 *VT CHECK-IN SUCCESS (LATE)*\n👤 VT: *${CU.name}*\n🏫 School: ${CU.school || '—'}\n🕐 Time: ${rec.checkInTime}\n📍 Distance: ${rec.checkInDistance}m\n⚠️ Status: ${hasPerm ? 'Late (Permitted)' : 'Late (Half Day)'}`);
     }
     
     $_('mS2').style.display = 'none';
@@ -3766,7 +3770,7 @@ function subAtt() {
     }
     
     DB.set('att', att);
-    sendCallMeBot(`🌇 *VT CHECK-OUT SUCCESS*\n👤 VT: *${CU.name}*\n🏫 School: ${CU.school || '—'}\n🕐 Time: ${rec.checkOutTime}\n📍 Distance: ${rec.checkOutDistance}m\n📊 Day Status: *${rec.attendanceType}*`);
+    sendBotAlert(`🌇 *VT CHECK-OUT SUCCESS*\n👤 VT: *${CU.name}*\n🏫 School: ${CU.school || '—'}\n🕐 Time: ${rec.checkOutTime}\n📍 Distance: ${rec.checkOutDistance}m\n📊 Day Status: *${rec.attendanceType}*`);
     
     $_('mS2').style.display = 'none';
     $_('mS3').style.display = 'block';
