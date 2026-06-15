@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Geo-FRS Portal - Yug Shakti Vocational Education | Jeeva Pilli</title>
 <meta name="description" content="Official Geo-FRS Attendance Portal for Yug Shakti Vocational Education Trainers in Telangana. Developed and managed by Jeeva Pilli." />
-<meta name="keywords" content="Yug Shakti, Jeeva Pilli, Geo-FRS Portal, Vocational Education, Telangana, Attendance System, Yug Shakti Shaikshanik Evam Samajik Vikas Sanstha" />
+<meta name="keywords" content="Yug Shakti, Jeeva Pilli, TSVC, Geo-FRS Portal, Vocational Education, Telangana, Attendance System, Yug Shakti Shaikshanik Evam Samajik Vikas Sanstha, VT Attendance, Face Recognition Attendance, Geo Attendance" />
 <meta name="author" content="Jeeva Pilli" />
 <meta name="google-site-verification" content="MAzbR7ZrCrBTtd8iPjXR4yEGxMIQtzqvneY1sM6LyfM" />
 <link rel="icon" type="image/jpeg" href="favicon.jpg"/>
@@ -39,6 +39,36 @@ if ('serviceWorker' in navigator) {
 <meta name="twitter:image" content="https://yugshaktivtattendancetg.vercel.app/ys_preview_hd.png" />
 <!-- Face Recognition AI Library -->
 <script src="js/face-api.min.js"></script>
+
+<!-- Google Structured Data (JSON-LD) for SEO -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Yug Shakti Geo-FRS Portal",
+  "alternateName": ["TSVC", "Jeeva Pilli", "YS Geo-FRS"],
+  "url": "https://yugshaktivtattendancetg.vercel.app/",
+  "description": "Official Geo-FRS Attendance Portal for Yug Shakti Vocational Education Trainers in Telangana. Developed by Jeeva Pilli for TSVC.",
+  "applicationCategory": "BusinessApplication",
+  "operatingSystem": "All",
+  "creator": {
+    "@type": "Person",
+    "name": "Jeeva Pilli",
+    "alternateName": "iamjeevapilli"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Yug Shakti Shaikshanik Evam Samajik Vikas Sanstha",
+    "alternateName": ["Yug Shakti", "TSVC"],
+    "url": "https://yugshaktivtattendancetg.vercel.app/",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://yugshaktivtattendancetg.vercel.app/logo.png"
+    }
+  },
+  "keywords": "Yug Shakti, Jeeva Pilli, TSVC, Geo-FRS, VT Attendance, Telangana, Vocational Education"
+}
+</script>
 <style>
 /* ═══════════════════════════════════════
    FACE SCANNER OVERLAY ANIMATIONS
