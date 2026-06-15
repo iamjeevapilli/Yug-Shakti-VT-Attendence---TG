@@ -9,6 +9,22 @@
 <meta name="author" content="Jeeva Pilli" />
 <meta name="google-site-verification" content="MAzbR7ZrCrBTtd8iPjXR4yEGxMIQtzqvneY1sM6LyfM" />
 <link rel="icon" type="image/jpeg" href="favicon.jpg"/>
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#1a73e8" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="YS Geo-FRS" />
+<link rel="apple-touch-icon" href="logo.png" />
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then(reg => console.log('Service Worker registered successfully!', reg.scope))
+      .catch(err => console.log('Service Worker registration failed:', err));
+  });
+}
+</script>
 
 <!-- Open Graph / SEO Meta Tags -->
 <meta property="og:title" content="Geo-FRS Portal - Yug Shakti | Jeeva Pilli" />
