@@ -973,17 +973,27 @@ tbody tr:nth-child(8){animation-delay:.32s}
         </div>
         <p style="font-size:0.75rem; color:var(--t2); margin-top:6px">⚠️ Opening time (8:30 AM) and Closing time (6:30 PM) are locked by system rules.</p>
       </div>
-      <div class="sts" style="opacity: 0.85; border-left: 3px solid var(--p);">
-        <h3>💬 WhatsApp Reporting Settings <span style="font-size:0.82rem;font-weight:normal;color:var(--t2)">🔒 (Locked to System Default)</span></h3>
+      <div class="sts" style="border-left: 3px solid #25D366;">
+        <h3>🤖 WhatsApp Bot Settings <span style="background:#25D366;color:#fff;font-size:0.72rem;padding:2px 8px;border-radius:20px;margin-left:6px">AUTO BOT</span></h3>
         <div class="fg" style="margin-bottom:12px">
-          <label>WhatsApp Recipient Number</label>
+          <label>WhatsApp Recipient Number (Locked)</label>
           <input class="fc" id="sWa" value="919010809057" disabled style="background:#f1f3f5; cursor:not-allowed; font-weight:700"/>
         </div>
-        <div class="fg" style="display:flex;align-items:center;margin-bottom:12px">
-          <input type="checkbox" id="sWaAuto" style="width:20px;height:20px;margin-right:8px;cursor:pointer"/>
-          <label for="sWaAuto" style="cursor:pointer;font-weight:700">Auto-prompt / Auto-send at Close Time</label>
+        <div class="fg" style="margin-bottom:12px">
+          <label>📟 CallMeBot API Key <span style="font-size:0.75rem;color:var(--t2);font-weight:normal">(Required for Auto Bot)</span></label>
+          <div style="display:flex;gap:8px">
+            <input class="fc" id="sBotKey" placeholder="Enter your CallMeBot API Key here..." style="flex:1"/>
+            <button class="btn" style="background:linear-gradient(135deg,#25D366,#128C7E);color:#fff;white-space:nowrap;font-size:0.8rem" onclick="openModal('botSetupM')">📖 How to Get Key</button>
+          </div>
         </div>
-        <p style="font-size:0.75rem; color:var(--t2); margin-top:6px">⚠️ The WhatsApp recipient number is locked by system rules.</p>
+        <div class="fg" style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+          <div style="display:flex;align-items:center">
+            <input type="checkbox" id="sWaAuto" style="width:20px;height:20px;margin-right:8px;cursor:pointer"/>
+            <label for="sWaAuto" style="cursor:pointer;font-weight:700">Auto End-of-Day Summary Bot</label>
+          </div>
+          <button class="btn" style="background:linear-gradient(135deg,#25D366,#128C7E);color:#fff;font-size:0.8rem" onclick="testBotMsg()">🧪 Test Bot Now</button>
+        </div>
+        <div id="botStatus" style="font-size:0.8rem;color:var(--t2);margin-top:4px">💡 Set your API key and enable the bot to receive automatic end-of-day reports.</div>
       </div>
       <div class="sts">
         <h3>🔑 Change Admin Password</h3>
@@ -1340,6 +1350,45 @@ tbody tr:nth-child(8){animation-delay:.32s}
       </button>
       <button class="btn bo" style="width:100%; justify-content:center" onclick="closeModal('waAutoM')">
         Dismiss
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- CallMeBot Setup Guide Modal -->
+<div class="mov" id="botSetupM">
+  <div class="mbox" style="max-width:420px; text-align:left; padding: 24px;">
+    <div class="mti" style="font-size:1.25rem; font-weight:800; color:var(--t); margin-bottom:12px; display:flex; align-items:center; gap:8px">
+      <span>🤖</span> WhatsApp Bot Setup Guide
+    </div>
+    <p style="font-size:.85rem; color:var(--t2); margin-bottom:16px; line-height:1.5">
+      Follow these simple, free steps to enable automated WhatsApp alerts for your attendance portal:
+    </p>
+    <ol style="font-size:.82rem; color:var(--t); padding-left:20px; margin-bottom:20px; line-height:1.6">
+      <li style="margin-bottom:8px">
+        Add the CallMeBot WhatsApp number to your contacts:<br/>
+        <strong><a href="https://wa.me/34644263377?text=I+allow+callmebot+to+send+me+messages" target="_blank" style="color:#128C7E; font-weight:700; text-decoration:underline">+34 644 26 33 77</a></strong>
+      </li>
+      <li style="margin-bottom:8px">
+        Send the following message to that contact on WhatsApp:<br/>
+        <code style="background:#eef2f6; padding:2px 6px; border-radius:4px; font-weight:700">I allow callmebot to send me messages</code>
+      </li>
+      <li style="margin-bottom:8px">
+        Wait 1-2 minutes. The bot will reply with your unique <strong>API Key</strong>.
+      </li>
+      <li style="margin-bottom:8px">
+        Copy that API Key and paste it into the <strong>CallMeBot API Key</strong> field in the settings.
+      </li>
+    </ol>
+    <div style="background:#fff9db; border:1px solid #ffe3e3; border-radius:10px; padding:12px; font-size:.78rem; color:#856404; margin-bottom:20px; line-height:1.4">
+      💡 <strong>Note:</strong> This service is 100% free and sends instant notifications. Make sure the phone number in settings matches the WhatsApp account you use to request the key.
+    </div>
+    <div style="display:flex; gap:10px">
+      <a href="https://wa.me/34644263377?text=I+allow+callmebot+to+send+me+messages" target="_blank" class="btn" style="background:linear-gradient(135deg,#25D366,#128C7E); color:#fff; border:none; border-radius:10px; padding:12px; font-size:.9rem; font-weight:700; flex:1; text-align:center; text-decoration:none; display:flex; align-items:center; justify-content:center">
+        💬 Open WhatsApp
+      </a>
+      <button class="btn bo" style="padding:12px; flex:1; justify-content:center" onclick="closeModal('botSetupM')">
+        Close
       </button>
     </div>
   </div>
@@ -2832,6 +2881,7 @@ function loadSet(){
   if(s.open)$('sOp').value=s.open;if(s.close)$('sCl').value=s.close;
   $('sWa').value=s.waPhone||'919010809057';
   $('sWaAuto').checked=s.waAuto!==false;
+  $('sBotKey').value=s.botKey||'';
 }
 function saveSet(){
   const la=parseFloat($('sLa').value),lo=parseFloat($('sLo').value);
@@ -2850,7 +2900,8 @@ function saveSet(){
     open:'08:30',
     close:'18:30',
     waPhone:'919010809057',
-    waAuto:$('sWaAuto').checked
+    waAuto:$('sWaAuto').checked,
+    botKey:$('sBotKey').value.trim()
   });
   sAlt('sAlt','✅ Settings saved!','success');
   rDash();
@@ -3040,6 +3091,7 @@ async function capPhoto(){
           const att=DB.get('att',[]);
           att.push({id:'FAIL'+Date.now(),teacherID:CU.ph,teacherName:CU.name,date:today(),time:new Date().toTimeString().split(' ')[0],status:'rejected',reason:'Face mismatch (FRS)',photo:c.toDataURL('image/jpeg',.5),ts:new Date().toISOString()});
           DB.set('att',att);
+          sendCallMeBot(`🚨 *FRS ERROR / FACE MISMATCH DETECTED!*\n👤 VT: *${CU ? CU.name : 'Unknown'}*\n📱 Phone: ${CU ? CU.ph : 'Unknown'}\n🏫 School: ${CU ? CU.school || '—' : '—'}\n📅 Date: ${today()}\n🕐 Time: ${new Date().toTimeString().split(' ')[0]}\n❌ Reason: Face mismatch (FRS)\n⚠️ Attendance has been BLOCKED.`);
           setTimeout(()=>{$('vFeed').style.display='block';frsStartOverlay();},900);
           return;
         } else {
@@ -3196,6 +3248,59 @@ function dlCSV(rows,fname){
 }
 function vPh(src,name,info){$('pvImg').src=src;$('pvTit').textContent='📸 '+name;$('pvInf').textContent='📅 '+info;openModal('pvM');}
 
+async function sendCallMeBot(message) {
+  const s = DB.get('settings', {});
+  if (!s.botKey) return;
+  const rawPhoneList = s.waPhone || '919010809057';
+  const numbers = rawPhoneList.split(',').map(n => n.trim().replace(/[^0-9]/g, '')).filter(Boolean);
+  
+  for (const num of numbers) {
+    const url = `https://api.callmebot.com/whatsapp.php?phone=${num}&text=${encodeURIComponent(message)}&apikey=${s.botKey}`;
+    try {
+      await fetch(url, { mode: 'no-cors' });
+      console.log(`WhatsApp bot alert sent to ${num}`);
+    } catch (e) {
+      console.error(`Failed to send WhatsApp bot alert to ${num}:`, e);
+    }
+  }
+}
+
+function testBotMsg() {
+  const key = $('sBotKey').value.trim();
+  if (!key) {
+    alert("⚠️ Please enter a CallMeBot API Key first!");
+    return;
+  }
+  const statusEl = $('botStatus');
+  if (statusEl) statusEl.innerHTML = "⏳ Sending test WhatsApp message...";
+  
+  const rawPhoneList = $('sWa').value || '919010809057';
+  const numbers = rawPhoneList.split(',').map(n => n.trim().replace(/[^0-9]/g, '')).filter(Boolean);
+  
+  if (numbers.length === 0) {
+    alert("⚠️ No recipient phone number configured!");
+    return;
+  }
+  
+  const testMsg = `🧪 *YUG Shakti Attendance Bot Test*
+✅ Bot Connection: *Active*
+📱 Recipients: ${numbers.join(', ')}
+⚙️ Configuration: Successful!`;
+
+  let sentCount = 0;
+  numbers.forEach(async (num) => {
+    const url = `https://api.callmebot.com/whatsapp.php?phone=${num}&text=${encodeURIComponent(testMsg)}&apikey=${key}`;
+    try {
+      await fetch(url, { mode: 'no-cors' });
+      sentCount++;
+      if (statusEl) statusEl.innerHTML = `✅ Test message sent to ${num}! Check your WhatsApp.`;
+    } catch (e) {
+      console.error(e);
+      if (statusEl) statusEl.innerHTML = `❌ Failed to send to ${num}. Check console.`;
+    }
+  });
+}
+
 function sendWhatsAppReport(){
   const todayStr=today();
   const att=DB.get('att',[]).filter(a=>a.date===todayStr&&a.status==='approved');
@@ -3248,15 +3353,21 @@ function sendWhatsAppReport(){
   lines.push('_Sent by YUG Shakti Attendance System_');
   
   const message=lines.join('\n');
-  const encoded=encodeURIComponent(message);
-  const rawPhoneList=s.waPhone||'919010809057';
-  const numbers=rawPhoneList.split(',').map(n=>n.trim().replace(/[^0-9]/g,'')).filter(Boolean);
-  numbers.forEach((num,index)=>{
-    const waURL=`https://wa.me/${num}?text=${encoded}`;
-    setTimeout(()=>{
-      try{window.open(waURL,'_blank');}catch(e){console.error("Auto WhatsApp popup blocked:",e);}
-    },index*400);
-  });
+  
+  if (s.botKey) {
+    sendCallMeBot(message);
+    sAlt('sAlt', '🤖 Auto End-of-Day WhatsApp Report Sent!', 'success');
+  } else {
+    const encoded=encodeURIComponent(message);
+    const rawPhoneList=s.waPhone||'919010809057';
+    const numbers=rawPhoneList.split(',').map(n=>n.trim().replace(/[^0-9]/g,'')).filter(Boolean);
+    numbers.forEach((num,index)=>{
+      const waURL=`https://wa.me/${num}?text=${encoded}`;
+      setTimeout(()=>{
+        try{window.open(waURL,'_blank');}catch(e){console.error("Auto WhatsApp popup blocked:",e);}
+      },index*400);
+    });
+  }
 }
 
 function checkAutoWhatsAppReport(){
@@ -3271,16 +3382,18 @@ function checkAutoWhatsAppReport(){
     const lastPrompt=DB.get('lastWaPromptDate','');
     if(lastPrompt!==todayStr){
       DB.set('lastWaPromptDate',todayStr);
-      const rawPhoneList=s.waPhone||'919010809057';
-      const formattedList=rawPhoneList.split(',').map(n=>{
-        const num=n.trim();
-        if(num.startsWith('91') && num.length===12) return '+91 '+num.substring(2,7)+' '+num.substring(7);
-        return '+'+num;
-      }).join(', ');
-      const recipEl=$('waAutoRecip');
-      if(recipEl)recipEl.textContent=formattedList;
       sendWhatsAppReport();
-      openModal('waAutoM');
+      if (!s.botKey) {
+        const rawPhoneList=s.waPhone||'919010809057';
+        const formattedList=rawPhoneList.split(',').map(n=>{
+          const num=n.trim();
+          if(num.startsWith('91') && num.length===12) return '+91 '+num.substring(2,7)+' '+num.substring(7);
+          return '+'+num;
+        }).join(', ');
+        const recipEl=$('waAutoRecip');
+        if(recipEl)recipEl.textContent=formattedList;
+        openModal('waAutoM');
+      }
     }
   }
 }
@@ -3462,6 +3575,11 @@ function subAtt() {
     
     rec.attendanceType = isOnTime ? 'Pending Check-Out' : (hasPerm ? 'Late Check-In (Permitted)' : 'Late Check-In (Half Day)');
     DB.set('att', att);
+    if (isOnTime) {
+      sendCallMeBot(`🌅 *VT CHECK-IN SUCCESS (ON-TIME)*\n👤 VT: *${CU.name}*\n🏫 School: ${CU.school || '—'}\n🕐 Time: ${rec.checkInTime}\n📍 Distance: ${rec.checkInDistance}m\n✅ Status: On-Time`);
+    } else {
+      sendCallMeBot(`🌅 *VT CHECK-IN SUCCESS (LATE)*\n👤 VT: *${CU.name}*\n🏫 School: ${CU.school || '—'}\n🕐 Time: ${rec.checkInTime}\n📍 Distance: ${rec.checkInDistance}m\n⚠️ Status: ${hasPerm ? 'Late (Permitted)' : 'Late (Half Day)'}`);
+    }
     
     $_('mS2').style.display = 'none';
     $_('mS3').style.display = 'block';
@@ -3530,6 +3648,7 @@ function subAtt() {
     }
     
     DB.set('att', att);
+    sendCallMeBot(`🌇 *VT CHECK-OUT SUCCESS*\n👤 VT: *${CU.name}*\n🏫 School: ${CU.school || '—'}\n🕐 Time: ${rec.checkOutTime}\n📍 Distance: ${rec.checkOutDistance}m\n📊 Day Status: *${rec.attendanceType}*`);
     
     $_('mS2').style.display = 'none';
     $_('mS3').style.display = 'block';
@@ -3683,6 +3802,7 @@ async function capPhoto(){
           const att=DB.get('att',[]);
           att.push({id:'FAIL'+Date.now(),teacherID:CU.ph,teacherName:CU.name,date:today(),time:new Date().toTimeString().split(' ')[0],status:'rejected',reason:'Face mismatch (FRS)',photo:c.toDataURL('image/jpeg',.5),ts:new Date().toISOString()});
           DB.set('att',att);
+          sendCallMeBot(`🚨 *FRS ERROR / FACE MISMATCH DETECTED!*\n👤 VT: *${CU ? CU.name : 'Unknown'}*\n📱 Phone: ${CU ? CU.ph : 'Unknown'}\n🏫 School: ${CU ? CU.school || '—' : '—'}\n📅 Date: ${today()}\n🕐 Time: ${new Date().toTimeString().split(' ')[0]}\n❌ Reason: Face mismatch (FRS)\n⚠️ Attendance has been BLOCKED.`);
           setTimeout(()=>{$_('vFeed').style.display='block';frsStartOverlay();},900);
           return;
         } else {
@@ -3949,15 +4069,21 @@ function sendWhatsAppReport(){
   lines.push('_Sent by YUG Shakti Attendance System_');
   
   const message=lines.join('\n');
-  const encoded=encodeURIComponent(message);
-  const rawPhoneList=s.waPhone||'919010809057';
-  const numbers=rawPhoneList.split(',').map(n=>n.trim().replace(/[^0-9]/g,'')).filter(Boolean);
-  numbers.forEach((num,index)=>{
-    const waURL=`https://wa.me/${num}?text=${encoded}`;
-    setTimeout(()=>{
-      try{window.open(waURL,'_blank');}catch(e){console.error("Auto WhatsApp popup blocked:",e);}
-    },index*400);
-  });
+  
+  if (s.botKey) {
+    sendCallMeBot(message);
+    sAlt('sAlt', '🤖 Auto End-of-Day WhatsApp Report Sent!', 'success');
+  } else {
+    const encoded=encodeURIComponent(message);
+    const rawPhoneList=s.waPhone||'919010809057';
+    const numbers=rawPhoneList.split(',').map(n=>n.trim().replace(/[^0-9]/g,'')).filter(Boolean);
+    numbers.forEach((num,index)=>{
+      const waURL=`https://wa.me/${num}?text=${encoded}`;
+      setTimeout(()=>{
+        try{window.open(waURL,'_blank');}catch(e){console.error("Auto WhatsApp popup blocked:",e);}
+      },index*400);
+    });
+  }
 }
 
 function expCSV(){
