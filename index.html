@@ -995,6 +995,28 @@ tbody tr:nth-child(8){animation-delay:.32s}
         </div>
         <div id="botStatus" style="font-size:0.8rem;color:var(--t2);margin-top:4px">💡 Set your API key and enable the bot to receive automatic end-of-day reports.</div>
       </div>
+      <div class="sts" style="border-left: 3px solid #0088cc;">
+        <h3>✈️ Telegram Bot Settings <span style="background:#0088cc;color:#fff;font-size:0.72rem;padding:2px 8px;border-radius:20px;margin-left:6px">OFFICIAL TG BOT</span></h3>
+        <div class="fg" style="margin-bottom:12px">
+          <label>🤖 Telegram Bot Token</label>
+          <input class="fc" id="sTgToken" placeholder="Enter your Telegram Bot Token (from @BotFather)..."/>
+        </div>
+        <div class="fg" style="margin-bottom:12px">
+          <label>🆔 Telegram Chat ID</label>
+          <div style="display:flex;gap:8px">
+            <input class="fc" id="sTgChatId" placeholder="Enter your Telegram Chat ID (e.g. 123456789)..." style="flex:1"/>
+            <button class="btn" style="background:linear-gradient(135deg,#0088cc,#006699);color:#fff;white-space:nowrap;font-size:0.8rem" onclick="openModal('tgSetupM')">📖 Setup Guide</button>
+          </div>
+        </div>
+        <div class="fg" style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+          <div style="display:flex;align-items:center">
+            <input type="checkbox" id="sTgAuto" style="width:20px;height:20px;margin-right:8px;cursor:pointer"/>
+            <label for="sTgAuto" style="cursor:pointer;font-weight:700">Auto Telegram End-of-Day Summary</label>
+          </div>
+          <button class="btn" style="background:linear-gradient(135deg,#0088cc,#006699);color:#fff;font-size:0.8rem" onclick="testTgMsg()">🧪 Test Telegram Bot</button>
+        </div>
+        <div id="tgStatus" style="font-size:0.8rem;color:var(--t2);margin-top:4px">💡 Set your Bot Token & Chat ID to receive instant alerts and reports on Telegram.</div>
+      </div>
       <div class="sts">
         <h3>🔑 Change Admin Password</h3>
         <div class="r2">
@@ -1388,6 +1410,49 @@ tbody tr:nth-child(8){animation-delay:.32s}
         💬 Open WhatsApp
       </a>
       <button class="btn bo" style="padding:12px; flex:1; justify-content:center" onclick="closeModal('botSetupM')">
+        Close
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Telegram Setup Guide Modal -->
+<div class="mov" id="tgSetupM">
+  <div class="mbox" style="max-width:440px; text-align:left; padding: 24px;">
+    <div class="mti" style="font-size:1.25rem; font-weight:800; color:var(--t); margin-bottom:12px; display:flex; align-items:center; gap:8px">
+      <span>✈️</span> Telegram Bot Setup Guide
+    </div>
+    <p style="font-size:.85rem; color:var(--t2); margin-bottom:16px; line-height:1.5">
+      Follow these simple, free steps to create your own official Telegram bot for instant attendance alerts:
+    </p>
+    <ol style="font-size:.82rem; color:var(--t); padding-left:20px; margin-bottom:20px; line-height:1.6">
+      <li style="margin-bottom:10px">
+        <strong>Create the Bot:</strong><br/>
+        Open Telegram, search for <strong><a href="https://t.me/BotFather" target="_blank" style="color:#0088cc; font-weight:700; text-decoration:underline">@BotFather</a></strong>, start a chat, and send:<br/>
+        <code style="background:#eef2f6; padding:2px 6px; border-radius:4px; font-weight:700">/newbot</code><br/>
+        Follow the prompts to name your bot and choose a username. Copy the long <strong>HTTP API Token</strong> it gives you.
+      </li>
+      <li style="margin-bottom:10px">
+        <strong>Get your Chat ID:</strong><br/>
+        Search for <strong><a href="https://t.me/GetChatID_Bot" target="_blank" style="color:#0088cc; font-weight:700; text-decoration:underline">@GetChatID_Bot</a></strong> (or `@userinfobot`), start the chat, and copy the numeric <strong>Chat ID</strong> it sends you.
+      </li>
+      <li style="margin-bottom:10px">
+        <strong>Start your Bot:</strong><br/>
+        Search for your new bot's username on Telegram, open it, and click <strong>Start</strong> (this registers you to receive messages).
+      </li>
+      <li style="margin-bottom:10px">
+        <strong>Save in Settings:</strong><br/>
+        Paste the Bot Token and Chat ID into the fields in settings, check the Auto checkbox, and click <strong>Save Settings</strong>.
+      </li>
+    </ol>
+    <div style="background:#e8f4fd; border:1px solid #d0e7fc; border-radius:10px; padding:12px; font-size:.78rem; color:#0056b3; margin-bottom:20px; line-height:1.4">
+      💡 <strong>Why this is awesome:</strong> This bot runs directly through Telegram's official API. It is completely private to you, delivers messages in milliseconds, and never gets rate-limited or blocked.
+    </div>
+    <div style="display:flex; gap:10px">
+      <a href="https://t.me/BotFather" target="_blank" class="btn" style="background:linear-gradient(135deg,#0088cc,#006699); color:#fff; border:none; border-radius:10px; padding:12px; font-size:.9rem; font-weight:700; flex:1; text-align:center; text-decoration:none; display:flex; align-items:center; justify-content:center">
+        ✈️ Open @BotFather
+      </a>
+      <button class="btn bo" style="padding:12px; flex:1; justify-content:center" onclick="closeModal('tgSetupM')">
         Close
       </button>
     </div>
@@ -2882,6 +2947,9 @@ function loadSet(){
   $('sWa').value=s.waPhone||'919010809057';
   $('sWaAuto').checked=s.waAuto!==false;
   $('sBotKey').value=s.botKey||'';
+  $('sTgToken').value=s.tgToken||'';
+  $('sTgChatId').value=s.tgChatId||'';
+  $('sTgAuto').checked=s.tgAuto!==false;
 }
 function saveSet(){
   const la=parseFloat($('sLa').value),lo=parseFloat($('sLo').value);
@@ -2901,7 +2969,10 @@ function saveSet(){
     close:'18:30',
     waPhone:'919010809057',
     waAuto:$('sWaAuto').checked,
-    botKey:$('sBotKey').value.trim()
+    botKey:$('sBotKey').value.trim(),
+    tgToken:$('sTgToken').value.trim(),
+    tgChatId:$('sTgChatId').value.trim(),
+    tgAuto:$('sTgAuto').checked
   });
   sAlt('sAlt','✅ Settings saved!','success');
   rDash();
@@ -3248,6 +3319,53 @@ function dlCSV(rows,fname){
 }
 function vPh(src,name,info){$('pvImg').src=src;$('pvTit').textContent='📸 '+name;$('pvInf').textContent='📅 '+info;openModal('pvM');}
 
+async function sendTelegramBot(message) {
+  const s = DB.get('settings', {});
+  if (!s.tgToken || !s.tgChatId) return;
+  const url = `https://api.telegram.org/bot${s.tgToken}/sendMessage?chat_id=${s.tgChatId}&text=${encodeURIComponent(message)}&parse_mode=Markdown`;
+  try {
+    await fetch(url);
+    console.log("Telegram bot alert sent successfully.");
+  } catch (e) {
+    console.error("Failed to send Telegram bot alert:", e);
+  }
+}
+
+function testTgMsg() {
+  const token = $('sTgToken').value.trim();
+  const chatId = $('sTgChatId').value.trim();
+  if (!token || !chatId) {
+    alert("⚠️ Please enter both Bot Token and Chat ID first!");
+    return;
+  }
+  const statusEl = $('tgStatus');
+  if (statusEl) statusEl.innerHTML = "⏳ Sending test Telegram message...";
+  
+  const testMsg = `🧪 *YUG Shakti Attendance Bot Test*
+✅ Telegram Connection: *Active*
+⚙️ Configuration: Successful!`;
+
+  const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(testMsg)}&parse_mode=Markdown`;
+  fetch(url)
+    .then(res => res.json())
+    .then(data => {
+      if (data.ok) {
+        if (statusEl) statusEl.innerHTML = "✅ Test message sent! Check your Telegram.";
+      } else {
+        if (statusEl) statusEl.innerHTML = `❌ Failed: ${data.description}`;
+      }
+    })
+    .catch(e => {
+      console.error(e);
+      if (statusEl) statusEl.innerHTML = "❌ Network error. Check console.";
+    });
+}
+
+function sendBotAlert(message) {
+  sendCallMeBot(message);
+  sendTelegramBot(message);
+}
+
 async function sendCallMeBot(message) {
   const s = DB.get('settings', {});
   if (!s.botKey) return;
@@ -3354,9 +3472,9 @@ function sendWhatsAppReport(){
   
   const message=lines.join('\n');
   
-  if (s.botKey) {
-    sendCallMeBot(message);
-    sAlt('sAlt', '🤖 Auto End-of-Day WhatsApp Report Sent!', 'success');
+  if (s.botKey || (s.tgToken && s.tgChatId)) {
+    sendBotAlert(message);
+    sAlt('sAlt', '🤖 Auto End-of-Day Report Sent!', 'success');
   } else {
     const encoded=encodeURIComponent(message);
     const rawPhoneList=s.waPhone||'919010809057';
@@ -3373,7 +3491,7 @@ function sendWhatsAppReport(){
 function checkAutoWhatsAppReport(){
   if(!CU||CU.role!=='admin')return;
   const s=DB.get('settings',{});
-  if(s.waAuto===false)return;
+  if(s.waAuto===false && s.tgAuto===false)return;
   const closeTime=s.close||'18:30';
   const now=getSecureDate();
   const hhmm=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
@@ -3383,7 +3501,7 @@ function checkAutoWhatsAppReport(){
     if(lastPrompt!==todayStr){
       DB.set('lastWaPromptDate',todayStr);
       sendWhatsAppReport();
-      if (!s.botKey) {
+      if (!s.botKey && (!s.tgToken || !s.tgChatId || !s.tgAuto)) {
         const rawPhoneList=s.waPhone||'919010809057';
         const formattedList=rawPhoneList.split(',').map(n=>{
           const num=n.trim();
