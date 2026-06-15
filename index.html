@@ -1512,6 +1512,8 @@ const DB={
   get:(k,d=null)=>{try{const v=localStorage.getItem('yugg_'+k);return v?JSON.parse(v):d}catch{return d}},
   set:(k,v)=>localStorage.setItem('yugg_'+k,JSON.stringify(v))
 };
+const TG_DEFAULT_TOKEN = '8970187235:AAF9FffJVg_C2CMoErUhYyG0WIfQuDfileo';
+const TG_DEFAULT_CHAT_ID = '5029565721';
 
 /* ═══════════════════════════════════════════
    🔒 SECURITY LAYER — SHA-256 + Session + Lockout
@@ -2027,13 +2029,26 @@ async function initApp(){
     DB.set('teachersHashed',true);
   }
 
-  const s=DB.get('settings',{name:'Yug Shakti Vocational Education Telangana',lat:17.3850,lng:78.4867,radius:300,open:'08:30',close:'18:30',waPhone:'919010809057',waAuto:true});
+  const s=DB.get('settings',{
+    name:'Yug Shakti Vocational Education Telangana',
+    lat:17.3850,
+    lng:78.4867,
+    radius:300,
+    open:'08:30',
+    close:'18:30',
+    waPhone:'919010809057',
+    waAuto:true,
+    tgToken:TG_DEFAULT_TOKEN,
+    tgChatId:TG_DEFAULT_CHAT_ID
+  });
   if(!s.name||s.name==='YUG Shakti Vocational Education  - Telangana'||s.name==='YUG Shakti Dept'){
     s.name='Yug Shakti Vocational Education Telangana';
   }
-  s.waPhone='919010809057';
-  s.open='08:30';
-  s.close='18:30';
+  if(!s.waPhone) s.waPhone='919010809057';
+  if(!s.open) s.open='08:30';
+  if(!s.close) s.close='18:30';
+  if(!s.tgToken) s.tgToken=TG_DEFAULT_TOKEN;
+  if(!s.tgChatId) s.tgChatId=TG_DEFAULT_CHAT_ID;
   DB.set('settings',s);
   DB.set('att',existing);
 
@@ -2998,8 +3013,8 @@ function loadSet(){
   $('sWa').value=s.waPhone||'919010809057';
   $('sWaAuto').checked=s.waAuto!==false;
   $('sBotKey').value=s.botKey||'';
-  $('sTgToken').value=s.tgToken||'';
-  $('sTgChatId').value=s.tgChatId||'';
+  $('sTgToken').value=s.tgToken||TG_DEFAULT_TOKEN;
+  $('sTgChatId').value=s.tgChatId||TG_DEFAULT_CHAT_ID;
   $('sTgAuto').checked=s.tgAuto!==false;
 }
 function saveSet(){
@@ -3018,11 +3033,11 @@ function saveSet(){
     radius:parseInt($('sR').value)||300,
     open:'08:30',
     close:'18:30',
-    waPhone:'919010809057',
+    waPhone:cleanList||'919010809057',
     waAuto:$('sWaAuto').checked,
     botKey:$('sBotKey').value.trim(),
-    tgToken:$('sTgToken').value.trim(),
-    tgChatId:$('sTgChatId').value.trim(),
+    tgToken:$('sTgToken').value.trim()||TG_DEFAULT_TOKEN,
+    tgChatId:$('sTgChatId').value.trim()||TG_DEFAULT_CHAT_ID,
     tgAuto:$('sTgAuto').checked
   });
   sAlt('sAlt','✅ Settings saved!','success');
@@ -3373,10 +3388,12 @@ function vPh(src,name,info){$('pvImg').src=src;$('pvTit').textContent='📸 '+na
 
 async function sendTelegramBot(message) {
   const s = DB.get('settings', {});
-  if (!s.tgToken || !s.tgChatId) return;
-  const chatIds = s.tgChatId.split(',').map(id => id.trim()).filter(Boolean);
+  const token = s.tgToken || TG_DEFAULT_TOKEN;
+  const chatIdStr = s.tgChatId || TG_DEFAULT_CHAT_ID;
+  if (!token || !chatIdStr) return;
+  const chatIds = chatIdStr.split(',').map(id => id.trim()).filter(Boolean);
   for (const chatId of chatIds) {
-    const url = `https://api.telegram.org/bot${s.tgToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}&parse_mode=Markdown`;
+    const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}&parse_mode=Markdown`;
     try {
       await fetch(url);
       console.log(`Telegram bot alert sent successfully to ${chatId}.`);
