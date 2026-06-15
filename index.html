@@ -1048,9 +1048,9 @@ tbody tr:nth-child(8){animation-delay:.32s}
           <input class="fc" id="sTgToken" placeholder="Enter your Telegram Bot Token (from @BotFather)..."/>
         </div>
         <div class="fg" style="margin-bottom:12px">
-          <label>🆔 Telegram Chat ID</label>
+          <label>🆔 Telegram Chat ID(s)</label>
           <div style="display:flex;gap:8px">
-            <input class="fc" id="sTgChatId" placeholder="Enter your Telegram Chat ID (e.g. 123456789)..." style="flex:1"/>
+            <input class="fc" id="sTgChatId" placeholder="Enter Chat ID(s) or Group ID, separated by commas..." style="flex:1"/>
             <button class="btn" style="background:linear-gradient(135deg,#0088cc,#006699);color:#fff;white-space:nowrap;font-size:0.8rem" onclick="openModal('tgSetupM')">📖 Setup Guide</button>
           </div>
         </div>
@@ -1479,16 +1479,18 @@ tbody tr:nth-child(8){animation-delay:.32s}
         Follow the prompts to name your bot and choose a username. Copy the long <strong>HTTP API Token</strong> it gives you.
       </li>
       <li style="margin-bottom:10px">
-        <strong>Get your Chat ID:</strong><br/>
-        Search for <strong><a href="https://t.me/GetChatID_Bot" target="_blank" style="color:#0088cc; font-weight:700; text-decoration:underline">@GetChatID_Bot</a></strong> (or `@userinfobot`), start the chat, and copy the numeric <strong>Chat ID</strong> it sends you.
+        <strong>Get Chat ID (User or Group):</strong><br/>
+        • <strong>For yourself:</strong> Chat with <strong><a href="https://t.me/GetChatID_Bot" target="_blank" style="color:#0088cc; font-weight:700; text-decoration:underline">@GetChatID_Bot</a></strong> and copy your ID.<br/>
+        • <strong>For a Group (multiple friends):</strong> Create a Telegram group with your friends, add your bot as an admin, add <strong>@GetChatID_Bot</strong> to the group to get the group ID (starts with a minus, e.g., <code style="background:#eef2f6; padding:2px 6px; border-radius:4px">-10012345678</code>), then remove the helper bot.<br/>
+        • <strong>Multiple Chat IDs:</strong> You can enter multiple Chat IDs separated by commas (e.g. <code style="background:#eef2f6; padding:2px 6px; border-radius:4px">12345678, 98765432, -10012345678</code>).
       </li>
       <li style="margin-bottom:10px">
         <strong>Start your Bot:</strong><br/>
-        Search for your new bot's username on Telegram, open it, and click <strong>Start</strong> (this registers you to receive messages).
+        Search for your new bot's username on Telegram, open it, and click <strong>Start</strong> (or send a message). If using a group, make sure the bot is added to the group and has permissions to post.
       </li>
       <li style="margin-bottom:10px">
         <strong>Save in Settings:</strong><br/>
-        Paste the Bot Token and Chat ID into the fields in settings, check the Auto checkbox, and click <strong>Save Settings</strong>.
+        Paste the Bot Token and Chat ID(s) into the fields in settings, check the Auto checkbox, and click <strong>Save Settings</strong>.
       </li>
     </ol>
     <div style="background:#e8f4fd; border:1px solid #d0e7fc; border-radius:10px; padding:12px; font-size:.78rem; color:#0056b3; margin-bottom:20px; line-height:1.4">
@@ -3372,19 +3374,22 @@ function vPh(src,name,info){$('pvImg').src=src;$('pvTit').textContent='📸 '+na
 async function sendTelegramBot(message) {
   const s = DB.get('settings', {});
   if (!s.tgToken || !s.tgChatId) return;
-  const url = `https://api.telegram.org/bot${s.tgToken}/sendMessage?chat_id=${s.tgChatId}&text=${encodeURIComponent(message)}&parse_mode=Markdown`;
-  try {
-    await fetch(url);
-    console.log("Telegram bot alert sent successfully.");
-  } catch (e) {
-    console.error("Failed to send Telegram bot alert:", e);
+  const chatIds = s.tgChatId.split(',').map(id => id.trim()).filter(Boolean);
+  for (const chatId of chatIds) {
+    const url = `https://api.telegram.org/bot${s.tgToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}&parse_mode=Markdown`;
+    try {
+      await fetch(url);
+      console.log(`Telegram bot alert sent successfully to ${chatId}.`);
+    } catch (e) {
+      console.error(`Failed to send Telegram bot alert to ${chatId}:`, e);
+    }
   }
 }
 
 function testTgMsg() {
   const token = $('sTgToken').value.trim();
-  const chatId = $('sTgChatId').value.trim();
-  if (!token || !chatId) {
+  const chatIdInput = $('sTgChatId').value.trim();
+  if (!token || !chatIdInput) {
     alert("⚠️ Please enter both Bot Token and Chat ID first!");
     return;
   }
@@ -3395,20 +3400,40 @@ function testTgMsg() {
 ✅ Telegram Connection: *Active*
 ⚙️ Configuration: Successful!`;
 
-  const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(testMsg)}&parse_mode=Markdown`;
-  fetch(url)
-    .then(res => res.json())
-    .then(data => {
-      if (data.ok) {
-        if (statusEl) statusEl.innerHTML = "✅ Test message sent! Check your Telegram.";
+  const chatIds = chatIdInput.split(',').map(id => id.trim()).filter(Boolean);
+  let successCount = 0;
+  let failCount = 0;
+  let errors = [];
+
+  const promises = chatIds.map(chatId => {
+    const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(testMsg)}&parse_mode=Markdown`;
+    return fetch(url)
+      .then(res => res.json())
+      .then(data => {
+        if (data.ok) {
+          successCount++;
+        } else {
+          failCount++;
+          errors.push(`${chatId}: ${data.description}`);
+        }
+      })
+      .catch(e => {
+        failCount++;
+        errors.push(`${chatId}: ${e.message}`);
+      });
+  });
+
+  Promise.all(promises).then(() => {
+    if (statusEl) {
+      if (failCount === 0) {
+        statusEl.innerHTML = `✅ Test message sent to all (${successCount}) chats!`;
+      } else if (successCount > 0) {
+        statusEl.innerHTML = `⚠️ Sent to ${successCount} successfully, but ${failCount} failed. Errors: ${errors.join(', ')}`;
       } else {
-        if (statusEl) statusEl.innerHTML = `❌ Failed: ${data.description}`;
+        statusEl.innerHTML = `❌ All failed. Errors: ${errors.join(', ')}`;
       }
-    })
-    .catch(e => {
-      console.error(e);
-      if (statusEl) statusEl.innerHTML = "❌ Network error. Check console.";
-    });
+    }
+  });
 }
 
 function sendBotAlert(message) {
