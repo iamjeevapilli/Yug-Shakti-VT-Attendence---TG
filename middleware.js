@@ -3,6 +3,16 @@ export const config = {
 };
 
 export default function middleware(req) {
+  const userAgent = req.headers.get('user-agent') || '';
+  const isBot = /WhatsApp|TelegramBot|facebookexternalhit|Twitterbot|LinkedInBot|Discordbot/i.test(userAgent);
+
+  if (isBot) {
+    return new Response(null, {
+      status: 200,
+      headers: { 'x-middleware-next': '1' }
+    });
+  }
+
   const basicAuth = req.headers.get('authorization');
 
   if (basicAuth) {
