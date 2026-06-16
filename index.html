@@ -1436,11 +1436,73 @@ tbody tr:nth-child(8){animation-delay:.32s}
   </div>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 <script>
-const DB={
-  get:(k,d=null)=>{try{const v=localStorage.getItem('yugg_'+k);return v?JSON.parse(v):d}catch{return d}},
-  set:(k,v)=>localStorage.setItem('yugg_'+k,JSON.stringify(v))
+const firebaseConfig = {
+  apiKey: "AIzaSyCiCTQutGOHata1kJNOa0yY-9dd-lXO_LI",
+  authDomain: "yugshaktivtattendancetg.firebaseapp.com",
+  projectId: "yugshaktivtattendancetg",
+  storageBucket: "yugshaktivtattendancetg.firebasestorage.app",
+  messagingSenderId: "673687396317",
+  appId: "1:673687396317:web:4a788448761eac22d72034",
+  measurementId: "G-TJPDLNMWYV"
 };
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+let DB_MEMORY = {};
+let FS_READY = false;
+
+const syncKeys = ['att', 'teachers', 'settings', 'adminPassHash', 'adminPassHashed', 'teachersHashed', 'loginLogs', 'latePerms', 'lastTgPromptDate'];
+
+const DB = {
+  get: (k, d=null) => {
+    if(DB_MEMORY[k] !== undefined) return DB_MEMORY[k];
+    try { const v=localStorage.getItem('yugg_'+k); return v?JSON.parse(v):d; } catch { return d; }
+  },
+  set: (k, v) => {
+    DB_MEMORY[k] = v;
+    localStorage.setItem('yugg_'+k, JSON.stringify(v));
+    if(FS_READY && syncKeys.includes(k)) {
+      db.collection('yug_data').doc(k).set({ data: JSON.stringify(v) })
+        .catch(e => console.error("FS Save Error:", e));
+    }
+  }
+};
+
+(async function initFirebaseSync() {
+  for(const k of syncKeys) {
+    try {
+      const docRef = db.collection('yug_data').doc(k);
+      const snap = await docRef.get();
+      if(snap.exists) {
+        const cloudData = snap.data().data;
+        DB_MEMORY[k] = JSON.parse(cloudData);
+        localStorage.setItem('yugg_'+k, cloudData);
+      } else {
+        const localV = localStorage.getItem('yugg_'+k);
+        if(localV) {
+          DB_MEMORY[k] = JSON.parse(localV);
+          await docRef.set({ data: localV });
+        }
+      }
+      
+      docRef.onSnapshot(docSnap => {
+        if(docSnap.exists) {
+          const cloudData = docSnap.data().data;
+          DB_MEMORY[k] = JSON.parse(cloudData);
+          localStorage.setItem('yugg_'+k, cloudData);
+          if (typeof updateSyncedUI === 'function') updateSyncedUI();
+        }
+      });
+    } catch(e) {
+      console.error("Firebase Sync Error for", k, e);
+    }
+  }
+  FS_READY = true;
+  console.log("🔥 Firebase Sync Engine Ready");
+})();
 const TG_DEFAULT_TOKEN = '8970187235:AAF9FffJVg_C2CMoErUhYyG0WIfQuDfileo';
 const TG_DEFAULT_CHAT_ID = '5029565721';
 
