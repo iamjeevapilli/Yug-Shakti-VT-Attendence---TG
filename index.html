@@ -576,6 +576,15 @@ tbody tr:nth-child(8){animation-delay:.32s}
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  document.addEventListener('contextmenu', event => event.preventDefault());
+  document.addEventListener('keydown', function(event) {
+    if(event.keyCode===123) event.preventDefault();
+    if(event.ctrlKey && event.shiftKey && (event.keyCode===73||event.keyCode===74)) event.preventDefault();
+    if(event.ctrlKey && event.keyCode===85) event.preventDefault();
+  });
+  setInterval(function(){(function(){return false;}['constructor']('debugger')());},1000);
+</script>
 </head>
 <body>
 <div id="loader">
@@ -619,7 +628,7 @@ tbody tr:nth-child(8){animation-delay:.32s}
       <button class="btn bs bfull" id="btnLgAction" onclick="handleTeacherLogin()" style="padding:13px;font-size:1rem;letter-spacing:.3px">🔐 Trainer Login</button>
       <p style="text-align:center;margin-top:10px;font-size:.76rem;color:var(--t2)">🔒 Secure Portal Login</p>
     </div>
-    <div class="lcopy">©Copyright Yug Shakti • @iamjeevapilli • All Rights Reserved</div>
+    <div class="lcopy">©Copyright 2026-Yug Shakti • Powered by @iamjeevapilli • All Rights Reserved</div>
   </div>
 </div>
 
@@ -957,7 +966,7 @@ tbody tr:nth-child(8){animation-delay:.32s}
   <div id="pg-trainer">
     <div class="tpback" onclick="swPg('teachers')">← Back to Trainers List</div>
     <div id="tpContent"></div>
-    <div class="footer">©Copyright Yug Shakti • @iamjeevapilli • All Rights Reserved</div>
+    <div class="footer">©Copyright 2026-Yug Shakti • Powered by @iamjeevapilli • All Rights Reserved</div>
   </div>
 
   <!-- LIVE MAP TRACKER -->
@@ -1061,7 +1070,7 @@ tbody tr:nth-child(8){animation-delay:.32s}
       </div>
       <div id="sAlt" style="margin-top:12px"></div>
     </div>
-    <div class="footer">©Copyright Yug Shakti • @iamjeevapilli • All Rights Reserved</div>
+    <div class="footer">©Copyright 2026-Yug Shakti • Powered by @iamjeevapilli • All Rights Reserved</div>
   </div>
 
   <!-- MORNING CHECK-IN -->
@@ -1170,7 +1179,7 @@ tbody tr:nth-child(8){animation-delay:.32s}
         </div>
       </div>
     </div>
-    <div class="footer">©Copyright Yug Shakti • @iamjeevapilli • All Rights Reserved</div>
+    <div class="footer">©Copyright 2026-Yug Shakti • Powered by @iamjeevapilli • All Rights Reserved</div>
   </div>
 
   <!-- EVENING CHECK-OUT -->
@@ -1279,7 +1288,7 @@ tbody tr:nth-child(8){animation-delay:.32s}
         </div>
       </div>
     </div>
-    <div class="footer">©Copyright Yug Shakti • @iamjeevapilli • All Rights Reserved</div>
+    <div class="footer">©Copyright 2026-Yug Shakti • Powered by @iamjeevapilli • All Rights Reserved</div>
   </div>
 
   <!-- MY HISTORY -->
@@ -1293,7 +1302,7 @@ tbody tr:nth-child(8){animation-delay:.32s}
       <div class="ctit">📅 My Attendance History</div>
       <div class="tw"><table><thead><tr><th>#</th><th>Date</th><th>Day</th><th>Time</th><th>Status</th><th>Distance</th><th>Photo</th></tr></thead><tbody id="hBody"></tbody></table></div>
     </div>
-    <div class="footer">©Copyright Yug Shakti • @iamjeevapilli • All Rights Reserved</div>
+    <div class="footer">©Copyright 2026-Yug Shakti • Powered by @iamjeevapilli • All Rights Reserved</div>
   </div>
 </div>
 
