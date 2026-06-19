@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>VT's Details — Yug Shakti Vocational Education, Telangana</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --ink:#0f172a;--ink2:#334155;--ink3:#64748b;--ink4:#94a3b8;
+  --bg:#f8fafc;--surface:#ffffff;--border:#e2e8f0;
+  --teal:#0d9488;--teal2:#ccfbf1;--teal3:#f0fdfa;
+  --amber:#d97706;--amber2:#fef3c7;
+  --rose:#e11d48;--rose2:#fce7f3;
+  --blue:#2563eb;--blue2:#dbeafe;
+  --violet:#7c3aed;--violet2:#ede9fe;
+  --emerald:#059669;--emerald2:#d1fae5;
+  --shadow:0 1px 3px rgba(0,0,0,.07),0 4px 16px rgba(0,0,0,.05);
+  --shadow-lg:0 8px 32px rgba(0,0,0,.12);
+}
+body{margin:0;overflow-y:auto;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}
+
+/* HEADER */
+.header{background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 60%,#0d4f45 100%);padding:36px 24px 32px;position:relative;overflow:hidden}
+.header::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")}
+.header-inner{max-width:1200px;margin:0 auto;position:relative;z-index:1}
+.header-badge{display:inline-flex;align-items:center;gap:7px;background:rgba(13,148,136,.25);border:1px solid rgba(13,148,136,.4);color:#5eead4;font-family:'Syne',sans-serif;font-size:.72rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:5px 12px;border-radius:20px;margin-bottom:16px}
+.header h1{font-family:'Syne',sans-serif;font-size:clamp(1.6rem,4vw,2.6rem);font-weight:800;color:#fff;line-height:1.15;margin-bottom:8px}
+.header h1 span{color:#5eead4}
+.header p{color:#94a3b8;font-size:.9rem;margin-bottom:20px}
+.header-stats{display:flex;gap:20px;flex-wrap:wrap}
+.hstat{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:10px 16px}
+.hstat .v{font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;color:#fff}
+.hstat .l{font-size:.72rem;color:#94a3b8;font-weight:500;letter-spacing:.5px;text-transform:uppercase;margin-top:1px}
+
+/* TABS */
+.tabs{max-width:1200px;margin:0 auto;padding:16px 16px 0;display:flex;gap:8px}
+.tab{padding:9px 20px;border-radius:10px;border:1.5px solid var(--border);background:var(--surface);color:var(--ink3);font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:600;cursor:pointer;transition:.15s;display:flex;align-items:center;gap:6px}
+.tab:hover{border-color:var(--teal);color:var(--teal)}
+.tab.active{background:var(--teal);border-color:var(--teal);color:#fff}
+
+/* CONTROLS */
+.controls{max-width:1200px;margin:12px auto 0;padding:0 16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.search-wrap{flex:1;min-width:200px;position:relative}
+.search-wrap input{width:100%;padding:10px 14px 10px 38px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.88rem;background:var(--surface);color:var(--ink);outline:none;transition:.2s}
+.search-wrap input:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(13,148,136,.12)}
+.search-wrap .si{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:.9rem;color:var(--ink3)}
+.ctl-select{padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.85rem;background:var(--surface);color:var(--ink);outline:none;cursor:pointer}
+.ctl-select:focus{border-color:var(--teal)}
+.btn-export{padding:10px 18px;border:none;border-radius:10px;background:var(--teal);color:#fff;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:.2s;white-space:nowrap}
+.btn-export:hover{background:#0f766e;transform:translateY(-1px);box-shadow:0 4px 12px rgba(13,148,136,.3)}
+
+/* SUMMARY */
+.summary{max-width:1200px;margin:12px auto 0;padding:0 16px;display:flex;gap:8px;flex-wrap:wrap}
+.stag{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;font-size:.76rem;font-weight:600;cursor:pointer;transition:.2s;user-select:none}
+.stag:hover{transform:translateY(-1px)}
+.stag.all{background:var(--ink);color:#fff}
+.stag.app{background:var(--blue2);color:var(--blue)}
+.stag.bw{background:var(--rose2);color:var(--rose)}
+.stag.hc{background:var(--emerald2);color:var(--emerald)}
+.stag.au{background:var(--amber2);color:var(--amber)}
+.stag.it{background:var(--violet2);color:var(--violet)}
+.stag.eh{background:#e0f2fe;color:#0369a1}
+.stag.active{outline:2px solid currentColor;outline-offset:2px}
+
+/* TABLE AREA */
+.table-wrap{max-width:1200px;margin:16px auto 0;padding:0 16px 40px}
+.card{background:var(--surface);border-radius:14px;box-shadow:var(--shadow);border:1px solid var(--border);overflow:hidden}
+.card-head{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.card-head span{font-family:'Syne',sans-serif;font-size:.82rem;font-weight:700;color:var(--ink2)}
+.count-badge{background:var(--teal3);color:var(--teal);font-weight:700;font-size:.76rem;padding:3px 10px;border-radius:20px}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.8rem}
+thead{position:sticky;top:0;z-index:2}
+thead th{padding:11px 14px;text-align:left;font-family:'Syne',sans-serif;font-weight:700;font-size:.71rem;letter-spacing:.6px;text-transform:uppercase;color:var(--ink3);background:#f8fafc;border-bottom:2px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none}
+thead th:hover{color:var(--teal)}
+tbody tr{border-bottom:1px solid #f1f5f9;transition:.12s}
+tbody tr:hover{background:#f8fafc}
+tbody tr:last-child{border:none}
+tbody td{padding:10px 14px;vertical-align:middle;color:var(--ink2)}
+tbody td strong{color:var(--ink);font-weight:600}
+.sno{color:var(--ink4);font-weight:600;font-size:.75rem}
+.phone{font-family:'DM Sans',sans-serif;font-weight:600;color:var(--teal);letter-spacing:.3px;font-size:.79rem}
+.yug{font-size:.72rem;color:var(--ink3);font-family:monospace}
+.school{font-size:.78rem;color:var(--ink2)}
+.district{font-size:.75rem;color:var(--ink3)}
+.qual{font-size:.74rem;color:var(--ink3)}
+.exp{font-size:.75rem;font-weight:600;color:var(--ink2)}
+.joining{font-size:.74rem;color:var(--ink3)}
+.dob{font-size:.74rem;color:var(--ink3)}
+
+/* sector badges */
+.sec{display:inline-block;padding:3px 9px;border-radius:20px;font-size:.68rem;font-weight:700;letter-spacing:.3px;text-transform:uppercase;white-space:nowrap}
+.s-ap{background:var(--blue2);color:var(--blue)}
+.s-bw{background:var(--rose2);color:var(--rose)}
+.s-hc{background:var(--emerald2);color:var(--emerald)}
+.s-au{background:var(--amber2);color:var(--amber)}
+.s-it{background:var(--violet2);color:var(--violet)}
+.s-eh{background:#e0f2fe;color:#0369a1}
+
+.udise{font-family:monospace;font-size:.7rem;background:#f1f5f9;color:var(--ink3);padding:2px 7px;border-radius:5px;display:inline-block}
+.stype{font-size:.67rem;font-weight:700;padding:2px 7px;border-radius:5px;display:inline-block;white-space:nowrap}
+.stype-pmshri{background:#fef9c3;color:#a16207}
+.stype-samagra{background:#ede9fe;color:#6d28d9}
+.stype-other{background:#f1f5f9;color:#64748b}
+
+.empty{text-align:center;padding:60px 20px;color:var(--ink3)}
+.empty .ei{font-size:3rem;margin-bottom:10px}
+
+/* PAGINATION */
+.pgr{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;padding:16px 0 4px}
+.pbn{padding:6px 12px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);color:var(--ink2);font-size:.8rem;font-weight:600;cursor:pointer;transition:.15s}
+.pbn:hover{border-color:var(--teal);color:var(--teal)}
+.pbn.on{background:var(--teal);border-color:var(--teal);color:#fff}
+
+/* MAP */
+#mapView{display:none}
+#mapView.active{display:block}
+.map-wrap{max-width:1200px;margin:16px auto 0;padding:0 16px 40px}
+#theMap{height:580px;border-radius:14px;box-shadow:var(--shadow);border:1px solid var(--border)}
+.map-legend{max-width:1200px;margin:0 auto 0;padding:0 16px 12px;display:flex;gap:10px;flex-wrap:wrap}
+.leg{display:flex;align-items:center;gap:5px;font-size:.76rem;font-weight:600}
+.leg-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
+
+/* MODAL */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;padding:16px}
+.modal-bg.open{display:flex}
+.modal{background:var(--surface);border-radius:16px;max-width:560px;width:100%;max-height:92vh;overflow-y:auto;box-shadow:var(--shadow-lg);animation:mIn .22s ease}
+@keyframes mIn{from{transform:translateY(-16px);opacity:0}to{transform:none;opacity:1}}
+.modal-header{padding:20px 22px 14px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;gap:10px;position:sticky;top:0;background:var(--surface);z-index:1}
+.modal-avatar{width:52px;height:52px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,var(--teal),#0d47a1);color:#fff;font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;display:flex;align-items:center;justify-content:center}
+.modal-name{font-family:'Syne',sans-serif;font-weight:800;font-size:1.05rem;color:var(--ink)}
+.modal-sub{font-size:.78rem;color:var(--ink3);margin-top:3px}
+.modal-close{background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--ink3);padding:4px;border-radius:6px;flex-shrink:0}
+.modal-close:hover{background:#f1f5f9}
+.modal-body{padding:18px 22px 22px}
+.mrow{display:flex;padding:9px 0;border-bottom:1px solid #f1f5f9;font-size:.82rem;gap:12px}
+.mrow:last-child{border:none}
+.ml{color:var(--ink3);font-weight:600;min-width:130px;flex-shrink:0}
+.mv{color:var(--ink);word-break:break-word}
+
+.footer{text-align:center;padding:24px 16px;font-size:.73rem;color:var(--ink4);border-top:1px solid var(--border);font-family:'Syne',sans-serif;letter-spacing:.5px}
+.footer a{color:var(--teal);text-decoration:none;font-weight:700}
+
+#tableView{display:block}
+#tableView.hidden{display:none}
+
+@media(max-width:700px){
+  .header-stats{gap:12px}
+  .hstat{padding:8px 12px}
+  .hstat .v{font-size:1.1rem}
+  thead th:nth-child(n+6){display:none}
+  tbody td:nth-child(n+6){display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="header-badge">📋 GeoAttend — Yug Shakti</div>
+    <h1>VT's <span>Details</span></h1>
+    <p>Vocational Trainers Master Register — Telangana State | 2025–26</p>
+    <div class="header-stats">
+      <div class="hstat"><div class="v" id="hTotal">206</div><div class="l">Total VTs</div></div>
+      <div class="hstat"><div class="v" id="hSectors">6</div><div class="l">Sectors</div></div>
+      <div class="hstat"><div class="v" id="hDistricts">—</div><div class="l">Districts</div></div>
+      <div class="hstat"><div class="v" id="hShowing">206</div><div class="l">Showing</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('table')" id="tabTable">📋 Table View</button>
+  <button class="tab" onclick="switchTab('map')" id="tabMap">🗺️ Map View</button>
+</div>
+
+<div class="controls">
+  <div class="search-wrap">
+    <span class="si">🔍</span>
+    <input id="srch" placeholder="Search by name, phone, school, district…" oninput="filterAll()"/>
+  </div>
+  <select class="ctl-select" id="secF" onchange="filterAll()">
+    <option value="">All Sectors</option>
+    <option value="APPAREL">APPAREL</option>
+    <option value="BEAUTY AND WELLNESS">BEAUTY &amp; WELLNESS</option>
+    <option value="HEALTH CARE">HEALTH CARE</option>
+    <option value="AUTOMOTIVE">AUTOMOTIVE</option>
+    <option value="IT/ITES">IT/ITES</option>
+    <option value="ELECTRONICS AND HARDWARE">ELECTRONICS &amp; HW</option>
+  </select>
+  <select class="ctl-select" id="schemeF" onchange="filterAll()">
+    <option value="">All Schemes</option>
+    <option value="PMSHRI">PM SHRI</option>
+    <option value="SAMAGRA">SAMAGRA</option>
+  </select>
+  <select class="ctl-select" id="sortF" onchange="filterAll()">
+    <option value="sno">Sort: S.No</option>
+    <option value="name">Sort: Name A–Z</option>
+    <option value="sector">Sort: Sector</option>
+    <option value="district">Sort: District</option>
+  </select>
+  <button class="btn-export" onclick="exportCSV()">📥 Export CSV</button>
+</div>
+
+<div class="summary" id="tagRow"></div>
+
+<!-- TABLE VIEW -->
+<div id="tableView">
+  <div class="table-wrap">
+    <div class="card">
+      <div class="card-head">
+        <span>Vocational Trainers Register</span>
+        <span class="count-badge" id="countBadge">206 records</span>
+      </div>
+      <div class="tw">
+        <table id="vtTable">
+          <thead>
+            <tr>
+              <th>S.No</th>
+              <th>Name &amp; Contact</th>
+              <th>Sector</th>
+              <th>YUG Contract ID</th>
+              <th>School</th>
+              <th>District</th>
+              <th>Mandal</th>
+              <th>Scheme</th>
+              <th>UDISE</th>
+              <th>Joining Date</th>
+              <th>DOB</th>
+              <th>Qualification</th>
+              <th>Exp (Current)</th>
+              <th>Exp (Total)</th>
+            </tr>
+          </thead>
+          <tbody id="vtBody"></tbody>
+        </table>
+      </div>
+      <div id="pgr" class="pgr"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MAP VIEW -->
+<div id="mapView">
+  <div class="map-legend" id="mapLegend"></div>
+  <div class="map-wrap">
+    <div id="theMap"></div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-bg" id="detailModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="modal-avatar" id="mAvt">R</div>
+        <div>
+          <div class="modal-name" id="mName">—</div>
+          <div class="modal-sub" id="mSub">—</div>
+        </div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="mBody"></div>
+  </div>
+</div>
+
+<div class="footer">
+  VT's Details · Yug Shakti Vocational Education Telangana · GeoAttend System ·
+  Built by <a href="https://instagram.com/iamjeevapilli" target="_blank">@iamjeevapilli</a>
+</div>
+
+<script>
+const VT = (window.parent && window.parent.DB) ? window.parent.DB.get('teachers', window.parent.SEED) : window.parent.VTS_FULL;
+
+const SECTOR_COLORS = {
+  'APPAREL': '#2563eb',
+  'BEAUTY AND WELLNESS': '#e11d48',
+  'HEALTH CARE': '#059669',
+  'AUTOMOTIVE': '#d97706',
+  'IT/ITES': '#7c3aed',
+  'ELECTRONICS AND HARDWARE': '#0369a1'
+};
+
+function secBadge(s){
+  const m={'APPAREL':'s-ap','BEAUTY AND WELLNESS':'s-bw','HEALTH CARE':'s-hc','AUTOMOTIVE':'s-au','IT/ITES':'s-it','ELECTRONICS AND HARDWARE':'s-eh'};
+  return `<span class="sec ${m[s]||'s-ap'}">${s}</span>`;
+}
+function schemeBadge(s){
+  const t=s?s.toUpperCase():'';
+  if(t.includes('PMSHRI')||t.includes('PM SHRI')||t.includes('PMSRI')||t.includes('PMSRHI'))
+    return `<span class="stype stype-pmshri">PM SHRI</span>`;
+  if(t.includes('SAMAGRA'))
+    return `<span class="stype stype-samagra">SAMAGRA</span>`;
+  return `<span class="stype stype-other">${s||'—'}</span>`;
+}
+
+const PP=25;let CUR=1;let FILTERED=[...VT];
+let mapInst=null, markers=[];
+
+// Tab switching
+function switchTab(tab) {
+  document.getElementById('tabTable').classList.toggle('active', tab==='table');
+  document.getElementById('tabMap').classList.toggle('active', tab==='map');
+  document.getElementById('tableView').style.display = tab==='table' ? 'block' : 'none';
+  document.getElementById('mapView').style.display = tab==='map' ? 'block' : 'none';
+  if(tab==='map') initMap();
+}
+
+function initMap() {
+  if(!mapInst) {
+    mapInst = L.map('theMap').setView([17.4,79.0], 7);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors',
+      maxZoom: 18
+    }).addTo(mapInst);
+  }
+  renderMapMarkers();
+}
+
+function renderMapMarkers() {
+  markers.forEach(m => mapInst.removeLayer(m));
+  markers = [];
+  const valid = FILTERED.filter(v => v.lat && v.lng);
+  valid.forEach(v => {
+    const color = SECTOR_COLORS[v.sector] || '#64748b';
+    const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 36" width="22" height="33">
+      <path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 24 12 24s12-15 12-24C24 5.4 18.6 0 12 0z" fill="${color}" stroke="white" stroke-width="1.5"/>
+      <circle cx="12" cy="12" r="5" fill="white"/>
+    </svg>`;
+    const icon = L.divIcon({
+      html: svgIcon,
+      className: '',
+      iconSize: [22, 33],
+      iconAnchor: [11, 33],
+      popupAnchor: [0, -33]
+    });
+    const m = L.marker([v.lat, v.lng], {icon})
+      .addTo(mapInst)
+      .bindPopup(`
+        <div style="font-family:DM Sans,sans-serif;min-width:200px">
+          <div style="font-weight:700;font-size:.9rem;color:#0f172a;margin-bottom:4px">${v.name}</div>
+          <div style="font-size:.75rem;color:#64748b;margin-bottom:6px">${v.phone}</div>
+          <div style="font-size:.72rem;margin-bottom:2px"><b>Sector:</b> ${v.sector}</div>
+          <div style="font-size:.72rem;margin-bottom:2px"><b>School:</b> ${v.school}</div>
+          <div style="font-size:.72rem;margin-bottom:6px"><b>District:</b> ${v.district}</div>
+          <button onclick="openModal(${v.sno})" style="padding:5px 12px;background:#0d9488;color:#fff;border:none;border-radius:6px;font-size:.75rem;font-weight:600;cursor:pointer;width:100%">View Details</button>
+        </div>
+      `, {maxWidth: 240});
+    markers.push(m);
+  });
+
+  // Update legend
+  const counts = {};
+  FILTERED.forEach(v => { counts[v.sector] = (counts[v.sector]||0)+1; });
+  const legDiv = document.getElementById('mapLegend');
+  legDiv.innerHTML = Object.entries(SECTOR_COLORS).filter(([s]) => counts[s]).map(([s,c]) =>
+    `<div class="leg"><div class="leg-dot" style="background:${c}"></div><span>${s} (${counts[s]||0})</span></div>`
+  ).join('');
+}
+
+function filterAll(){
+  const q=document.getElementById('srch').value.toLowerCase();
+  const sec=document.getElementById('secF').value;
+  const scheme=document.getElementById('schemeF').value.toUpperCase();
+  const sort=document.getElementById('sortF').value;
+  FILTERED=VT.filter(v=>{
+    const match=!q||v.name.toLowerCase().includes(q)||v.phone.includes(q)||v.school.toLowerCase().includes(q)||(v.district||'').toLowerCase().includes(q)||(v.yug||'').toLowerCase().includes(q);
+    const secOk=!sec||v.sector===sec;
+    const schOk=!scheme||(v.scheme||'').toUpperCase().includes(scheme);
+    return match&&secOk&&schOk;
+  });
+  if(sort==='name') FILTERED.sort((a,b)=>a.name.localeCompare(b.name));
+  else if(sort==='sector') FILTERED.sort((a,b)=>a.sector.localeCompare(b.sector));
+  else if(sort==='district') FILTERED.sort((a,b)=>(a.district||'').localeCompare(b.district||''));
+  else FILTERED.sort((a,b)=>a.sno-b.sno);
+  CUR=1;
+  document.getElementById('countBadge').textContent=`${FILTERED.length} records`;
+  document.getElementById('hShowing').textContent=FILTERED.length;
+  render();
+  if(mapInst) renderMapMarkers();
+}
+
+function render(){
+  const start=(CUR-1)*PP,end=Math.min(start+PP,FILTERED.length);
+  const sl=FILTERED.slice(start,end);
+  document.getElementById('vtBody').innerHTML=sl.length?sl.map(v=>`
+    <tr onclick="openModal(${v.sno})" style="cursor:pointer">
+      <td class="sno">${v.sno}</td>
+      <td><strong>${v.name}</strong><br><span class="phone">${v.phone}</span></td>
+      <td>${secBadge(v.sector)}</td>
+      <td class="yug">${v.yug||'—'}</td>
+      <td class="school">${v.school}</td>
+      <td class="district">${v.district||'—'}</td>
+      <td class="district">${v.mandal||'—'}</td>
+      <td>${schemeBadge(v.scheme)}</td>
+      <td><span class="udise">${v.udise||'—'}</span></td>
+      <td class="joining">${v.joining}</td>
+      <td class="dob">${v.dob}</td>
+      <td class="qual">${v.qual||'—'}</td>
+      <td class="exp">${v.expCurr||'—'}</td>
+      <td class="exp">${v.expTotal||'—'}</td>
+    </tr>`).join('')
+    :`<tr><td colspan="14"><div class="empty"><div class="ei">🔍</div><p>No records match your filters</p></div></td></tr>`;
+  makePgr();
+}
+
+function makePgr(){
+  const pages=Math.ceil(FILTERED.length/PP)||1;
+  if(pages<=1){document.getElementById('pgr').innerHTML='';return;}
+  let html='';
+  for(let i=1;i<=pages;i++)
+    html+=`<button class="pbn${i===CUR?' on':''}" onclick="CUR=${i};render()">${i}</button>`;
+  document.getElementById('pgr').innerHTML=html;
+}
+
+function openModal(sno){
+  const v=VT.find(x=>x.sno===sno);if(!v)return;
+  document.getElementById('mAvt').textContent=v.name[0];
+  document.getElementById('mName').textContent=v.name;
+  document.getElementById('mSub').innerHTML=`${secBadge(v.sector)} &nbsp; <span class="phone">${v.phone}</span>`;
+  document.getElementById('mBody').innerHTML=`
+    <div class="mrow"><span class="ml">S.No</span><span class="mv">${v.sno}</span></div>
+    <div class="mrow"><span class="ml">Full Name</span><span class="mv">${v.name}</span></div>
+    <div class="mrow"><span class="ml">Phone</span><span class="mv">${v.phone}</span></div>
+    <div class="mrow"><span class="ml">Email</span><span class="mv">${v.email||'—'}</span></div>
+    <div class="mrow"><span class="ml">Sector</span><span class="mv">${secBadge(v.sector)}</span></div>
+    <div class="mrow"><span class="ml">YUG Contract ID</span><span class="mv" style="font-family:monospace;font-size:.8rem">${v.yug||'—'}</span></div>
+    <div class="mrow"><span class="ml">Joining Date</span><span class="mv">${v.joining}</span></div>
+    <div class="mrow"><span class="ml">Date of Birth</span><span class="mv">${v.dob}</span></div>
+    <div class="mrow"><span class="ml">Qualification</span><span class="mv">${v.qual||'—'}</span></div>
+    <div class="mrow"><span class="ml">Current Exp</span><span class="mv">${v.expCurr||'—'}</span></div>
+    <div class="mrow"><span class="ml">Total Exp</span><span class="mv">${v.expTotal||'—'}</span></div>
+    <div class="mrow"><span class="ml">Aadhar No.</span><span class="mv" style="font-family:monospace">${v.aadhar||'—'}</span></div>
+    <div class="mrow"><span class="ml">PAN No.</span><span class="mv" style="font-family:monospace">${v.pan||'—'}</span></div>
+    <hr style="border:none;border-top:1px dashed var(--border);margin:8px 0">
+    <div class="mrow"><span class="ml">School</span><span class="mv">${v.school}</span></div>
+    <div class="mrow"><span class="ml">District</span><span class="mv">${v.district||'—'}</span></div>
+    <div class="mrow"><span class="ml">Mandal</span><span class="mv">${v.mandal||'—'}</span></div>
+    <div class="mrow"><span class="ml">Block</span><span class="mv">${v.block||'—'}</span></div>
+    <div class="mrow"><span class="ml">UDISE Code</span><span class="mv"><span class="udise">${v.udise||'—'}</span></span></div>
+    <div class="mrow"><span class="ml">School Type</span><span class="mv">${v.schoolType||'—'}</span></div>
+    <div class="mrow"><span class="ml">Scheme</span><span class="mv">${schemeBadge(v.scheme)}</span></div>
+    ${v.lat&&v.lng?`<div class="mrow"><span class="ml">Coordinates</span><span class="mv" style="font-family:monospace;font-size:.75rem">${v.lat.toFixed(5)}, ${v.lng.toFixed(5)}</span></div>`:''}
+    <hr style="border:none;border-top:1px dashed var(--border);margin:8px 0">
+    <div class="mrow"><span class="ml">HM/Principal</span><span class="mv">${v.hm||'—'}</span></div>
+    <div class="mrow"><span class="ml">HM Phone</span><span class="mv">${v.hmPhone||'—'}</span></div>
+    <div class="mrow"><span class="ml">HM Email</span><span class="mv" style="font-size:.75rem">${v.hmEmail||'—'}</span></div>
+    <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+      <a href="tel:${v.phone}" style="padding:8px 16px;background:var(--teal);color:#fff;border-radius:8px;text-decoration:none;font-size:.82rem;font-weight:600">📞 Call VT</a>
+      <a href="mailto:${v.email}" style="padding:8px 16px;background:var(--blue);color:#fff;border-radius:8px;text-decoration:none;font-size:.82rem;font-weight:600">✉️ Email VT</a>
+      ${v.lat&&v.lng?`<a href="https://www.google.com/maps?q=${v.lat},${v.lng}" target="_blank" style="padding:8px 16px;background:var(--amber);color:#fff;border-radius:8px;text-decoration:none;font-size:.82rem;font-weight:600">📍 Google Maps</a>`:`<a href="https://www.google.com/maps/search/${encodeURIComponent(v.school+', '+v.district+', Telangana')}" target="_blank" style="padding:8px 16px;background:var(--amber);color:#fff;border-radius:8px;text-decoration:none;font-size:.82rem;font-weight:600">📍 Maps</a>`}
+    </div>`;
+  document.getElementById('detailModal').classList.add('open');
+}
+function closeModal(){document.getElementById('detailModal').classList.remove('open')}
+document.getElementById('detailModal').addEventListener('click',function(e){if(e.target===this)closeModal()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
+
+function buildTags(){
+  const counts={};
+  VT.forEach(v=>{counts[v.sector]=(counts[v.sector]||0)+1});
+  const tagMap={'APPAREL':'app','BEAUTY AND WELLNESS':'bw','HEALTH CARE':'hc','AUTOMOTIVE':'au','IT/ITES':'it','ELECTRONICS AND HARDWARE':'eh'};
+  let html=`<div class="stag all active" onclick="filterBySec(\'\')">All · ${VT.length}</div>`;
+  Object.entries(counts).forEach(([sec,cnt])=>{
+    html+=`<div class="stag ${tagMap[sec]||'app'}" onclick="filterBySec(\'${sec}\')">${sec} · ${cnt}</div>`;
+  });
+  document.getElementById('tagRow').innerHTML=html;
+  const dists=new Set(VT.map(v=>v.district).filter(Boolean));
+  document.getElementById('hDistricts').textContent=dists.size;
+}
+
+function filterBySec(s){
+  document.getElementById('secF').value=s;
+  document.querySelectorAll('.stag').forEach(t=>t.classList.remove('active'));
+  if(!s) document.querySelector('.stag.all').classList.add('active');
+  filterAll();
+}
+
+function exportCSV(){
+  const rows=[['S.No','Name','Phone','Aadhar','PAN','Sector','Email','YUG Contract ID','Joining Date','DOB','Qualification','Exp (Current)','Exp (Total)','School','District','Mandal','Block','UDISE','School Type','Scheme','HM/Principal','HM Phone','HM Email','Latitude','Longitude']];
+  FILTERED.forEach(v=>rows.push([v.sno,v.name,v.phone,v.aadhar,v.pan,v.sector,v.email,v.yug,v.joining,v.dob,v.qual,v.expCurr,v.expTotal,v.school,v.district,v.mandal,v.block,v.udise,v.schoolType,v.scheme,v.hm,v.hmPhone,v.hmEmail,v.lat||'',v.lng||'']));
+  const csv=rows.map(r=>r.map(c=>`"${(c||'').toString().replace(/"/g,'\"')}"` ).join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);
+  a.download='VT_Details_YugShakti_Telangana.csv';a.click();
+}
+
+buildTags();
+filterAll();
+</script>
+</body>
+</html>

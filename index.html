@@ -879,87 +879,8 @@ tbody tr:nth-child(8){animation-delay:.32s}
   </div>
 
   <!-- VTS DATA SHEET (Full searchable grid from Claude) -->
-  <div class="pg" id="pg-vtsdata">
-    <div class="vtd-header" style="display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap;">
-      <div class="vtd-header-inner">
-        <div class="vtd-header-badge">📋 Geo-FRS Portal — Yug Shakti</div>
-        <h2>VT's <span>Details</span></h2>
-        <p>Vocational Trainers Master Register — Telangana State | 2025–26</p>
-        <div class="vtd-header-stats">
-          <div class="vtd-hstat"><div class="v" id="vtd-hTotal">206</div><div class="l">Total VTs</div></div>
-          <div class="vtd-hstat"><div class="v" id="vtd-hSectors">6</div><div class="l">Sectors</div></div>
-          <div class="vtd-hstat"><div class="v" id="vtd-hDistricts">—</div><div class="l">Districts</div></div>
-          <div class="vtd-hstat"><div class="v" id="vtd-hShowing">206</div><div class="l">Showing</div></div>
-        </div>
-      </div>
-      <div class="vtd-header-logo" style="position: relative; z-index: 1; background: rgba(255, 255, 255, 0.95); border-radius: 12px; padding: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25); margin-right: 10px; margin-top: 10px; margin-bottom: 10px;">
-        <img src="logo.png" alt="Yug Shakti Logo" style="height: 85px; width: auto; object-fit: contain;">
-      </div>
-    </div>
-
-    <div class="vtd-controls">
-      <div class="vtd-search-wrap">
-        <span class="si"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><path d="M21 21l-4.35-4.35"></path></svg></span>
-        <input class="fc" id="vtd-srch" placeholder="Search by name, phone, school, district, qualification, UDISE, PAN..." oninput="vtdFilterAll()"/>
-      </div>
-      <select class="vtd-ctl-select" id="vtd-secF" onchange="vtdFilterAll()">
-        <option value="">All Sectors</option>
-        <option value="APPAREL">APPAREL</option>
-        <option value="BEAUTY AND WELLNESS">BEAUTY &amp; WELLNESS</option>
-        <option value="HEALTH CARE">HEALTH CARE</option>
-        <option value="AUTOMOTIVE">AUTOMOTIVE</option>
-        <option value="IT/ITES">IT/ITES</option>
-        <option value="ELECTRONICS AND HARDWARE">ELECTRONICS &amp; HW</option>
-      </select>
-      <select class="vtd-ctl-select" id="vtd-schemeF" onchange="vtdFilterAll()">
-        <option value="">All Schemes</option>
-        <option value="PMSHRI">PM SHRI</option>
-        <option value="SAMAGRA">SAMAGRA</option>
-      </select>
-      <select class="vtd-ctl-select" id="vtd-sortF" onchange="vtdFilterAll()">
-        <option value="sno">Sort: S.No</option>
-        <option value="name">Sort: Name A–Z</option>
-        <option value="sector">Sort: Sector</option>
-        <option value="district">Sort: District</option>
-        <option value="joining">Sort: Joining Date</option>
-      </select>
-      <button class="vtd-btn-export" onclick="vtdExportCSV()">📤 Export CSV</button>
-    </div>
-
-    <div class="vtd-summary" id="vtd-tagRow"></div>
-
-    <div class="vtd-table-wrap">
-      <div class="vtd-card">
-        <div class="vtd-card-head">
-          <span>Vocational Trainers Register</span>
-          <span class="vtd-count-badge" id="vtd-countBadge">206 records</span>
-        </div>
-        <div class="vtd-tw">
-          <table id="vtd-vtTable">
-            <thead>
-              <tr>
-                <th>S.No</th>
-                <th>Name &amp; Contact</th>
-                <th>Sector</th>
-                <th>YUG Contract ID</th>
-                <th>School</th>
-                <th>District</th>
-                <th>Mandal</th>
-                <th>Scheme</th>
-                <th>UDISE</th>
-                <th>Joining Date</th>
-                <th>DOB</th>
-                <th>Qualification</th>
-                <th>Exp (Current)</th>
-                <th>Exp (Total)</th>
-              </tr>
-            </thead>
-            <tbody id="vtd-vtBody"></tbody>
-          </table>
-        </div>
-        <div id="vtd-pgr" class="vtd-pgr"></div>
-      </div>
-    </div>
+  <div class="pg" id="pg-vtsdata" style="padding:0;">
+    <iframe src="vts.html" style="width:100%; height:calc(100vh - 60px); border:none; display:block;"></iframe>
   </div>
 
   <!-- TRAINER PROFILE (subfolder) -->
@@ -2869,10 +2790,7 @@ function vtdExportCSV() {
   a.click();
 }
 
-function rVtsData() {
-  vtdBuildTags();
-  vtdFilterAll();
-}
+function rVtsData() {}
 
 
 // ── Teacher Data Validation ──────────────────────────────────────────
