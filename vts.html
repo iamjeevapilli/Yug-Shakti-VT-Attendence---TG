@@ -275,7 +275,13 @@ tbody td strong{color:var(--ink);font-weight:600}
 </div>
 
 <script>
-const VT = (window.parent && window.parent.DB) ? window.parent.DB.get('teachers', window.parent.SEED) : window.parent.VTS_FULL;
+const VT = (() => { 
+  try { 
+    const t = JSON.parse(localStorage.getItem('teachers')); 
+    if(t && t.length > 0) return t; 
+  } catch(e) {} 
+  return window.parent && window.parent.SEED ? window.parent.SEED : window.parent && window.parent.VTS_FULL ? window.parent.VTS_FULL : []; 
+})();
 
 const SECTOR_COLORS = {
   'APPAREL': '#2563eb',
