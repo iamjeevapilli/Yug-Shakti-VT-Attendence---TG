@@ -17,11 +17,23 @@
 <link rel="apple-touch-icon" href="/logo.png" />
 
 <script>
+// Force-clear service workers and caches to prevent development/testing cache issues
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
-      .then(reg => console.log('Service Worker registered successfully!', reg.scope))
-      .catch(err => console.log('Service Worker registration failed:', err));
+  navigator.serviceWorker.getRegistrations().then(registrations => {
+    for (let registration of registrations) {
+      registration.unregister().then(() => {
+        console.log('Service Worker unregistered successfully');
+      });
+    }
+  });
+}
+if ('caches' in window) {
+  caches.keys().then(keys => {
+    keys.forEach(key => {
+      caches.delete(key).then(() => {
+        console.log('Cache cleared:', key);
+      });
+    });
   });
 }
 </script>
@@ -1056,8 +1068,8 @@ tbody tr:nth-child(8){animation-delay:.32s}
         <div class="card" style="border-radius:16px;padding:16px">
           <div style="font-size:.78rem;font-weight:800;color:var(--t2);text-align:center;margin-bottom:10px;letter-spacing:.5px">📸 FACE VERIFICATION</div>
           <div class="camw" style="position:relative;border-radius:14px;overflow:hidden;background:#000">
-            <video id="checkin_vFeed" autoplay playsinline style="border-radius:12px;display:block"></video>
-            <canvas id="checkin_frsCanvas" style="position:absolute;top:0;left:0;pointer-events:none;"></canvas>
+            <video id="checkin_vFeed" autoplay playsinline style="border-radius:12px;display:block;transform:scaleX(-1)"></video>
+            <canvas id="checkin_frsCanvas" style="position:absolute;top:0;left:0;pointer-events:none;transform:scaleX(-1)"></canvas>
             <canvas id="checkin_pCanvas"></canvas>
             <img id="checkin_cPhoto" alt="" style="border-radius:12px"/>
             <!-- Live badge -->
@@ -1165,8 +1177,8 @@ tbody tr:nth-child(8){animation-delay:.32s}
         <div class="card" style="border-radius:16px;padding:16px">
           <div style="font-size:.78rem;font-weight:800;color:var(--t2);text-align:center;margin-bottom:10px;letter-spacing:.5px">📸 FACE VERIFICATION</div>
           <div class="camw" style="position:relative;border-radius:14px;overflow:hidden;background:#000">
-            <video id="checkout_vFeed" autoplay playsinline style="border-radius:12px;display:block"></video>
-            <canvas id="checkout_frsCanvas" style="position:absolute;top:0;left:0;pointer-events:none;"></canvas>
+            <video id="checkout_vFeed" autoplay playsinline style="border-radius:12px;display:block;transform:scaleX(-1)"></video>
+            <canvas id="checkout_frsCanvas" style="position:absolute;top:0;left:0;pointer-events:none;transform:scaleX(-1)"></canvas>
             <canvas id="checkout_pCanvas"></canvas>
             <img id="checkout_cPhoto" alt="" style="border-radius:12px"/>
             <!-- Live badge -->
@@ -2258,7 +2270,7 @@ function renderMapMarkers() {
   const att = DB.get('att', []);
   const td = today();
 
-  teachers.slice(0, 15).forEach(t => {
+  teachers.forEach(t => {
     if (t.lat && t.lng) {
       const todayAtt = att.find(a => a.teacherID === t.ph && a.date === td && a.status === 'approved');
       
@@ -2306,6 +2318,75 @@ function renderMapMarkers() {
       mapMarkers['teacher_' + t.ph] = teacherMarker;
     }
   });
+}
+
+window.trackVTLive = function(sno) {
+  closeModal('vtDetailsModal');
+  const v = VTS_FULL.find(x => x.sno == sno);
+  if(!v) return;
+  swPg('map');
+  
+  setTimeout(() => {
+    const teachers = DB.get('teachers', []);
+    const t = teachers.find(x => x.ph == v.phone || x.name === v.name); 
+    
+    let lat = null, lng = null;
+    const td = today();
+    const att = DB.get('att', []);
+    const todayAtt = t ? att.find(a => a.teacherID === t.ph && a.date === td && a.status === 'approved') : null;
+    
+    if (t && simulatedPositions[t.ph]) {
+        lat = simulatedPositions[t.ph].lat;
+        lng = simulatedPositions[t.ph].lng;
+    } else if (todayAtt) {
+        lat = todayAtt.lat || t.lat;
+        lng = todayAtt.lng || t.lng;
+    } else if (t && t.lat && t.lng) {
+        lat = t.lat;
+        lng = t.lng;
+    }
+    
+    if (lat && lng && liveMap) {
+        liveMap.setView([lat, lng], 16);
+        const marker = mapMarkers['teacher_' + t.ph] || mapMarkers['school_' + t.ph];
+        if (marker) marker.openPopup();
+    } else {
+        alert("Live location not available for this trainer.");
+    }
+  }, 300);
+}
+
+window.trackVTLiveByPhone = function(ph) {
+  swPg('map');
+  setTimeout(() => {
+    const teachers = DB.get('teachers', []);
+    const t = teachers.find(x => x.ph == ph); 
+    if(!t) { alert("Trainer not found in database."); return; }
+    
+    let lat = null, lng = null;
+    const td = today();
+    const att = DB.get('att', []);
+    const todayAtt = att.find(a => a.teacherID === t.ph && a.date === td && a.status === 'approved');
+    
+    if (simulatedPositions[t.ph]) {
+        lat = simulatedPositions[t.ph].lat;
+        lng = simulatedPositions[t.ph].lng;
+    } else if (todayAtt) {
+        lat = todayAtt.lat || t.lat;
+        lng = todayAtt.lng || t.lng;
+    } else if (t.lat && t.lng) {
+        lat = t.lat;
+        lng = t.lng;
+    }
+    
+    if (lat && lng && liveMap) {
+        liveMap.setView([lat, lng], 16);
+        const marker = mapMarkers['teacher_' + t.ph] || mapMarkers['school_' + t.ph];
+        if (marker) marker.openPopup();
+    } else {
+        alert("Live location not available for this trainer.");
+    }
+  }, 300);
 }
 
 function toggleGPSSimulation() {
@@ -2430,6 +2511,7 @@ function openTrainer(ph){
         <div class="tpstatus ${isPresent?'tps-present':'tps-absent'}">${isPresent?'✅ Present Today':'❌ Absent Today'}</div>
       </div>
       <div style="display:flex;flex-direction:column;gap:8px">
+        <button class="btn bs" style="background:var(--s);color:#fff;font-size:.8rem;border:none" onclick="trackVTLiveByPhone('${t.ph}')">🛰️ Live Tracker</button>
         <button class="btn bo" style="background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.4);color:#fff;font-size:.8rem" onclick="oEdit('${t.ph}')">✏️ Edit</button>
         <button class="btn bd2" style="font-size:.8rem" onclick="delTfromProfile('${t.ph}')">🗑️ Delete</button>
       </div>
@@ -2747,6 +2829,7 @@ function vtdOpenModal(sno) {
       <a href="tel:${v.phone}" class="btn bp" style="padding:8px 16px;text-decoration:none;font-size:.82rem;font-weight:600;display:inline-flex;align-items:center;gap:4px">📞 Call VT</a>
       <a href="mailto:${v.email}" class="btn bw" style="padding:8px 16px;text-decoration:none;font-size:.82rem;font-weight:600;display:inline-flex;align-items:center;gap:4px">✉️ Email VT</a>
       <a href="https://www.google.com/maps/search/${encodeURIComponent(v.school + ', ' + v.district + ', Telangana')}" target="_blank" class="btn bo" style="padding:8px 16px;text-decoration:none;font-size:.82rem;font-weight:600;display:inline-flex;align-items:center;gap:4px">📍 Maps</a>
+      <button onclick="trackVTLive('${v.sno}')" class="btn bs" style="padding:8px 16px;text-decoration:none;font-size:.82rem;font-weight:600;display:inline-flex;align-items:center;gap:4px;border:none;cursor:pointer;">🛰️ Live Tracker</button>
     </div>`;
   openModal('vtDetailsModal');
 }
@@ -3051,23 +3134,34 @@ function frsStartOverlay(){
   const sc=$('frsScanner');
   if(sc){sc.style.display='block';sc.classList.remove('scan-verified','scan-fail');}
   if(FRS_DETECT_LOOP)clearInterval(FRS_DETECT_LOOP);
+  let isDetecting = false;
   FRS_DETECT_LOOP=setInterval(async()=>{
-    if(!CAM||!FRS_READY)return;
-    const det=await faceapi.detectAllFaces(v,new faceapi.SsdMobilenetv1Options({minConfidence:0.5}));
-    const ctx=fc.getContext('2d');
-    ctx.clearRect(0,0,fc.width,fc.height);
-    // Update scanner label dynamically
-    const lbl=document.querySelector('.scan-label');
-    const st=$('frsStatus');
-    if(det.length===1){
-      if(lbl)lbl.textContent='✅ FACE LOCKED — CLICK CAPTURE';
-      if(st&&FRS_READY){st.textContent='✅ Face detected! Click "Verify & Capture"';st.style.background='#e8f5e9';st.style.color='#0f9d58';st.style.borderColor='#a5d6a7';}
-    } else if(det.length>1){
-      if(lbl)lbl.textContent='⚠️ MULTIPLE FACES — STEP BACK';
-      if(st&&FRS_READY){st.textContent='⚠️ Multiple faces detected! Only 1 person allowed';st.style.background='#fff3e0';st.style.color='#e65100';st.style.borderColor='#ffcc02';}
-    } else {
-      if(lbl)lbl.textContent='🤖 SCANNING FACE...';
-      if(st&&FRS_READY){st.textContent='👤 No face detected — position your face in the camera';st.style.background='#eef2ff';st.style.color='#1a73e8';st.style.borderColor='#c7d7fc';}
+    if(!CAM||!FRS_READY||isDetecting)return;
+    isDetecting = true;
+    try {
+      const MAX=240;
+      const scale=Math.min(1,MAX/Math.max(v.videoWidth||640,v.videoHeight||480));
+      const small=document.createElement('canvas');
+      small.width=Math.round((v.videoWidth||640)*scale);
+      small.height=Math.round((v.videoHeight||480)*scale);
+      small.getContext('2d').drawImage(v,0,0,small.width,small.height);
+      const det=await faceapi.detectAllFaces(small,new faceapi.SsdMobilenetv1Options({minConfidence:0.4}));
+      const ctx=fc.getContext('2d');
+      ctx.clearRect(0,0,fc.width,fc.height);
+      const lbl=document.querySelector('.scan-label');
+      const st=$('frsStatus');
+      if(det.length===1){
+        if(lbl)lbl.textContent='✅ FACE LOCKED — CLICK CAPTURE';
+        if(st&&FRS_READY){st.textContent='✅ Face detected! Click "Verify & Capture"';st.style.background='#e8f5e9';st.style.color='#0f9d58';st.style.borderColor='#a5d6a7';}
+      } else if(det.length>1){
+        if(lbl)lbl.textContent='⚠️ MULTIPLE FACES — STEP BACK';
+        if(st&&FRS_READY){st.textContent='⚠️ Multiple faces detected! Only 1 person allowed';st.style.background='#fff3e0';st.style.color='#e65100';st.style.borderColor='#ffcc02';}
+      } else {
+        if(lbl)lbl.textContent='🤖 SCANNING FACE...';
+        if(st&&FRS_READY){st.textContent='👤 No face detected — position your face in the camera';st.style.background='#eef2ff';st.style.color='#1a73e8';st.style.borderColor='#c7d7fc';}
+      }
+    } finally {
+      isDetecting = false;
     }
   },200);
 }
@@ -3078,7 +3172,11 @@ async function capPhoto(){
   const v=$('vFeed'),c=$('pCanvas');
   // Save full-res photo for display
   c.width=v.videoWidth;c.height=v.videoHeight;
-  c.getContext('2d').drawImage(v,0,0);
+  const ctx = c.getContext('2d');
+  ctx.translate(c.width, 0);
+  ctx.scale(-1, 1);
+  ctx.drawImage(v,0,0);
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
   const frsC=$('frsCanvas');frsC.getContext('2d').clearRect(0,0,frsC.width,frsC.height);
 
   // --- FRS Verification ---
@@ -3777,22 +3875,34 @@ function frsStartOverlay(){
   const sc=$_('frsScanner');
   if(sc){sc.style.display='block';sc.classList.remove('scan-verified','scan-fail');}
   if(FRS_DETECT_LOOP)clearInterval(FRS_DETECT_LOOP);
+  let isDetecting = false;
   FRS_DETECT_LOOP=setInterval(async()=>{
-    if(!CAM||!FRS_READY)return;
-    const det=await faceapi.detectAllFaces(v,new faceapi.SsdMobilenetv1Options({minConfidence:0.5}));
-    const ctx=fc.getContext('2d');
-    ctx.clearRect(0,0,fc.width,fc.height);
-    const lbl=sc.querySelector('.scan-label');
-    const st=$_('frsStatus');
-    if(det.length===1){
-      if(lbl)lbl.textContent='✅ FACE LOCKED — CLICK CAPTURE';
-      if(st&&FRS_READY){st.textContent='✅ Face detected! Click "Verify & Capture"';st.style.background='#e8f5e9';st.style.color='#0f9d58';st.style.borderColor='#a5d6a7';}
-    } else if(det.length>1){
-      if(lbl)lbl.textContent='⚠️ MULTIPLE FACES — STEP BACK';
-      if(st&&FRS_READY){st.textContent='⚠️ Multiple faces detected! Only 1 person allowed';st.style.background='#fff3e0';st.style.color='#e65100';st.style.borderColor='#ffcc02';}
-    } else {
-      if(lbl)lbl.textContent='🤖 SCANNING FACE...';
-      if(st&&FRS_READY){st.textContent='👤 No face detected — position your face in the camera';st.style.background='#eef2ff';st.style.color='#1a73e8';st.style.borderColor='#c7d7fc';}
+    if(!CAM||!FRS_READY||isDetecting)return;
+    isDetecting = true;
+    try {
+      const MAX=240;
+      const scale=Math.min(1,MAX/Math.max(v.videoWidth||640,v.videoHeight||480));
+      const small=document.createElement('canvas');
+      small.width=Math.round((v.videoWidth||640)*scale);
+      small.height=Math.round((v.videoHeight||480)*scale);
+      small.getContext('2d').drawImage(v,0,0,small.width,small.height);
+      const det=await faceapi.detectAllFaces(small,new faceapi.SsdMobilenetv1Options({minConfidence:0.4}));
+      const ctx=fc.getContext('2d');
+      ctx.clearRect(0,0,fc.width,fc.height);
+      const lbl=sc.querySelector('.scan-label');
+      const st=$_('frsStatus');
+      if(det.length===1){
+        if(lbl)lbl.textContent='✅ FACE LOCKED — CLICK CAPTURE';
+        if(st&&FRS_READY){st.textContent='✅ Face detected! Click "Verify & Capture"';st.style.background='#e8f5e9';st.style.color='#0f9d58';st.style.borderColor='#a5d6a7';}
+      } else if(det.length>1){
+        if(lbl)lbl.textContent='⚠️ MULTIPLE FACES — STEP BACK';
+        if(st&&FRS_READY){st.textContent='⚠️ Multiple faces detected! Only 1 person allowed';st.style.background='#fff3e0';st.style.color='#e65100';st.style.borderColor='#ffcc02';}
+      } else {
+        if(lbl)lbl.textContent='🤖 SCANNING FACE...';
+        if(st&&FRS_READY){st.textContent='👤 No face detected — position your face in the camera';st.style.background='#eef2ff';st.style.color='#1a73e8';st.style.borderColor='#c7d7fc';}
+      }
+    } finally {
+      isDetecting = false;
     }
   },200);
 }
@@ -3802,7 +3912,11 @@ async function capPhoto(){
   const sc=$_('frsScanner');
   const v=$_('vFeed'),c=$_('pCanvas');
   c.width=v.videoWidth;c.height=v.videoHeight;
-  c.getContext('2d').drawImage(v,0,0);
+  const ctx = c.getContext('2d');
+  ctx.translate(c.width, 0);
+  ctx.scale(-1, 1);
+  ctx.drawImage(v,0,0);
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
   const frsC=$_('frsCanvas');frsC.getContext('2d').clearRect(0,0,frsC.width,frsC.height);
 
   if(FRS_READY){
@@ -3975,6 +4089,7 @@ function openTrainer(ph){
         <div class="tpstatus ${isPresent?'tps-present':'tps-absent'}">${isPresent?'✅ Present Today':'❌ Absent Today'}</div>
       </div>
       <div style="display:flex;flex-direction:column;gap:8px">
+        <button class="btn bs" style="background:var(--s);color:#fff;font-size:.8rem;border:none" onclick="trackVTLiveByPhone('${t.ph}')">🛰️ Live Tracker</button>
         <button class="btn bo" style="background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.4);color:#fff;font-size:.8rem" onclick="oEdit('${t.ph}')">✏️ Edit</button>
         <button class="btn bd2" style="font-size:.8rem" onclick="delTfromProfile('${t.ph}')">🗑️ Delete</button>
       </div>
