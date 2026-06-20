@@ -579,6 +579,7 @@ tbody tr:nth-child(8){animation-delay:.32s}
 /* Shared utility */
 @keyframes fadeSlideUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes gpsPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.5)}}
 
 /* Scroll-reveal class (added by JS) */
 .reveal{opacity:0;transform:translateY(20px);transition:opacity .45s ease,transform .45s ease}
@@ -905,15 +906,18 @@ tbody tr:nth-child(8){animation-delay:.32s}
   <!-- LIVE MAP TRACKER -->
   <div class="pg" id="pg-map">
     <div class="card">
-      <div class="ctit" style="justify-content:space-between">
+      <div class="ctit" style="justify-content:space-between;flex-wrap:wrap;gap:8px">
         <span style="display:flex;align-items:center;gap:8px">🗺️ Live Teacher GPS Monitor</span>
-        <button class="btn bs" id="btn-sim" onclick="toggleGPSSimulation()">🛰️ Start Live Simulation</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn bs" id="btn-refresh-map" onclick="refreshLiveMap()" style="font-size:.8rem">🔄 Refresh Now</button>
+          <span id="map-last-update" style="font-size:.75rem;color:var(--t2);align-self:center"></span>
+        </div>
       </div>
-      <p style="font-size:.84rem;color:var(--t2);margin-bottom:12px">
-        In a production environment, this map tracks real-time location syncs from teachers' mobile devices. 
-        Below is a fully functional demonstration showing school boundaries (🏫) and teachers' actual or simulated coordinates.
-      </p>
-      <div id="map-canvas" style="height: 520px; border-radius: 12px; border: 2px solid var(--bd); box-shadow: inset 0 2px 6px rgba(0,0,0,0.08); z-index: 10"></div>
+      <!-- Live Trainer Status Cards -->
+      <div id="live-trainer-status" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px"></div>
+      <!-- Map -->
+      <div id="map-canvas" style="height:480px;border-radius:12px;border:2px solid var(--bd);box-shadow:inset 0 2px 6px rgba(0,0,0,0.08);z-index:10"></div>
+      <p style="font-size:.76rem;color:var(--t2);margin-top:8px">🟢 = Trainer shared location today &nbsp; 🔴 = No live data (showing school location) &nbsp; Map auto-refreshes every 30 seconds.</p>
     </div>
   </div>
 
@@ -2161,6 +2165,8 @@ function handleTeacherLogin() {
         SESSION.create(CU);
         resetLoginCheckForm();
         boot();
+        // Start real-time GPS tracking after login
+        setTimeout(() => startTrainerGPSTracking(), 1500);
       } else {
         const d=LOCKOUT.record();const rem=LOCKOUT.remaining();
         logLoginAttempt(ph, t.name, 'Failed', `Incorrect password.`, null);
@@ -2231,7 +2237,7 @@ async function forgotPass(role) {
     alert("👩‍🏫 TEACHER RECOVERY\n\nPlease contact your Administrator. The Admin can instantly reset your password from the 'Manage Trainers' tab inside their Dashboard.");
   }
 }
-function doLogout(){stopCam();resetLoginCheckForm();SESSION.destroy();CU=null;PHOTO=null;LOC=null;$('app').style.display='none';$('loginPg').style.display='flex';}
+function doLogout(){stopCam();stopTrainerGPSTracking();resetLoginCheckForm();SESSION.destroy();CU=null;PHOTO=null;LOC=null;$('app').style.display='none';$('loginPg').style.display='flex';}
 function resetAll(){
   if(confirm('Reset ALL teachers list to original 206 trainers?')){
     DB.set('teachers',SEED);alert('✅ All 206 trainers reloaded!');rTch();rDash();
@@ -2242,11 +2248,128 @@ let liveMap = null;
 let mapMarkers = {};
 let gpsInterval = null;
 let simulatedPositions = {};
+let trainerGPSInterval = null;  // For trainer's self-reporting GPS
+let mapAutoRefreshInterval = null; // Admin map auto-refresh
+
+// ─── TRAINER GPS SELF-REPORTING ───────────────────────────────────────────────
+function startTrainerGPSTracking() {
+  if (!CU || CU.role !== 'teacher') return;
+  if (!navigator.geolocation) return;
+
+  // Show live indicator in nav bar
+  const nUser = $('nUser');
+  if (nUser) {
+    let dot = document.getElementById('gps-live-dot');
+    if (!dot) {
+      dot = document.createElement('span');
+      dot.id = 'gps-live-dot';
+      dot.style.cssText = 'display:inline-flex;align-items:center;gap:4px;font-size:.72rem;background:#e8f5e9;color:#0f9d58;padding:2px 8px;border-radius:20px;margin-left:6px;font-weight:700';
+      dot.innerHTML = '<span style="width:7px;height:7px;background:#0f9d58;border-radius:50%;display:inline-block;animation:gpsPulse 1.5s infinite"></span> GPS On';
+      nUser.parentNode.insertBefore(dot, nUser.nextSibling);
+    }
+  }
+
+  // Send GPS immediately, then every 5 minutes
+  saveTrainerLocation();
+  trainerGPSInterval = setInterval(saveTrainerLocation, 5 * 60 * 1000);
+}
+
+function stopTrainerGPSTracking() {
+  if (trainerGPSInterval) { clearInterval(trainerGPSInterval); trainerGPSInterval = null; }
+  const dot = document.getElementById('gps-live-dot');
+  if (dot) dot.remove();
+}
+
+function saveTrainerLocation() {
+  if (!CU || CU.role !== 'teacher') return;
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      const lat = parseFloat(pos.coords.latitude.toFixed(6));
+      const lng = parseFloat(pos.coords.longitude.toFixed(6));
+      const now = getSecureDate();
+      const ts = now.toISOString();
+      const timeStr = now.toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit'});
+      const dateStr = now.toISOString().split('T')[0];
+
+      // Save to liveLocations in DB keyed by phone
+      const locs = DB.get('liveLocations', {});
+      locs[CU.ph] = {
+        ph: CU.ph,
+        name: CU.name,
+        school: CU.school,
+        lat, lng,
+        timestamp: ts,
+        timeStr,
+        dateStr,
+        accuracy: Math.round(pos.coords.accuracy)
+      };
+      DB.set('liveLocations', locs);
+
+      // Update dot to show last update time
+      const dot = document.getElementById('gps-live-dot');
+      if (dot) dot.innerHTML = `<span style="width:7px;height:7px;background:#0f9d58;border-radius:50%;display:inline-block;animation:gpsPulse 1.5s infinite"></span> GPS ${timeStr}`;
+    },
+    (err) => {
+      const dot = document.getElementById('gps-live-dot');
+      if (dot) dot.innerHTML = '📍 GPS Blocked';
+    },
+    { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 }
+  );
+}
+
+// ─── ADMIN MAP AUTO-REFRESH ────────────────────────────────────────────────────
+function refreshLiveMap() {
+  renderMapMarkers();
+  renderLiveTrainerStatusCards();
+  const el = $('map-last-update');
+  if (el) el.textContent = 'Updated: ' + getSecureDate().toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+}
+
+function renderLiveTrainerStatusCards() {
+  const container = $('live-trainer-status');
+  if (!container) return;
+  const locs = DB.get('liveLocations', {});
+  const teachers = DB.get('teachers', []);
+  const today = getSecureDate().toISOString().split('T')[0];
+  const liveTodayKeys = Object.keys(locs).filter(ph => locs[ph].dateStr === today);
+
+  if (liveTodayKeys.length === 0) {
+    container.innerHTML = `<div style="font-size:.8rem;color:var(--t2);padding:8px 12px;background:#f8fafc;border-radius:10px;border:1px solid var(--bd)">📭 No trainers have shared live GPS today. Trainers must be logged in with location permission granted.</div>`;
+    return;
+  }
+
+  container.innerHTML = liveTodayKeys.map(ph => {
+    const loc = locs[ph];
+    const minAgo = Math.round((Date.now() - new Date(loc.timestamp).getTime()) / 60000);
+    const fresh = minAgo <= 10;
+    return `<div style="display:flex;align-items:center;gap:8px;background:${fresh?'#e8f5e9':'#fff8e1'};border:1px solid ${fresh?'#a5d6a7':'#ffe082'};border-radius:10px;padding:7px 12px;font-size:.78rem">
+      <span style="font-size:1rem">${fresh?'🟢':'🟡'}</span>
+      <div>
+        <div style="font-weight:800;color:#202124">${loc.name}</div>
+        <div style="color:var(--t2)">${loc.school||'—'} &nbsp;•&nbsp; 🕐 ${loc.timeStr} (${minAgo===0?'just now':minAgo+'m ago'}) &nbsp;•&nbsp; 🎯 ±${loc.accuracy}m</div>
+      </div>
+      <button onclick="focusTrainerOnMap('${ph}')" class="btn bs" style="font-size:.72rem;padding:4px 10px;margin-left:auto">📍 Focus</button>
+    </div>`;
+  }).join('');
+}
+
+function focusTrainerOnMap(ph) {
+  const locs = DB.get('liveLocations', {});
+  const loc = locs[ph];
+  if (!loc || !liveMap) return;
+  liveMap.setView([loc.lat, loc.lng], 16);
+  const marker = mapMarkers['live_' + ph] || mapMarkers['teacher_' + ph] || mapMarkers['school_' + ph];
+  if (marker) marker.openPopup();
+}
 
 function initLiveMap() {
   if (!$('map-canvas')) return;
   if (liveMap) {
-    setTimeout(() => { liveMap.invalidateSize(); renderMapMarkers(); }, 100);
+    setTimeout(() => { liveMap.invalidateSize(); refreshLiveMap(); }, 100);
+    // Start auto-refresh every 30s
+    if (!mapAutoRefreshInterval) {
+      mapAutoRefreshInterval = setInterval(refreshLiveMap, 30000);
+    }
     return;
   }
   setTimeout(() => {
@@ -2255,7 +2378,11 @@ function initLiveMap() {
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors'
     }).addTo(liveMap);
-    renderMapMarkers();
+    refreshLiveMap();
+    // Auto-refresh every 30 seconds
+    if (!mapAutoRefreshInterval) {
+      mapAutoRefreshInterval = setInterval(refreshLiveMap, 30000);
+    }
   }, 100);
 }
 
@@ -2266,6 +2393,79 @@ function renderMapMarkers() {
   }
   mapMarkers = {};
 
+  const teachers = DB.get('teachers', []);
+  const att = DB.get('att', []);
+  const locs = DB.get('liveLocations', {});
+  const td = today();
+
+  teachers.forEach(t => {
+    if (!t.lat && !t.lng) return;
+
+    // Check for live GPS location shared today
+    const liveLoc = locs[t.ph];
+    const hasLiveToday = liveLoc && liveLoc.dateStr === td;
+    const minAgo = hasLiveToday ? Math.round((Date.now() - new Date(liveLoc.timestamp).getTime()) / 60000) : null;
+    const isFreshLive = hasLiveToday && minAgo <= 15;
+
+    // Show live GPS marker if available
+    if (hasLiveToday) {
+      const liveMarker = L.marker([liveLoc.lat, liveLoc.lng], {
+        icon: L.divIcon({
+          className: 'custom-icon',
+          html: `<div style="background:${isFreshLive?'#0f9d58':'#f9ab00'};color:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:13px;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.4)">${isFreshLive?'🟢':'🟡'}</div>`,
+          iconSize: [28, 28],
+          iconAnchor: [14, 14]
+        })
+      }).addTo(liveMap);
+      liveMarker.bindPopup(`
+        <strong>👤 ${t.name}</strong><br>
+        📱 ${t.ph}<br>
+        🏫 ${t.school||'—'}<br>
+        ${isFreshLive ? '🟢 <strong>Live GPS Active</strong>' : '🟡 GPS ('+minAgo+'m ago)'}<br>
+        🕐 Last update: ${liveLoc.timeStr}<br>
+        🎯 Accuracy: ±${liveLoc.accuracy}m
+      `);
+      mapMarkers['live_' + t.ph] = liveMarker;
+    }
+
+    const todayAtt = att.find(a => a.teacherID === t.ph && a.date === td && a.status === 'approved');
+    const schoolMarker = L.marker([t.lat, t.lng], {
+      icon: L.divIcon({
+        className: 'custom-icon',
+        html: `<div style="background-color: var(--p); color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 11px; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3)">🏫</div>`,
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+      })
+    }).addTo(liveMap);
+    schoolMarker.bindPopup(`<strong>🏫 ${t.school||t.name}</strong><br>📱 ${t.ph}<br>${hasLiveToday ? '🟢 Trainer has live GPS today' : '🔴 No live GPS today'}${todayAtt ? '<br>✅ Checked in at '+todayAtt.time : ''}`);
+    mapMarkers['school_' + t.ph] = schoolMarker;
+
+    if (t.lat && t.lng) {
+      const isLive = simulatedPositions[t.ph] ? true : !!todayAtt;
+      const label = simulatedPositions[t.ph] ? 'GPS Simulation Active' : (todayAtt ? `Checked in at ${todayAtt.time}` : 'No attendance today');
+      const color = isLive ? 'var(--s)' : 'var(--d)';
+      const emoji = isLive ? '🟢' : '🔴';
+
+      const teacherLat = simulatedPositions[t.ph] ? simulatedPositions[t.ph].lat : (todayAtt ? (todayAtt.lat || t.lat) : t.lat);
+      const teacherLng = simulatedPositions[t.ph] ? simulatedPositions[t.ph].lng : (todayAtt ? (todayAtt.lng || t.lng) : t.lng);
+
+      const teacherMarker = L.marker([teacherLat + (isLive ? 0.0004 : -0.0006), teacherLng + (isLive ? -0.0004 : 0.0006)], {
+        icon: L.divIcon({
+          className: 'custom-icon',
+          html: `<div style="background-color: ${color}; color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 11px; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3)">👤</div>`,
+          iconSize: [24, 24],
+          iconAnchor: [12, 12]
+        })
+      }).addTo(liveMap);
+      teacherMarker.bindPopup(`<strong>👤 Trainer: ${t.name}</strong><br>Phone: ${t.ph}<br>Status: ${emoji} ${isLive ? (simulatedPositions[t.ph] ? 'Live Tracking Active' : 'Present') : 'Offline / Absent'}<br>${label}`);
+      mapMarkers['teacher_' + t.ph] = teacherMarker;
+    }
+  });
+}
+
+function renderMapMarkersOld() {
+  if (!liveMap) return;
+  // legacy placeholder — real rendering done in renderMapMarkers above
   const teachers = DB.get('teachers', []);
   const att = DB.get('att', []);
   const td = today();
