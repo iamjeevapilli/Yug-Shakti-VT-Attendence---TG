@@ -2444,7 +2444,7 @@ function boot(){
 }
 function buildTabs(){
   const tabs=CU.role==='admin'
-    ?[['dashboard','📊 Dashboard'],['records','📁 Records'],['teachers','👩‍🏫 Trainers'],['vtsdata','📁 Vt\'s Details'],['map','🗺️ Live Tracker'],['reports','📈 Reports'],['settings','⚙️ Settings']]
+    ?[['dashboard','📊 Dashboard'],['records','📁 Records'],['teachers','👩‍🏫 Trainers'],['vtsdata','📁 Vt\'s Details'],['reports','📈 Reports'],['settings','⚙️ Settings']]
     :[['checkin','🌅 Morning Check-In'],['checkout','🌇 Evening Check-Out'],['history','📅 My History']];
   $('tabBar').innerHTML=tabs.map(([id,l])=>`<button class="tbtn" id="tb-${id}" onclick="swPg('${id}')">${l}</button>`).join('');
 }
