@@ -961,9 +961,9 @@ tbody tr:nth-child(8){animation-delay:.32s}
         <h3>🕐 Attendance Time Window <span style="font-size:0.82rem;font-weight:normal;color:var(--t2)">🔒 (Locked to System Default)</span></h3>
         <div class="r2">
           <div class="fg"><label>Opens At</label><input class="fc" type="time" id="sOp" value="08:30" disabled style="background:#f1f3f5; cursor:not-allowed; font-weight:700"/></div>
-          <div class="fg"><label>Closes At</label><input class="fc" type="time" id="sCl" value="18:30" disabled style="background:#f1f3f5; cursor:not-allowed; font-weight:700"/></div>
+          <div class="fg"><label>Closes At</label><input class="fc" type="time" id="sCl" value="17:00" disabled style="background:#f1f3f5; cursor:not-allowed; font-weight:700"/></div>
         </div>
-        <p style="font-size:0.75rem; color:var(--t2); margin-top:6px">⚠️ Opening time (8:30 AM) and Closing time (6:30 PM) are locked by system rules.</p>
+        <p style="font-size:0.75rem; color:var(--t2); margin-top:6px">⚠️ Opening time (8:30 AM) and Closing time (5:00 PM) are locked by system rules.</p>
       </div>
 
       <div class="sts" style="border-left: 3px solid #0088cc;">
@@ -1018,7 +1018,7 @@ tbody tr:nth-child(8){animation-delay:.32s}
         <span style="font-size:1.5rem">📢</span>
         <div>
           <div style="font-weight:800;font-size:.85rem;margin-bottom:2px">Morning Check-In Policy</div>
-          <div style="font-size:.76rem;line-height:1.4">Morning Check-In is required by <strong>9:30 AM</strong> to qualify for a <strong>Full Day</strong> of attendance. Late Check-In will result in a Half Day.</div>
+          <div style="font-size:.76rem;line-height:1.4">Morning Check-In is required by <strong>10:30 AM</strong> to qualify for a <strong>Full Day</strong> of attendance. Late Check-In will result in a Half Day.</div>
         </div>
       </div>
 
@@ -1127,7 +1127,7 @@ tbody tr:nth-child(8){animation-delay:.32s}
         <span style="font-size:1.5rem">📢</span>
         <div>
           <div style="font-weight:800;font-size:.85rem;margin-bottom:2px">Evening Check-Out Policy</div>
-          <div style="font-size:.76rem;line-height:1.4">Evening Check-Out must be completed between <strong>3:30 PM</strong> and <strong>6:30 PM</strong> to secure your daily attendance status.</div>
+          <div style="font-size:.76rem;line-height:1.4">Evening Check-Out must be completed between <strong>3:30 PM</strong> and <strong>5:00 PM</strong> to secure your daily attendance status.</div>
         </div>
       </div>
 
@@ -1963,7 +1963,7 @@ async function initApp(){
     lng:78.4867,
     radius:300,
     open:'08:30',
-    close:'18:30',
+    close:'17:00',
     waPhone:'919010809057',
     waAuto:true,
     tgToken:TG_DEFAULT_TOKEN,
@@ -1974,7 +1974,7 @@ async function initApp(){
   }
   if(!s.waPhone) s.waPhone='919010809057';
   if(!s.open) s.open='08:30';
-  if(!s.close) s.close='18:30';
+  if(!s.close) s.close='17:00';
   if(!s.tgToken) s.tgToken=TG_DEFAULT_TOKEN;
   if(!s.tgChatId) s.tgChatId=TG_DEFAULT_CHAT_ID;
   DB.set('settings',s);
@@ -3212,7 +3212,7 @@ function saveSet(){
     lng:lo,
     radius:parseInt($('sR').value)||300,
     open:'08:30',
-    close:'18:30',
+    close:'17:00',
     waPhone:'919010809057',
     waAuto:false,
     botKey:'',
@@ -3760,7 +3760,7 @@ function isAttendanceLocked(mode){
     if (hhmm < openTime) {
       return { locked: true, reason: `Check-In opens at ${openTime}.`, openTime, closeTime };
     }
-    if (hhmm > '09:30') {
+    if (hhmm > '10:30') {
       const perms = DB.get('latePerms', {});
       const key = typeof CU !== 'undefined' && CU ? CU.ph + '_' + today() : '';
       if (key && perms[key]) {
@@ -3878,7 +3878,7 @@ function subAtt() {
     }
     
     const checkInHourMin = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
-    let isOnTime = checkInHourMin <= '09:30';
+    let isOnTime = checkInHourMin <= '10:30';
     
     const perms = DB.get('latePerms', {});
     const hasPerm = perms[CU.ph + '_' + todayStr];
@@ -3975,7 +3975,7 @@ function subAtt() {
     if (rec.checkInTime) {
       const parts = rec.checkInTime.split(':');
       const checkInHourMin = parts[0] + ':' + parts[1];
-      if (checkInHourMin <= '09:30' || hasPerm) {
+      if (checkInHourMin <= '10:30' || hasPerm) {
         checkInOnTime = true;
       }
     }
