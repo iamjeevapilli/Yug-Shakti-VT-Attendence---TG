@@ -1243,27 +1243,161 @@ tbody tr:nth-child(8){animation-delay:.32s}
   </div>
 </div>
 
-  <!-- RAW DATABASE TAB -->
+  <!-- FIREBASE STYLE DATABASE EXPLORER TAB -->
   <div class="pg" id="pg-database">
-    <div class="card">
-      <div class="ctit">🗄️ Raw Database Explorer</div>
-      <p style="font-size:.8rem;color:var(--t2);margin-bottom:15px">This tab provides a direct view into the raw Firebase JSON documents.</p>
+    <div class="card" style="padding: 15px;">
+      <div class="ctit">🔥 Cloud Firestore Explorer</div>
+      <p style="font-size:.8rem;color:var(--t2);margin-bottom:15px">Direct real-time view into Yug Shakti Firebase Firestore Collections, Documents, and Fields.</p>
       
-      <div style="display:flex;gap:10px;margin-bottom:15px;flex-wrap:wrap">
-        <button class="btn bo" onclick="renderRawDB('teachers')">👩‍🏫 Teachers</button>
-        <button class="btn bo" onclick="renderRawDB('att')">✅ Attendance</button>
-        <button class="btn bo" onclick="renderRawDB('liveLocations')">🛰️ Live GPS</button>
-        <button class="btn bo" onclick="renderRawDB('loginLogs')">🔐 Logs</button>
-        <button class="btn bo" onclick="renderRawDB('latePerms')">⏳ Perms</button>
-        <button class="btn bo" onclick="renderRawDB('settings')">⚙️ Settings</button>
+      <!-- Fake Firebase Console Tab Bar -->
+      <div style="display:flex; border-bottom: 1px solid var(--bd); margin-bottom: 15px;">
+        <div style="padding: 10px 20px; border-bottom: 3px solid #f6820d; color: var(--t); font-weight: 700; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; gap: 8px;">
+          <span style="color:#f6820d">📁</span> Data
+        </div>
+        <div style="padding: 10px 20px; color: var(--t2); cursor: not-allowed; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; opacity: 0.6;">
+          🔒 Rules
+        </div>
+        <div style="padding: 10px 20px; color: var(--t2); cursor: not-allowed; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; opacity: 0.6;">
+          📈 Usage
+        </div>
       </div>
 
-      <div style="background:#1e1e1e;color:#d4d4d4;padding:15px;border-radius:10px;font-family:monospace;white-space:pre-wrap;font-size:.75rem;max-height:500px;overflow:auto;word-wrap:break-word;position:relative;">
-        <button onclick="copyRawDB()" style="position:absolute;top:10px;right:10px;background:#333;color:#fff;border:none;padding:5px 10px;border-radius:5px;cursor:pointer;font-size:.7rem">Copy Data</button>
-        <div id="rawDBContainer">Select a collection above to view its raw data...</div>
+      <!-- Firebase Console Layout -->
+      <div class="firebase-explorer">
+        <!-- Column 1: Collections -->
+        <div class="fb-col">
+          <div class="fb-header" style="background:#1a73e8;">
+            📂 Collections
+          </div>
+          <div class="fb-list" id="fb-collections-list">
+            <!-- Populated via Javascript -->
+          </div>
+        </div>
+
+        <!-- Column 2: Documents -->
+        <div class="fb-col">
+          <div class="fb-header" style="background:#0f9d58;">
+            📄 Documents
+          </div>
+          <div class="fb-list" id="fb-documents-list">
+            <div style="padding:20px; text-align:center; color:var(--t2); font-size:0.8rem; font-style:italic;">Select a collection...</div>
+          </div>
+        </div>
+
+        <!-- Column 3: Fields -->
+        <div class="fb-col">
+          <div class="fb-header" style="background:#f6820d; display:flex; justify-content:space-between; align-items:center;">
+            <span>📋 Fields</span>
+            <div style="display:flex; gap: 5px;">
+              <button onclick="toggleJsonView()" id="btn-toggle-json" style="background:rgba(255,255,255,0.25); border:none; color:white; padding:4px 8px; border-radius:4px; font-size:0.68rem; cursor:pointer; font-weight:600;">Show JSON</button>
+              <button onclick="copyDocData()" style="background:rgba(255,255,255,0.25); border:none; color:white; padding:4px 8px; border-radius:4px; font-size:0.68rem; cursor:pointer; font-weight:600;">Copy</button>
+            </div>
+          </div>
+          <div class="fb-list" id="fb-fields-container" style="padding:0;">
+            <div style="padding:20px; text-align:center; color:var(--t2); font-size:0.8rem; font-style:italic;">Select a document...</div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
+
+  <style>
+  .firebase-explorer {
+    display: flex;
+    background: var(--w);
+    border: 1px solid var(--bd);
+    border-radius: 12px;
+    overflow: hidden;
+    height: 520px;
+    color: var(--t);
+  }
+  .fb-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--bd);
+    min-width: 160px;
+    background: var(--bg);
+  }
+  .fb-col:last-child {
+    border-right: none;
+    flex: 1.8;
+    background: var(--w);
+  }
+  .fb-header {
+    color: white;
+    padding: 10px 14px;
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .fb-list {
+    overflow-y: auto;
+    flex: 1;
+    padding: 6px 0;
+  }
+  .fb-item {
+    padding: 10px 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.78rem;
+    transition: all 0.15s;
+    border-left: 3px solid transparent;
+    color: var(--t);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .fb-item:hover {
+    background: rgba(0,0,0,0.04);
+  }
+  .fb-item.active {
+    background: #e8f0fe;
+    color: #1a73e8;
+    font-weight: 600;
+    border-left-color: #1a73e8;
+  }
+  .fb-item-icon {
+    font-size: 0.85rem;
+    opacity: 0.75;
+  }
+  .fb-field-row {
+    display: flex;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--bd);
+    font-size: 0.78rem;
+    align-items: flex-start;
+  }
+  .fb-field-name {
+    width: 140px;
+    font-weight: 600;
+    color: #b71c1c;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-family: monospace;
+  }
+  .fb-field-type {
+    color: #1a73e8;
+    font-size: 0.62rem;
+    background: #e8f0fe;
+    padding: 2px 5px;
+    border-radius: 3px;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-right: 12px;
+    font-family: 'Roboto', sans-serif;
+  }
+  .fb-field-val {
+    flex: 1;
+    word-break: break-all;
+    font-family: monospace;
+    color: var(--t);
+  }
+  </style>
 
 <!-- MODALS -->
 <div class="mov" id="addTM">
@@ -2267,23 +2401,197 @@ function resetAll(){
 }
 
 // ─── DATABASE EXPLORER ────────────────────────────────────────────────────────
-function renderRawDB(collectionKey) {
-  const data = DB.get(collectionKey, null);
-  const container = $('rawDBContainer');
-  if (!container) return;
-  if (!data) {
-    container.innerHTML = `<i>No data found in collection '${collectionKey}'.</i>`;
-    return;
-  }
-  container.innerHTML = JSON.stringify(data, null, 2).replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  container.dataset.raw = JSON.stringify(data, null, 2);
+// ─── CLOUD FIRESTORE EXPLORER ──────────────────────────────────────────────────
+let selectedCol = '';
+let selectedDocIndex = -1;
+let selectedDocKey = '';
+let selectedDocData = null;
+let isJsonView = false;
+
+function initFirebaseExplorer() {
+  const collectionsList = $('fb-collections-list');
+  if (!collectionsList) return;
+  
+  const collections = [
+    { key: 'teachers', label: '👩‍🏫 teachers', icon: '📁' },
+    { key: 'att', label: '✅ att', icon: '📁' },
+    { key: 'liveLocations', label: '🛰️ liveLocations', icon: '📁' },
+    { key: 'loginLogs', label: '🔐 loginLogs', icon: '📁' },
+    { key: 'latePerms', label: '⏳ latePerms', icon: '📁' },
+    { key: 'settings', label: '⚙️ settings', icon: '📁' },
+    { key: 'adminPassHashed', label: '🔑 adminPassHashed', icon: '📁' },
+    { key: 'lastTgPromptDate', label: '📅 lastTgPromptDate', icon: '📁' }
+  ];
+
+  collectionsList.innerHTML = collections.map(c => `
+    <div class="fb-item" id="fb-col-${c.key}" onclick="selectFbCollection('${c.key}')">
+      <span class="fb-item-icon">${c.icon}</span>
+      <span>${c.key}</span>
+    </div>
+  `).join('');
+
+  selectFbCollection('teachers');
 }
 
-function copyRawDB() {
-  const container = $('rawDBContainer');
-  if (!container || !container.dataset.raw) return;
-  navigator.clipboard.writeText(container.dataset.raw)
-    .then(() => alert("✅ Data copied to clipboard!"))
+function selectFbCollection(colKey) {
+  selectedCol = colKey;
+  
+  document.querySelectorAll('#fb-collections-list .fb-item').forEach(el => el.classList.remove('active'));
+  const activeColEl = $(`fb-col-${colKey}`);
+  if (activeColEl) activeColEl.classList.add('active');
+
+  const docsList = $('fb-documents-list');
+  if (!docsList) return;
+
+  const data = DB.get(colKey, null);
+  if (!data || (Array.isArray(data) && data.length === 0) || (typeof data === 'object' && Object.keys(data).length === 0)) {
+    docsList.innerHTML = `<div style="padding:20px; text-align:center; color:var(--t2); font-size:0.8rem; font-style:italic;">No documents found</div>`;
+    const fieldsContainer = $('fb-fields-container');
+    if (fieldsContainer) fieldsContainer.innerHTML = `<div style="padding:20px; text-align:center; color:var(--t2); font-size:0.8rem; font-style:italic;">No document selected</div>`;
+    selectedDocData = null;
+    return;
+  }
+
+  let docItems = [];
+  if (Array.isArray(data)) {
+    data.forEach((item, index) => {
+      let label = `doc_${index}`;
+      if (item && typeof item === 'object') {
+        if (colKey === 'teachers' && item.name) {
+          label = `${item.name} (${item.ph})`;
+        } else if (colKey === 'att' && item.date && item.teacherID) {
+          label = `${item.date} - ${item.teacherID}`;
+        } else if (colKey === 'loginLogs' && item.ts && item.username) {
+          label = `${item.ts.split(' ')[0]} - ${item.username}`;
+        } else if (colKey === 'latePerms' && item.date && item.teacherID) {
+          label = `${item.date} - ${item.teacherID}`;
+        }
+      }
+      docItems.push({ id: index, label: label });
+    });
+  } else if (typeof data === 'object') {
+    Object.keys(data).forEach(key => {
+      let label = key;
+      if (colKey === 'liveLocations') {
+        const tObj = DB.get('teachers', []).find(t => t.ph === key);
+        if (tObj) label = `${tObj.name} (${key})`;
+      }
+      docItems.push({ id: key, label: label });
+    });
+  } else {
+    docItems.push({ id: 'value', label: 'value' });
+  }
+
+  docsList.innerHTML = docItems.map(doc => `
+    <div class="fb-item" id="fb-doc-${doc.id}" onclick="selectFbDocument('${doc.id}')">
+      <span class="fb-item-icon">📄</span>
+      <span>${doc.label}</span>
+    </div>
+  `).join('');
+
+  if (docItems.length > 0) {
+    selectFbDocument(docItems[0].id);
+  }
+}
+
+function selectFbDocument(docId) {
+  document.querySelectorAll('#fb-documents-list .fb-item').forEach(el => el.classList.remove('active'));
+  const activeDocEl = $(`fb-doc-${docId}`);
+  if (activeDocEl) activeDocEl.classList.add('active');
+
+  const data = DB.get(selectedCol, null);
+  let docData = null;
+
+  if (Array.isArray(data)) {
+    selectedDocIndex = parseInt(docId);
+    selectedDocKey = '';
+    docData = data[selectedDocIndex];
+  } else if (typeof data === 'object' && data !== null) {
+    selectedDocKey = docId;
+    selectedDocIndex = -1;
+    docData = data[selectedDocKey];
+  } else {
+    docData = data;
+  }
+
+  selectedDocData = docData;
+  renderFbFields();
+}
+
+function renderFbFields() {
+  const fieldsContainer = $('fb-fields-container');
+  if (!fieldsContainer) return;
+
+  if (isJsonView) {
+    fieldsContainer.innerHTML = `<pre style="font-family:monospace; font-size:0.72rem; padding:15px; max-height:470px; overflow:auto; margin:0; background:var(--bg); color:var(--t); word-wrap:break-word; white-space:pre-wrap;">${JSON.stringify(selectedDocData, null, 2).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>`;
+    return;
+  }
+
+  if (selectedDocData === null || selectedDocData === undefined) {
+    fieldsContainer.innerHTML = `<div style="padding:20px; text-align:center; color:var(--t2); font-size:0.8rem; font-style:italic;">No data fields</div>`;
+    return;
+  }
+
+  let html = '';
+  if (typeof selectedDocData === 'object' && !Array.isArray(selectedDocData)) {
+    const keys = Object.keys(selectedDocData).sort();
+    if (keys.length === 0) {
+      html = `<div style="padding:20px; text-align:center; color:var(--t2); font-size:0.8rem; font-style:italic;">Empty Object {}</div>`;
+    } else {
+      keys.forEach(k => {
+        const val = selectedDocData[k];
+        html += renderFbFieldRow(k, val);
+      });
+    }
+  } else {
+    html += renderFbFieldRow('value', selectedDocData);
+  }
+
+  fieldsContainer.innerHTML = html;
+}
+
+function renderFbFieldRow(key, val) {
+  let type = typeof val;
+  let valStr = '';
+
+  if (val === null) {
+    type = 'null';
+    valStr = 'null';
+  } else if (Array.isArray(val)) {
+    type = 'array';
+    valStr = `[${val.length} items] ` + JSON.stringify(val);
+  } else if (type === 'object') {
+    type = 'map';
+    valStr = JSON.stringify(val);
+  } else if (type === 'boolean') {
+    valStr = val ? 'true' : 'false';
+  } else {
+    valStr = String(val);
+  }
+
+  return `
+    <div class="fb-field-row">
+      <div class="fb-field-name" title="${key}">${key}</div>
+      <div class="fb-field-type">${type}</div>
+      <div class="fb-field-val">${valStr.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
+    </div>
+  `;
+}
+
+function toggleJsonView() {
+  isJsonView = !isJsonView;
+  const toggleBtn = $('btn-toggle-json');
+  if (toggleBtn) {
+    toggleBtn.textContent = isJsonView ? 'Show Fields' : 'Show JSON';
+  }
+  renderFbFields();
+}
+
+function copyDocData() {
+  if (!selectedDocData) return;
+  const txt = JSON.stringify(selectedDocData, null, 2);
+  navigator.clipboard.writeText(txt)
+    .then(() => alert("✅ Document data copied to clipboard!"))
     .catch(err => alert("❌ Failed to copy: " + err));
 }
 
@@ -2710,6 +3018,7 @@ function swPg(id){
     vtsdata:rVtsData,
     reports:()=>{},
     settings:loadSet,
+    database:initFirebaseExplorer,
     mark:resetMark,
     checkin:()=>resetMark('checkin'),
     checkout:()=>resetMark('checkout'),
