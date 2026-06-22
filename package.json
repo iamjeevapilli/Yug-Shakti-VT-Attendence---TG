@@ -1,0 +1,29 @@
+{
+  "name": "yug-shakti-vt-attendence-tg",
+  "version": "1.0.0",
+  "description": "GeoAttend - Yug Shakti Vocational Education - Telangana Attendance System",
+  "main": "index.html",
+  "scripts": {
+    "dev": "npx http-server -p 3000",
+    "test": "echo \"No tests specified\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tsyugshakti/Yug-Shakti-VT-Attendence---TG.git"
+  },
+  "keywords": [
+    "attendance",
+    "geolocation",
+    "vocational-education",
+    "telangana"
+  ],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tsyugshakti/Yug-Shakti-VT-Attendence---TG/issues"
+  },
+  "homepage": "https://github.com/tsyugshakti/Yug-Shakti-VT-Attendence---TG#readme",
+  "dependencies": {
+    "@vercel/speed-insights": "^2.0.0"
+  }
+}
