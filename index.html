@@ -1391,7 +1391,7 @@ const db = firebase.firestore();
 let DB_MEMORY = {};
 let FS_READY = false;
 
-const syncKeys = ['att', 'teachers', 'settings', 'adminPassHash', 'adminPassHashed', 'teachersHashed', 'loginLogs', 'latePerms', 'lastTgPromptDate'];
+const syncKeys = ['att', 'teachers', 'settings', 'adminPassHash', 'adminPassHashed', 'teachersHashed', 'loginLogs', 'latePerms', 'lastTgPromptDate', 'liveLocations'];
 
 const DB = {
   get: (k, d=null) => {
