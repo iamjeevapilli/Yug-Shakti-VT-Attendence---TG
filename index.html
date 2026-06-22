@@ -1243,6 +1243,28 @@ tbody tr:nth-child(8){animation-delay:.32s}
   </div>
 </div>
 
+  <!-- RAW DATABASE TAB -->
+  <div class="pg" id="pg-database">
+    <div class="card">
+      <div class="ctit">🗄️ Raw Database Explorer</div>
+      <p style="font-size:.8rem;color:var(--t2);margin-bottom:15px">This tab provides a direct view into the raw Firebase JSON documents.</p>
+      
+      <div style="display:flex;gap:10px;margin-bottom:15px;flex-wrap:wrap">
+        <button class="btn bo" onclick="renderRawDB('teachers')">👩‍🏫 Teachers</button>
+        <button class="btn bo" onclick="renderRawDB('att')">✅ Attendance</button>
+        <button class="btn bo" onclick="renderRawDB('liveLocations')">🛰️ Live GPS</button>
+        <button class="btn bo" onclick="renderRawDB('loginLogs')">🔐 Logs</button>
+        <button class="btn bo" onclick="renderRawDB('latePerms')">⏳ Perms</button>
+        <button class="btn bo" onclick="renderRawDB('settings')">⚙️ Settings</button>
+      </div>
+
+      <div style="background:#1e1e1e;color:#d4d4d4;padding:15px;border-radius:10px;font-family:monospace;white-space:pre-wrap;font-size:.75rem;max-height:500px;overflow:auto;word-wrap:break-word;position:relative;">
+        <button onclick="copyRawDB()" style="position:absolute;top:10px;right:10px;background:#333;color:#fff;border:none;padding:5px 10px;border-radius:5px;cursor:pointer;font-size:.7rem">Copy Data</button>
+        <div id="rawDBContainer">Select a collection above to view its raw data...</div>
+      </div>
+    </div>
+  </div>
+
 <!-- MODALS -->
 <div class="mov" id="addTM">
   <div class="mbox">
@@ -2244,6 +2266,27 @@ function resetAll(){
   }
 }
 
+// ─── DATABASE EXPLORER ────────────────────────────────────────────────────────
+function renderRawDB(collectionKey) {
+  const data = DB.get(collectionKey, null);
+  const container = $('rawDBContainer');
+  if (!container) return;
+  if (!data) {
+    container.innerHTML = `<i>No data found in collection '${collectionKey}'.</i>`;
+    return;
+  }
+  container.innerHTML = JSON.stringify(data, null, 2).replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  container.dataset.raw = JSON.stringify(data, null, 2);
+}
+
+function copyRawDB() {
+  const container = $('rawDBContainer');
+  if (!container || !container.dataset.raw) return;
+  navigator.clipboard.writeText(container.dataset.raw)
+    .then(() => alert("✅ Data copied to clipboard!"))
+    .catch(err => alert("❌ Failed to copy: " + err));
+}
+
 let liveMap = null;
 let mapMarkers = {};
 let gpsInterval = null;
@@ -2644,7 +2687,7 @@ function boot(){
 }
 function buildTabs(){
   const tabs=CU.role==='admin'
-    ?[['dashboard','📊 Dashboard'],['records','📁 Records'],['teachers','👩‍🏫 Trainers'],['vtsdata','📁 Vt\'s Details'],['reports','📈 Reports'],['settings','⚙️ Settings']]
+    ?[['dashboard','📊 Dashboard'],['records','📁 Records'],['teachers','👩‍🏫 Trainers'],['vtsdata','📁 Vt\'s Details'],['reports','📈 Reports'],['settings','⚙️ Settings'],['database','🗄️ Database']]
     :[['checkin','🌅 Morning Check-In'],['checkout','🌇 Evening Check-Out'],['history','📅 My History']];
   $('tabBar').innerHTML=tabs.map(([id,l])=>`<button class="tbtn" id="tb-${id}" onclick="swPg('${id}')">${l}</button>`).join('');
 }
