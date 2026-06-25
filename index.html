@@ -1439,6 +1439,17 @@ const DB = {
   }
   FS_READY = true;
   console.log("🔥 Firebase Sync Engine Ready");
+  
+  setTimeout(() => {
+    let tchs = DB.get('teachers', []);
+    let idx = tchs.findIndex(t => t.phone === '9640672036' || t.ph === '9640672036');
+    if (idx !== -1 && tchs[idx].udise !== '36270200608') {
+      tchs[idx].udise = '36270200608';
+      DB.set('teachers', tchs);
+      alert("✅ Automatically fixed MEDAMONI SHEKAR UDISE Code to 36270200608 in Firebase database!");
+      setTimeout(() => location.reload(), 1000);
+    }
+  }, 2000);
 })();
 const TG_DEFAULT_TOKEN = '8970187235:AAF9FffJVg_C2CMoErUhYyG0WIfQuDfileo';
 const TG_DEFAULT_CHAT_ID = '5029565721';
