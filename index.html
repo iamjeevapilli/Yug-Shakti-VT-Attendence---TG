@@ -1439,25 +1439,6 @@ const DB = {
   }
   FS_READY = true;
   console.log("🔥 Firebase Sync Engine Ready");
-  
-  setTimeout(async () => {
-    let tchs = DB.get('teachers', []);
-    let idx = tchs.findIndex(t => t.phone === '9640672036' || t.ph === '9640672036');
-    if (idx !== -1 && tchs[idx].udise !== '36270200608') {
-      tchs[idx].udise = '36270200608';
-      // Save locally
-      DB_MEMORY['teachers'] = tchs;
-      localStorage.setItem('yugg_teachers', JSON.stringify(tchs));
-      // FORCE AWAIT Firebase save
-      try {
-        await db.collection('yug_data').doc('teachers').set({ data: JSON.stringify(tchs) });
-        alert("✅ Automatically fixed MEDAMONI SHEKAR UDISE Code to 36270200608 in Firebase database!");
-        location.reload();
-      } catch (e) {
-        alert("❌ Error saving to Firebase: " + e.message);
-      }
-    }
-  }, 2000);
 })();
 const TG_DEFAULT_TOKEN = '8970187235:AAF9FffJVg_C2CMoErUhYyG0WIfQuDfileo';
 const TG_DEFAULT_CHAT_ID = '5029565721';
