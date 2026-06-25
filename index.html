@@ -1285,7 +1285,11 @@ tbody tr:nth-child(8){animation-delay:.32s}
     </div>
     <div class="r2">
       <div class="fg"><label>Sector</label><select class="fc" id="eSec"><option>APPAREL</option><option>BEAUTY AND WELLNESS</option><option>HEALTH CARE</option><option>AUTOMOTIVE</option><option>IT/ITES</option><option>ELECTRONICS AND HARDWARE</option></select></div>
+      <div class="fg"><label>UDISE Code</label><input class="fc" id="eUdise" placeholder="Enter UDISE Code"/></div>
+    </div>
+    <div class="r2">
       <div class="fg"><label>New Password (blank=keep)</label><input class="fc" type="password" id="ePas" placeholder="Leave blank to keep"/></div>
+      <div class="fg"></div>
     </div>
     <div id="editAlt"></div>
     <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:7px;flex-wrap:wrap">
@@ -2998,6 +3002,11 @@ function vtdOpenModal(sno) {
   const v = VTS_FULL.find(x => x.sno === sno);
   if (!v) return;
   
+  // Link with the DB 'teachers' array to pull any custom edited UDISE code
+  const allT = DB.get('teachers', []);
+  const tDB = allT.find(t => t.ph === v.phone || t.phone === v.phone);
+  const displayUdise = (tDB && tDB.udise) ? tDB.udise : v.udise;
+  
   document.getElementById('vtd-mAvt').textContent = v.name[0];
   document.getElementById('vtd-mName').textContent = v.name;
   document.getElementById('vtd-mSub').innerHTML = `${vtdSecBadge(v.sector)} &nbsp; <span class="vtd-phone">${v.phone}</span>`;
@@ -3020,7 +3029,7 @@ function vtdOpenModal(sno) {
     <div class="vtd-mrow"><span class="vtd-ml">District</span><span class="vtd-mv">${v.district || '—'}</span></div>
     <div class="vtd-mrow"><span class="vtd-ml">Mandal</span><span class="vtd-mv">${v.mandal || '—'}</span></div>
     <div class="vtd-mrow"><span class="vtd-ml">Block</span><span class="vtd-mv">${v.block || '—'}</span></div>
-    <div class="vtd-mrow"><span class="vtd-ml">UDISE Code</span><span class="vtd-mv"><span class="vtd-udise">${v.udise || '—'}</span></span></div>
+    <div class="vtd-mrow"><span class="vtd-ml">UDISE Code</span><span class="vtd-mv"><span class="vtd-udise">${displayUdise || '—'}</span></span></div>
     <div class="vtd-mrow"><span class="vtd-ml">School Type</span><span class="vtd-mv">${v.schoolType || '—'}</span></div>
     <div class="vtd-mrow"><span class="vtd-ml">Scheme</span><span class="vtd-mv">${vtdSchemeBadge(v.scheme)}</span></div>
     <hr style="border:none;border-top:1px dashed var(--border);margin:8px 0">
@@ -3135,6 +3144,7 @@ function oEdit(ph){
   const t=DB.get('teachers',[]).find(x=>x.ph===ph);if(!t)return;
   $('ePh').value=ph;$('eNm').value=t.name;$('eSch').value=t.school||'';
   $('eLa').value=t.lat||'';$('eLo').value=t.lng||'';$('eSec').value=t.sector||'APPAREL';$('ePas').value='';
+  $('eUdise').value=t.udise||'';
   openModal('editTM');
 }
 function saveEdit(){
@@ -3145,7 +3155,8 @@ function saveEdit(){
     school:$('eSch').value.trim(),
     lat:parseFloat($('eLa').value)||all[i].lat,
     lng:parseFloat($('eLo').value)||all[i].lng,
-    sector:$('eSec').value
+    sector:$('eSec').value,
+    udise:$('eUdise').value.trim()
   };
   // Validate
   const errs=validateTeacherData(updatedT,all,true);
@@ -3157,6 +3168,7 @@ function saveEdit(){
   all[i].name=updatedT.name;all[i].school=updatedT.school;
   all[i].lat=updatedT.lat;all[i].lng=updatedT.lng;
   all[i].sector=updatedT.sector;
+  all[i].udise=updatedT.udise;
   const p=$('ePas').value.trim();if(p)all[i].pass=p;
   DB.set('teachers',all);closeModal('editTM');rTch();
   // Refresh trainer profile if currently open
