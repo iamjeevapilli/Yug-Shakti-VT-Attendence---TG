@@ -536,6 +536,39 @@ function exportCSV(){
   a.download='VT_Details_YugShakti_Telangana.csv';a.click();
 }
 
+function syncVTWithDB() {
+  try {
+    let teachers = [];
+    if (window.parent && window.parent.DB && typeof window.parent.DB.get === 'function') {
+      teachers = window.parent.DB.get('teachers', []);
+    } else {
+      const v = localStorage.getItem('yugg_teachers');
+      if (v) teachers = JSON.parse(v);
+    }
+    if (teachers && teachers.length) {
+      VT.forEach(v => {
+        const t = teachers.find(x => x.ph === v.phone || x.phone === v.phone);
+        if (t) {
+          if (t.name) v.name = t.name;
+          if (t.school) v.school = t.school;
+          if (t.sector) v.sector = t.sector;
+          if (t.udise !== undefined) v.udise = t.udise;
+          if (t.lat !== undefined) v.lat = parseFloat(t.lat) || v.lat;
+          if (t.lng !== undefined) v.lng = parseFloat(t.lng) || v.lng;
+        }
+      });
+    }
+  } catch (e) {
+    console.error("syncVTWithDB error:", e);
+  }
+}
+window.syncAndRender = function() {
+  syncVTWithDB();
+  buildTags();
+  filterAll();
+};
+
+syncVTWithDB();
 buildTags();
 filterAll();
 </script>

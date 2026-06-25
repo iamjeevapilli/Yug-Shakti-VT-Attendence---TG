@@ -3084,7 +3084,18 @@ function vtdExportCSV() {
   a.click();
 }
 
-function rVtsData() {}
+function rVtsData() {
+  const iframe = document.querySelector('#pg-vtsdata iframe');
+  if (iframe && iframe.contentWindow) {
+    try {
+      if (typeof iframe.contentWindow.syncAndRender === 'function') {
+        iframe.contentWindow.syncAndRender();
+      }
+    } catch(e) {
+      console.error("Failed to sync iframe data:", e);
+    }
+  }
+}
 
 
 // ── Teacher Data Validation ──────────────────────────────────────────
