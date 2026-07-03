@@ -125,13 +125,8 @@ if ('caches' in window) {
 *{margin:0;padding:0;box-sizing:border-box}
 :root{--p:#1a73e8;--s:#0f9d58;--d:#d93025;--o:#f9ab00;--bg:#f0f4f8;--w:#fff;--bd:#dadce0;--t:#202124;--t2:#5f6368}
 body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--t);min-height:100vh}
-#loader{position:fixed;inset:0;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;color:#333}
-#loader .ico{font-size:4rem;animation:bnc 1s infinite alternate}
-#loader h1{font-size:2rem;font-weight:900;margin:10px 0 5px}
-#loader p{opacity:.8;font-size:.9rem;margin-bottom:22px}
-.spin{width:34px;height:34px;border:4px solid rgba(26,115,232,.2);border-top-color:#1a73e8;border-radius:50%;animation:spin .8s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-@keyframes bnc{from{transform:translateY(0)}to{transform:translateY(-10px)}}
+#loader{position:fixed;inset:0;background:#080808;display:flex;align-items:center;justify-content:center;z-index:9999;overflow:hidden}
+#loaderCanvas{display:block;width:100%;height:100%;max-width:800px;max-height:600px;background:transparent}
 .lwrap{min-height:100vh;background:radial-gradient(circle,rgba(255,255,255,0.94) 30%,rgba(240,244,248,0.98) 100%),url('logo.png') no-repeat center;background-size:50% auto;display:flex;align-items:center;justify-content:center;padding:20px}
 .lbox{background:#fff;border-radius:20px;padding:40px 36px;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,.28);border:1px solid rgba(0,0,0,0.08)}
 .llogo{text-align:center;margin-bottom:24px}
@@ -905,9 +900,251 @@ tbody tr:nth-child(8){animation-delay:.32s}
 </head>
 <body>
 <div id="loader">
-  <img src="logo.png" alt="Yug Shakti Logo" style="width:340px;max-width:85%;height:auto;object-fit:contain;margin-bottom:30px">
-  <div class="spin"></div>
+  <canvas id="loaderCanvas" width="800" height="600"></canvas>
 </div>
+<script>
+(function() {
+  const CONFIG = {
+    grainSize: 3,             // px size of one grid cell / grain
+    releaseSamplesPerFrame: 1500,
+    releaseChance: 0.022,
+    edgeReleaseMultiplier: 3.3,
+
+    gravity: 850,
+    airDrag: 0.992,
+
+    pileRelaxStepsPerFrame: 5,
+    pileHoldSeconds: 0.8,
+
+    reformDurationSeconds: 2,
+    reformStaggerSeconds: 0.65,
+    formedHoldSeconds: 3
+  };
+
+  const PHASE = {
+    RELEASING: "releasing",
+    FALLING:   "falling",
+    PILED:     "piled",
+    REFORMING: "reforming",
+    FORMED:    "formed"
+  };
+
+  const canvas = document.getElementById('loaderCanvas');
+  const ctx = canvas.getContext('2d');
+  
+  let currentPhase = PHASE.REFORMING;
+  let particles = [];
+  let pileHeight = new Float32Array(Math.ceil(canvas.width / CONFIG.grainSize));
+  let phaseTimer = 0;
+  
+  const img = new Image();
+  img.src = 'logo.png';
+  img.onload = function() {
+    initParticles();
+    requestAnimationFrame(loop);
+  };
+
+  function initParticles() {
+    const maxW = 150; 
+    const scale = maxW / img.width;
+    const logoW = Math.round(img.width * scale);
+    const logoH = Math.round(img.height * scale);
+
+    const offscreen = document.createElement('canvas');
+    offscreen.width = logoW;
+    offscreen.height = logoH;
+    const offCtx = offscreen.getContext('2d');
+    offCtx.drawImage(img, 0, 0, logoW, logoH);
+
+    const imgData = offCtx.getImageData(0, 0, logoW, logoH);
+    const data = imgData.data;
+    const step = CONFIG.grainSize;
+
+    const startX = (canvas.width - logoW * step) / 2;
+    const startY = (canvas.height - logoH * step) / 2 - 20;
+
+    particles = [];
+    for (let y = 0; y < logoH; y++) {
+      for (let x = 0; x < logoW; x++) {
+        const idx = (y * logoW + x) * 4;
+        const a = data[idx + 3];
+        if (a > 120) {
+          const r = data[idx];
+          const g = data[idx + 1];
+          const b = data[idx + 2];
+          const color = `rgba(${r},${g},${b},${a / 255})`;
+          
+          const ox = startX + x * step;
+          const oy = startY + y * step;
+          
+          const px = ox + (Math.random() - 0.5) * 40; 
+          const pileCenter = canvas.width / 2;
+          const distFromCenter = px - pileCenter;
+          const pileY = canvas.height - 10 - Math.exp(-((distFromCenter / 120) ** 2)) * 60 - Math.random() * 15;
+          
+          particles.push({
+            ox: ox,
+            oy: oy,
+            x: px,
+            y: pileY,
+            px: px,
+            py: pileY,
+            vx: 0,
+            vy: 0,
+            color: color,
+            state: PHASE.REFORMING,
+            staggerDelay: Math.random() * CONFIG.reformStaggerSeconds,
+            centerDist: Math.hypot(ox - 400, oy - 280)
+          });
+        }
+      }
+    }
+    
+    resetPileHeight();
+    currentPhase = PHASE.REFORMING;
+    phaseTimer = 0;
+  }
+
+  function resetPileHeight() {
+    for (let i = 0; i < pileHeight.length; i++) {
+      pileHeight[i] = canvas.height;
+    }
+  }
+
+  function relaxPile() {
+    const step = CONFIG.grainSize;
+    for (let r = 0; r < CONFIG.pileRelaxStepsPerFrame; r++) {
+      for (let i = 1; i < pileHeight.length - 1; i++) {
+        const diffL = pileHeight[i] - pileHeight[i - 1];
+        if (diffL < -step * 1.5) {
+          pileHeight[i] += step;
+          pileHeight[i - 1] -= step;
+        }
+        const diffR = pileHeight[i] - pileHeight[i + 1];
+        if (diffR < -step * 1.5) {
+          pileHeight[i] += step;
+          pileHeight[i + 1] -= step;
+        }
+      }
+    }
+  }
+
+  let lastTime = performance.now();
+  function loop(now) {
+    const dt = Math.min((now - lastTime) / 1000, 0.1);
+    lastTime = now;
+    
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    phaseTimer += dt;
+    
+    let allPiled = true;
+    let allReformed = true;
+    const step = CONFIG.grainSize;
+
+    for (let i = 0; i < particles.length; i++) {
+      const p = particles[i];
+      
+      if (currentPhase === PHASE.REFORMING) {
+        if (phaseTimer > p.staggerDelay) {
+          const t = Math.min((phaseTimer - p.staggerDelay) / CONFIG.reformDurationSeconds, 1);
+          if (t < 1) {
+            allReformed = false;
+            const easeT = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+            p.x = p.px + (p.ox - p.px) * easeT;
+            p.y = p.py + (p.oy - p.py) * easeT;
+          } else {
+            p.x = p.ox;
+            p.y = p.oy;
+          }
+        } else {
+          allReformed = false;
+          p.x = p.px;
+          p.y = p.py;
+        }
+      } 
+      else if (currentPhase === PHASE.RELEASING) {
+        if (p.state === PHASE.FORMED) {
+          const prob = CONFIG.releaseChance * (1 + (p.centerDist / 80) * CONFIG.edgeReleaseMultiplier) * dt * 60;
+          if (Math.random() < prob) {
+            p.state = PHASE.FALLING;
+            p.vx = (Math.random() - 0.5) * 60;
+            p.vy = Math.random() * 20;
+          }
+        }
+      }
+
+      if (p.state === PHASE.FALLING) {
+        allPiled = false;
+        p.vy += CONFIG.gravity * dt;
+        p.vx *= CONFIG.airDrag;
+        p.vy *= CONFIG.airDrag;
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        
+        const col = Math.max(0, Math.min(pileHeight.length - 1, Math.floor(p.x / step)));
+        if (p.y >= pileHeight[col]) {
+          p.state = PHASE.PILED;
+          p.y = pileHeight[col];
+          p.x = col * step + step / 2;
+          p.vx = 0;
+          p.vy = 0;
+          pileHeight[col] -= step;
+          relaxPile();
+        }
+      } else if (p.state === PHASE.FORMED || p.state === PHASE.REFORMING) {
+        allPiled = false;
+      }
+
+      ctx.fillStyle = p.color;
+      ctx.fillRect(p.x - step/2, p.y - step/2, step, step);
+    }
+    
+    if (currentPhase === PHASE.REFORMING && allReformed) {
+      currentPhase = PHASE.FORMED;
+      phaseTimer = 0;
+      particles.forEach(p => p.state = PHASE.FORMED);
+      window.animationReady = true;
+      if (typeof window.checkAndDismissLoader === 'function') {
+        window.checkAndDismissLoader();
+      }
+    } 
+    else if (currentPhase === PHASE.FORMED && phaseTimer >= CONFIG.formedHoldSeconds) {
+      currentPhase = PHASE.RELEASING;
+      phaseTimer = 0;
+      resetPileHeight();
+    } 
+    else if (currentPhase === PHASE.RELEASING) {
+      let anyFormed = false;
+      for (let i = 0; i < particles.length; i++) {
+        if (particles[i].state === PHASE.FORMED) {
+          anyFormed = true;
+          break;
+        }
+      }
+      if (!anyFormed) {
+        currentPhase = PHASE.FALLING;
+      }
+    } 
+    else if (currentPhase === PHASE.FALLING && allPiled) {
+      currentPhase = PHASE.PILED;
+      phaseTimer = 0;
+    } 
+    else if (currentPhase === PHASE.PILED && phaseTimer >= CONFIG.pileHoldSeconds) {
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
+        p.px = p.x;
+        p.py = p.y;
+        p.state = PHASE.REFORMING;
+      }
+      currentPhase = PHASE.REFORMING;
+      phaseTimer = 0;
+    }
+
+    requestAnimationFrame(loop);
+  }
+})();
+</script>
 
 <div id="loginPg" class="lwrap lamp-off" style="display:none">
   <!-- Hint -->
@@ -2310,19 +2547,38 @@ async function initApp(){
   const sess=SESSION.validate();
   if(sess){
     CU=sess;
-    setTimeout(()=>{
-      const l=document.getElementById('loader');
-      l.style.transition='opacity .5s';l.style.opacity='0';
-      setTimeout(()=>{l.style.display='none';boot();},500);
-    },1200);
-  } else {
-    setTimeout(()=>{
-      const l=document.getElementById('loader');
-      l.style.transition='opacity .5s';l.style.opacity='0';
-      setTimeout(()=>{l.style.display='none';document.getElementById('loginPg').style.display='flex';},500);
-    },1200);
   }
+  onAppReady();
 }
+
+let appInitialized = false;
+window.animationReady = false;
+
+function onAppReady() {
+  appInitialized = true;
+  window.checkAndDismissLoader();
+}
+
+window.checkAndDismissLoader = function() {
+  if (appInitialized && window.animationReady) {
+    const l = document.getElementById('loader');
+    if (l && l.style.display !== 'none') {
+      l.style.transition = 'opacity .6s ease';
+      l.style.opacity = '0';
+      setTimeout(() => {
+        l.style.display = 'none';
+        const sess = SESSION.validate();
+        if (sess) {
+          CU = sess;
+          boot();
+        } else {
+          document.getElementById('loginPg').style.display = 'flex';
+        }
+      }, 600);
+    }
+  }
+};
+
 initApp();
 
 setInterval(()=>{const c=document.getElementById('clk');if(c)c.textContent=getSecureDate().toLocaleTimeString();},1000);
