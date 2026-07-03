@@ -585,6 +585,309 @@ tbody tr:nth-child(8){animation-delay:.32s}
 .reveal{opacity:0;transform:translateY(20px);transition:opacity .45s ease,transform .45s ease}
 .reveal.visible{opacity:1;transform:none}
 
+/* ═══════════════════════════════════════════════
+   LAMP LOGIN ANIMATION
+═══════════════════════════════════════════════ */
+
+/* Override lwrap only for login page */
+#loginPg.lwrap {
+  background: #080808 !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 70px !important;
+  padding: 40px 60px !important;
+  min-height: 100vh !important;
+  position: relative !important;
+  overflow: hidden !important;
+  transition: background 0.8s ease;
+}
+
+/* Hint text */
+.lamp-hint {
+  position: absolute;
+  top: 28px;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 3.5px;
+  color: rgba(255,255,255,0.3);
+  text-transform: uppercase;
+  pointer-events: none;
+  z-index: 20;
+  animation: hintPulse 2.5s ease-in-out infinite alternate;
+}
+#loginPg.lamp-on .lamp-hint {
+  animation: none;
+  color: rgba(255,255,255,0.08);
+}
+@keyframes hintPulse {
+  from { opacity: 0.35; }
+  to   { opacity: 1; }
+}
+
+/* Lamp wrapper */
+.lamp-wrap {
+  position: relative;
+  width: 200px;
+  height: 480px;
+  flex-shrink: 0;
+}
+
+/* Flat disc shade (like image) */
+.lamp-shade {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 195px;
+  height: 14px;
+  background: linear-gradient(180deg, #353848 0%, #20222f 100%);
+  border-radius: 50%;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.9), inset 0 2px 3px rgba(255,255,255,0.06);
+  z-index: 6;
+  transition: box-shadow 0.6s ease;
+}
+#loginPg.lamp-on .lamp-shade {
+  box-shadow: 0 6px 18px rgba(0,0,0,0.9),
+              inset 0 2px 3px rgba(255,255,255,0.06),
+              0 10px 40px 6px rgba(255,210,80,0.55);
+}
+
+/* Bulb glow spot */
+.lamp-bulb {
+  position: absolute;
+  top: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #2a2d3e;
+  z-index: 5;
+  transition: background 0.5s ease, box-shadow 0.5s ease;
+}
+#loginPg.lamp-on .lamp-bulb {
+  background: #fff8d0;
+  box-shadow: 0 0 18px 8px rgba(255,220,80,0.9),
+              0 0 55px 20px rgba(255,190,40,0.45);
+}
+
+/* Vertical rod */
+.lamp-rod {
+  position: absolute;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 5px;
+  height: 395px;
+  background: linear-gradient(90deg, #1a1b26 0%, #2c2f45 50%, #14151f 100%);
+  z-index: 4;
+}
+
+/* Base */
+.lamp-base {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 115px;
+  height: 13px;
+  background: linear-gradient(180deg, #2d2f42 0%, #18192a 100%);
+  border-radius: 7px;
+  box-shadow: 0 5px 16px rgba(0,0,0,0.8);
+  z-index: 4;
+}
+
+/* Pull string */
+.pull-string {
+  position: absolute;
+  top: 24px;
+  left: calc(50% + 28px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  z-index: 10;
+  transform-origin: top center;
+  transition: transform 0.18s cubic-bezier(0.34,1.56,0.64,1);
+  user-select: none;
+}
+.pull-string.pulled {
+  transform: translateY(24px) rotate(4deg);
+}
+.pull-string:hover .string-bead {
+  box-shadow: 0 0 14px 5px rgba(200,150,60,0.7);
+}
+
+.string-line {
+  width: 1.5px;
+  height: 88px;
+  background: linear-gradient(180deg, rgba(100,100,120,0.7) 0%, rgba(160,140,90,0.55) 100%);
+}
+
+.string-bead {
+  width: 14px;
+  height: 24px;
+  background: linear-gradient(180deg, #c89040 0%, #a06020 100%);
+  border-radius: 8px;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.6);
+  transition: background 0.45s ease, box-shadow 0.45s ease;
+}
+#loginPg.lamp-on .string-bead {
+  background: linear-gradient(180deg, #ffe060 0%, #e09020 100%);
+  box-shadow: 0 0 14px 5px rgba(255,200,50,0.65);
+}
+#loginPg.lamp-off .string-bead {
+  animation: beadPulse 2s ease-in-out infinite;
+}
+@keyframes beadPulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(200,150,60,0.6); }
+  50%     { box-shadow: 0 0 0 12px rgba(200,150,60,0); }
+}
+
+/* Light cone — spreads right & down from lamp shade */
+.light-cone {
+  position: absolute;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-45%);
+  width: 740px;
+  height: 580px;
+  background: linear-gradient(
+    165deg,
+    rgba(255,215,80,0.26) 0%,
+    rgba(255,190,50,0.10) 38%,
+    rgba(255,180,30,0.03) 65%,
+    transparent 100%
+  );
+  clip-path: polygon(8% 0%, 22% 0%, 100% 100%, -20% 100%);
+  filter: blur(9px);
+  pointer-events: none;
+  opacity: 0;
+  z-index: 2;
+  transition: opacity 0.75s ease;
+}
+#loginPg.lamp-on .light-cone {
+  opacity: 1;
+}
+
+/* Floor ellipse glow */
+.lamp-floor-glow {
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-40%);
+  width: 460px;
+  height: 60px;
+  background: radial-gradient(ellipse, rgba(255,200,60,0.18) 0%, transparent 70%);
+  pointer-events: none;
+  opacity: 0;
+  z-index: 3;
+  transition: opacity 0.75s ease;
+  filter: blur(8px);
+}
+#loginPg.lamp-on .lamp-floor-glow {
+  opacity: 1;
+}
+
+/* Login box — hidden until lamp ON */
+#loginPg .lbox {
+  opacity: 0 !important;
+  transform: translateY(22px) scale(0.97) !important;
+  pointer-events: none !important;
+  animation: none !important;
+  transition: opacity 0.7s cubic-bezier(0.34,1.56,0.64,1),
+              transform 0.7s cubic-bezier(0.34,1.56,0.64,1) !important;
+  /* Dark glass card */
+  background: rgba(16,18,30,0.9) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(255,255,255,0.07) !important;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.75) !important;
+  color: #e2e8f0 !important;
+  position: relative;
+  z-index: 10;
+}
+#loginPg.lamp-on .lbox {
+  opacity: 1 !important;
+  transform: translateY(0) scale(1) !important;
+  pointer-events: auto !important;
+}
+
+/* Login form dark theme */
+#loginPg .llogo h1 { color: #f0c050 !important; }
+#loginPg .llogo p  { color: rgba(255,255,255,0.45) !important; }
+#loginPg label     { color: rgba(255,255,255,0.55) !important; }
+#loginPg .fc {
+  background: rgba(255,255,255,0.06) !important;
+  border-color: rgba(255,255,255,0.12) !important;
+  color: #fff !important;
+}
+#loginPg .fc::placeholder { color: rgba(255,255,255,0.3) !important; }
+#loginPg .fc:focus {
+  border-color: #f0c050 !important;
+  box-shadow: 0 0 0 3px rgba(240,192,80,0.18) !important;
+  background: rgba(255,255,255,0.09) !important;
+}
+#loginPg .rtab {
+  background: rgba(255,255,255,0.05) !important;
+  color: rgba(255,255,255,0.45) !important;
+  border-color: rgba(255,255,255,0.1) !important;
+}
+#loginPg .rtab.on {
+  background: var(--p) !important;
+  color: #fff !important;
+}
+#loginPg .lcopy  { color: rgba(255,255,255,0.25) !important; }
+#loginPg a[href] { color: #f0c050 !important; }
+#loginPg .lbox .btn.bp { background: var(--p) !important; }
+#loginPg .lbox .btn.bs { background: var(--s) !important; }
+/* Security badge dark override */
+#loginPg #tForm > div:first-child {
+  background: rgba(255,255,255,0.05) !important;
+  border-color: rgba(255,255,255,0.08) !important;
+}
+#loginPg #tForm > div:first-child div:first-child { color: #7dd3fc !important; }
+#loginPg #tForm > div:first-child div:last-child  { color: rgba(255,255,255,0.4) !important; }
+
+/* Responsive — mobile: lamp top, form below */
+@media (max-width: 700px) {
+  #loginPg.lwrap {
+    flex-direction: column !important;
+    gap: 0 !important;
+    padding: 20px !important;
+    justify-content: flex-start !important;
+    align-items: center !important;
+  }
+  .lamp-hint { top: 18px; font-size: 0.55rem; letter-spacing: 2px; }
+  .lamp-wrap  { width: 160px; height: 300px; flex-shrink: 0; margin-top: 50px; }
+  .lamp-shade { width: 150px; height: 10px; top: 8px; }
+  .lamp-bulb  { top: 17px; width: 13px; height: 13px; }
+  .lamp-rod   { top: 18px; height: 240px; }
+  .lamp-base  { width: 90px; height: 10px; }
+  .pull-string { top: 18px; left: calc(50% + 22px); }
+  .string-line { height: 65px; }
+  .string-bead { width: 11px; height: 18px; }
+  .light-cone {
+    top: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 340px;
+    height: 400px;
+    clip-path: polygon(35% 0%, 65% 0%, 100% 100%, 0% 100%);
+    filter: blur(14px);
+  }
+  .lamp-floor-glow { display: none; }
+  #loginPg .lbox {
+    width: 95% !important;
+    max-width: 380px !important;
+    margin-top: 18px !important;
+  }
+}
 
 </style>
 
@@ -606,7 +909,25 @@ tbody tr:nth-child(8){animation-delay:.32s}
   <div class="spin"></div>
 </div>
 
-<div id="loginPg" class="lwrap" style="display:none">
+<div id="loginPg" class="lwrap lamp-off" style="display:none">
+  <!-- Hint -->
+  <p class="lamp-hint">PULL THE STRING TO TOGGLE LOGIN</p>
+
+  <!-- Lamp -->
+  <div class="lamp-wrap">
+    <div class="lamp-shade"></div>
+    <div class="lamp-bulb"></div>
+    <div class="lamp-rod"></div>
+    <div class="lamp-base"></div>
+    <div class="pull-string" onclick="toggleLamp()" title="Toggle login">
+      <div class="string-line"></div>
+      <div class="string-bead"></div>
+    </div>
+    <div class="light-cone"></div>
+    <div class="lamp-floor-glow"></div>
+  </div>
+
+  <!-- Login card -->
   <div class="lbox">
     <div class="llogo">
       <div class="li" style="margin-bottom:15px"><img src="logo.png" alt="Yug Shakti Logo" style="height:180px;object-fit:contain"></div>
@@ -2123,6 +2444,18 @@ function swR(r){
   resetLoginCheckForm();
   // Preload FRS models as soon as Teacher tab is clicked
   if(r==='teacher' && typeof faceapi!=='undefined') frsLoadModels();
+}
+function toggleLamp() {
+  const pg = document.getElementById('loginPg');
+  const str = document.querySelector('.pull-string');
+  if (!pg || !str) return;
+  // Spring pull animation
+  str.classList.add('pulled');
+  setTimeout(() => str.classList.remove('pulled'), 320);
+  // Toggle state
+  const isOff = pg.classList.contains('lamp-off');
+  pg.classList.toggle('lamp-off',  !isOff);
+  pg.classList.toggle('lamp-on',    isOff);
 }
 function logLoginAttempt(ph, name, status, details, photo) {
   const logs = DB.get('loginLogs', []);
