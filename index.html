@@ -936,6 +936,7 @@ tbody tr:nth-child(8){animation-delay:.32s}
   let particles = [];
   let pileHeight = new Float32Array(Math.ceil(canvas.width / CONFIG.grainSize));
   let phaseTimer = 0;
+  let logoImageOpacity = 0;
   
   const img = new Image();
   img.src = 'logo.png';
@@ -1098,6 +1099,29 @@ tbody tr:nth-child(8){animation-delay:.32s}
 
       ctx.fillStyle = p.color;
       ctx.fillRect(p.x - step/2, p.y - step/2, step, step);
+    }
+    
+    // Update HD logo opacity
+    if (currentPhase === PHASE.FORMED) {
+      logoImageOpacity = Math.min(logoImageOpacity + dt * 2.5, 1);
+    } else {
+      logoImageOpacity = Math.max(logoImageOpacity - dt * 8.0, 0);
+    }
+
+    // Draw HD logo on top of particles during FORMED/transition phases
+    if (logoImageOpacity > 0 && img.complete) {
+      ctx.save();
+      ctx.globalAlpha = logoImageOpacity;
+      
+      const maxW = 150; 
+      const scale = maxW / img.width;
+      const logoW = Math.round(img.width * scale) * step;
+      const logoH = Math.round(img.height * scale) * step;
+      const startX = (canvas.width - logoW) / 2;
+      const startY = (canvas.height - logoH) / 2 - 20;
+
+      ctx.drawImage(img, startX, startY, logoW, logoH);
+      ctx.restore();
     }
     
     if (currentPhase === PHASE.REFORMING && allReformed) {
