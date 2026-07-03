@@ -819,22 +819,96 @@ tbody tr:nth-child(8){animation-delay:.32s}
   .lwrap {
     flex-direction: column;
     justify-content: center;
-    gap: 30px;
+    align-items: center;
     padding: 20px;
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+    position: relative;
   }
   .lamp-container {
-    height: 380px;
-    width: 260px;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .lamp-hint {
+    position: absolute;
+    top: 25px;
+    left: 0;
+    width: 100%;
+    margin-bottom: 0;
+    z-index: 10;
+    text-align: center;
   }
   .lamp {
-    transform: scale(0.75);
-    transform-origin: top center;
-    height: 320px;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    transform: none;
+  }
+  .lamp-base {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 150px;
+    height: 12px;
+  }
+  .lamp-rod {
+    position: absolute;
+    bottom: 30px;
+    top: 130px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 8px;
+    height: auto;
+    background: linear-gradient(to right, #232533, #3c405a, #181921);
+  }
+  .lamp-shade {
+    position: absolute;
+    top: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 160px;
+    height: 75px;
+    z-index: 6;
+  }
+  .lamp-bulb {
+    width: 48px;
+    height: 14px;
+    bottom: -5px;
+  }
+  .pull-string {
+    position: absolute;
+    top: 135px;
+    left: calc(50% + 105px);
+    height: 120px;
+    pointer-events: auto;
+    z-index: 20;
+  }
+  .string-line {
+    height: 90px;
   }
   .light-cone {
-    top: 90px;
-    width: 400px;
-    height: 450px;
+    position: absolute;
+    top: 130px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    height: calc(100% - 150px);
+    background: linear-gradient(to bottom, rgba(255, 223, 112, 0.28) 0%, rgba(255, 223, 112, 0.08) 50%, rgba(255, 223, 112, 0) 100%);
+    clip-path: polygon(25% 0%, 75% 0%, 100% 100%, 0% 100%);
+    filter: blur(12px);
+  }
+  #loginPg .lbox {
+    width: 90%;
+    max-width: 360px;
+    margin-top: 120px;
+    margin-bottom: 30px;
+    z-index: 10;
   }
 }
 </style>
