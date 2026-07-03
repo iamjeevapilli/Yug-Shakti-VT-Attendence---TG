@@ -586,10 +586,10 @@ tbody tr:nth-child(8){animation-delay:.32s}
 .reveal.visible{opacity:1;transform:none}
 
 /* Lamp Login Page Layout & Animations */
-.lwrap.lamp-on {
+#loginPg.lamp-on {
   background: radial-gradient(circle at 35% 30%, #1e2235 0%, #0d0f17 100%);
 }
-.lwrap.lamp-off {
+#loginPg.lamp-off {
   background: #06070a;
 }
 .lwrap {
@@ -625,7 +625,7 @@ tbody tr:nth-child(8){animation-delay:.32s}
   text-shadow: 0 2px 4px rgba(0,0,0,0.5);
   animation: pulseHint 2s infinite alternate;
 }
-.lamp-on .lamp-hint {
+#loginPg.lamp-on .lamp-hint {
   color: rgba(255, 255, 255, 0.12);
   animation: none;
 }
@@ -690,7 +690,7 @@ tbody tr:nth-child(8){animation-delay:.32s}
   border-radius: 50%;
   transition: background 0.4s, box-shadow 0.4s;
 }
-.lamp-on .lamp-bulb {
+#loginPg.lamp-on .lamp-bulb {
   background: #fff;
   box-shadow: 0 0 35px 12px #ffdf70, 0 0 70px 25px #ffdf70;
 }
@@ -728,11 +728,11 @@ tbody tr:nth-child(8){animation-delay:.32s}
   border: 1.5px solid #5a422d;
   transition: background 0.4s, border-color 0.4s;
 }
-.lamp-on .string-bead {
+#loginPg.lamp-on .string-bead {
   background: #ffdf70;
   border-color: #cc8a3b;
 }
-.lamp-off .string-bead {
+#loginPg.lamp-off .string-bead {
   animation: beadGlow 1.8s infinite;
 }
 @keyframes beadGlow {
@@ -754,9 +754,9 @@ tbody tr:nth-child(8){animation-delay:.32s}
   pointer-events: none;
   opacity: 0;
   z-index: 1;
-  transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity 0.5s ease;
 }
-.lamp-on .light-cone {
+#loginPg.lamp-on .light-cone {
   opacity: 1;
 }
 
@@ -774,7 +774,7 @@ tbody tr:nth-child(8){animation-delay:.32s}
   pointer-events: none;
   transition: opacity 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
-.lamp-on .lbox {
+#loginPg.lamp-on .lbox {
   opacity: 1;
   transform: scale(1) translateY(0);
   pointer-events: auto;
