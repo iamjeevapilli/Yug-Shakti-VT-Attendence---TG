@@ -144,10 +144,11 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--t)
 .nu{font-size:.84rem;opacity:.9}
 #clk{font-size:.76rem;opacity:.8}
 .blo{background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.35);padding:6px 13px;border-radius:20px;cursor:pointer;font-size:.8rem;font-weight:700}
-.tbar{background:#fff;display:flex;border-bottom:2px solid var(--bd);padding:0 16px;overflow-x:auto;box-shadow:0 1px 4px rgba(0,0,0,.06)}
-.tbtn{padding:12px 17px;border:none;background:none;cursor:pointer;font-size:.86rem;font-weight:700;color:var(--t2);border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap;transition:.2s}
-.tbtn.on{color:var(--p);border-bottom-color:var(--p)}
-.tbtn:hover{color:var(--p);background:#eef2ff;border-radius:8px 8px 0 0}
+.tbar{background:#fff;display:flex;border-bottom:2px solid var(--bd);padding:0 12px;overflow-x:auto;box-shadow:0 2px 8px rgba(0,0,0,.08);gap:4px;scrollbar-width:none}
+.tbar::-webkit-scrollbar{display:none}
+.tbtn{padding:14px 18px;border:none;background:none;cursor:pointer;font-size:.95rem;font-weight:700;color:var(--t2);border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap;transition:.2s;letter-spacing:.1px;display:flex;align-items:center;gap:6px}
+.tbtn.on{color:var(--p);border-bottom-color:var(--p);background:linear-gradient(180deg,transparent 60%,rgba(26,115,232,.07) 100%);border-radius:10px 10px 0 0}
+.tbtn:hover{color:var(--p);background:#eef2ff;border-radius:10px 10px 0 0}
 .pg{display:none;padding:22px 15px;max-width:1080px;margin:0 auto;animation:fi .3s}
 .pg.on{display:block}
 @keyframes fi{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
@@ -280,9 +281,9 @@ tbody td{padding:10px 12px;vertical-align:middle}
   .nr{gap:6px}
 
   /* ── TAB BAR ── */
-  .tbar{padding:0 8px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .tbar{padding:0 6px;-webkit-overflow-scrolling:touch;gap:2px}
   .tbar::-webkit-scrollbar{display:none}
-  .tbtn{padding:10px 12px;font-size:.78rem;white-space:nowrap}
+  .tbtn{padding:13px 14px;font-size:.9rem;font-weight:800;letter-spacing:.05px;border-bottom-width:3px}
 
   /* ── MAIN PAGE PADDING ── */
   .pg{padding:12px 10px}
