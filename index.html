@@ -1577,8 +1577,7 @@ tbody tr:nth-child(8){animation-delay:.32s}
       <button class="vtd-modal-close" onclick="closeModal('vtDetailsModal')" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--ink3);padding:4px;border-radius:6px;flex-shrink:0;">✕</button>
     </div>
     <div class="vtd-modal-body" id="vtd-mBody" style="padding: 18px 22px 22px; max-height: 440px; overflow-y: auto; text-align: left;"></div>
-    <div style="display:flex; justify-content:space-between; align-items:center; padding: 12px 22px; border-top: 1px solid var(--border); background: #f8fafc; gap: 8px; flex-wrap: wrap;">
-      <button id="vtd-shareBtn" class="btn" onclick="shareVTDetails()" style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;background:linear-gradient(135deg,#0f9d58,#00796b);color:#fff;border:none;border-radius:9px;font-size:.82rem;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(15,157,88,.25);transition:all .2s">📤 Share</button>
+    <div style="display:flex; justify-content:flex-end; padding: 12px 22px; border-top: 1px solid var(--border); background: #f8fafc;">
       <button class="btn bp" onclick="closeModal('vtDetailsModal')">Close Details</button>
     </div>
   </div>
@@ -3324,6 +3323,7 @@ function vtdOpenModal(sno) {
       <a href="mailto:${v.email}" class="btn bw" style="padding:8px 16px;text-decoration:none;font-size:.82rem;font-weight:600;display:inline-flex;align-items:center;gap:4px">✉️ Email VT</a>
       <a href="https://www.google.com/maps/search/${encodeURIComponent(v.school + ', ' + v.district + ', Telangana')}" target="_blank" class="btn bo" style="padding:8px 16px;text-decoration:none;font-size:.82rem;font-weight:600;display:inline-flex;align-items:center;gap:4px">📍 Maps</a>
       <button onclick="trackVTLive('${v.sno}')" class="btn bs" style="padding:8px 16px;text-decoration:none;font-size:.82rem;font-weight:600;display:inline-flex;align-items:center;gap:4px;border:none;cursor:pointer;">🛰️ Live Tracker</button>
+      <button id="vtd-shareBtn" onclick="shareVTDetails()" style="padding:8px 16px;display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#0f9d58,#00796b);color:#fff;border:none;border-radius:9px;font-size:.82rem;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(15,157,88,.22);transition:all .2s">📤 Share</button>
     </div>`;
   // Store current VT for share function
   window._vtShareData = v;
