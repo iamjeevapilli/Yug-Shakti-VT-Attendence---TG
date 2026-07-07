@@ -1698,9 +1698,11 @@ tbody tr:nth-child(8){animation-delay:.32s}
       </div>
       <button class="vtd-modal-close" onclick="closeModal('vtDetailsModal')" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--ink3);padding:4px;border-radius:6px;flex-shrink:0;">✕</button>
     </div>
-    <div class="vtd-modal-body" id="vtd-mBody" style="padding: 18px 22px 22px; max-height: 440px; overflow-y: auto; text-align: left;"></div>
-    <div style="display:flex; justify-content:flex-end; padding: 12px 22px; border-top: 1px solid var(--border); background: #f8fafc;">
-      <button class="btn bp" onclick="closeModal('vtDetailsModal')">Close Details</button>
+    <div class="vtd-modal-body" id="vtd-mBody" style="padding: 18px 22px 14px; max-height: 55vh; overflow-y: auto; text-align: left;"></div>
+    <!-- Action buttons always visible sticky footer -->
+    <div id="vtd-mActions" style="padding: 12px 16px; border-top: 1px solid var(--border); background: #f8fafc; display:flex; gap:7px; flex-wrap:wrap; align-items:center; justify-content:flex-start;"></div>
+    <div style="display:flex; justify-content:flex-end; padding: 10px 16px; border-top: 1px solid var(--border); background: #f8fafc;">
+      <button class="btn bp" onclick="closeModal('vtDetailsModal')">✕ Close</button>
     </div>
   </div>
 </div>
@@ -3405,7 +3407,7 @@ function vtdMakePgr() {
 function vtdOpenModal(sno) {
   const v = VTS_FULL.find(x => x.sno === sno);
   if (!v) return;
-  
+
   // Link with the DB 'teachers' array to pull any custom edited UDISE code
   const allT = DB.get('teachers', []);
   const tDB = allT.find(t => t.ph === v.phone || t.phone === v.phone);
@@ -3439,14 +3441,17 @@ function vtdOpenModal(sno) {
     <hr style="border:none;border-top:1px dashed var(--border);margin:8px 0">
     <div class="vtd-mrow"><span class="vtd-ml">HM/Principal</span><span class="vtd-mv">${v.hm || '—'}</span></div>
     <div class="vtd-mrow"><span class="vtd-ml">HM Phone</span><span class="vtd-mv">${v.hmPhone || '—'}</span></div>
-    <div class="vtd-mrow"><span class="vtd-ml">HM Email</span><span class="vtd-mv" style="font-size:.75rem">${v.hmEmail || '—'}</span></div>
-    <div class="vtd-action-row" style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
-      <a href="tel:${v.phone}" class="btn bp" style="padding:9px 14px;text-decoration:none;font-size:.82rem;font-weight:700;display:inline-flex;align-items:center;gap:5px;border-radius:10px">📞 Call</a>
-      <a href="mailto:${v.email}" class="btn bw" style="padding:9px 14px;text-decoration:none;font-size:.82rem;font-weight:700;display:inline-flex;align-items:center;gap:5px;border-radius:10px">✉️ Email</a>
-      <a href="https://www.google.com/maps/search/${encodeURIComponent(v.school + ', ' + v.district + ', Telangana')}" target="_blank" class="btn bo" style="padding:9px 14px;text-decoration:none;font-size:.82rem;font-weight:700;display:inline-flex;align-items:center;gap:5px;border-radius:10px">📍 Maps</a>
-      <button onclick="trackVTLive('${v.sno}')" class="btn bs" style="padding:9px 14px;font-size:.82rem;font-weight:700;display:inline-flex;align-items:center;gap:5px;border:none;cursor:pointer;border-radius:10px">🛰️ Track</button>
-      <button id="vtd-shareBtn" onclick="shareVTDetails()" class="vtd-share-btn-wrap" style="padding:9px 14px;display:inline-flex;align-items:center;gap:5px;background:linear-gradient(135deg,#25d366,#128c7e);color:#fff;border:none;border-radius:10px;font-size:.82rem;font-weight:700;cursor:pointer;box-shadow:0 3px 10px rgba(37,211,102,.3);transition:all .22s">📤 Share</button>
-    </div>`;
+    <div class="vtd-mrow"><span class="vtd-ml">HM Email</span><span class="vtd-mv" style="font-size:.75rem">${v.hmEmail || '—'}</span></div>`;
+
+  // Always-visible action buttons in sticky footer (never hidden by scroll)
+  document.getElementById('vtd-mActions').innerHTML = `
+    <a href="tel:${v.phone}" class="btn bp" style="padding:10px 15px;text-decoration:none;font-size:.84rem;font-weight:700;display:inline-flex;align-items:center;gap:6px;border-radius:10px">📞 Call</a>
+    <a href="mailto:${v.email}" class="btn bw" style="padding:10px 15px;text-decoration:none;font-size:.84rem;font-weight:700;display:inline-flex;align-items:center;gap:6px;border-radius:10px">✉️ Email</a>
+    <a href="https://www.google.com/maps/search/${encodeURIComponent(v.school + ', ' + v.district + ', Telangana')}" target="_blank" class="btn bo" style="padding:10px 15px;text-decoration:none;font-size:.84rem;font-weight:700;display:inline-flex;align-items:center;gap:6px;border-radius:10px">📍 Maps</a>
+    <button onclick="trackVTLive('${v.sno}')" class="btn bs" style="padding:10px 15px;font-size:.84rem;font-weight:700;display:inline-flex;align-items:center;gap:6px;border:none;cursor:pointer;border-radius:10px">🛰️ Track</button>
+    <button id="vtd-shareBtn" onclick="shareVTDetails()" style="padding:10px 15px;display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#25d366,#128c7e);color:#fff;border:none;border-radius:10px;font-size:.84rem;font-weight:800;cursor:pointer;box-shadow:0 3px 12px rgba(37,211,102,.4);transition:all .22s">📤 Share</button>
+  `;
+
   // Store current VT for share function
   window._vtShareData = v;
   openModal('vtDetailsModal');
