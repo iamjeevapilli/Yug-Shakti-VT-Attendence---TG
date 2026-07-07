@@ -264,7 +264,128 @@ tbody td{padding:10px 12px;vertical-align:middle}
 .footer{text-align:center;padding:18px 10px 10px;font-size:.72rem;color:var(--t2);border-top:1px solid var(--bd);margin-top:8px;letter-spacing:.3px}
 .footer a{color:var(--p);text-decoration:none;font-weight:800}
 
-@media(max-width:600px){.lbox{padding:26px 18px}.card{padding:15px 12px}.sg{grid-template-columns:1fr 1fr}.nu{display:none}.wb{flex-direction:column}}
+/* ════════════════════════════════════════════
+   COMPREHENSIVE MOBILE-RESPONSIVE STYLES
+   Full portal optimised for phones ≤ 600px
+════════════════════════════════════════════ */
+@media(max-width:600px){
+
+  /* ── NAV BAR ── */
+  .nav{height:auto;padding:10px 14px;flex-wrap:wrap;gap:6px}
+  .nbrand{font-size:.96rem}
+  .nbrand img{height:24px}
+  #clk{display:none}
+  .nu{display:none}
+  .blo{padding:5px 10px;font-size:.74rem;border-radius:16px}
+  .nr{gap:6px}
+
+  /* ── TAB BAR ── */
+  .tbar{padding:0 8px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .tbar::-webkit-scrollbar{display:none}
+  .tbtn{padding:10px 12px;font-size:.78rem;white-space:nowrap}
+
+  /* ── MAIN PAGE PADDING ── */
+  .pg{padding:12px 10px}
+
+  /* ── LOGIN BOX ── */
+  .lbox{padding:22px 16px;margin:10px;border-radius:16px}
+  .llogo img{height:120px!important}
+  .llogo h1{font-size:1.2rem}
+
+  /* ── WELCOME BANNER ── */
+  .wb{flex-direction:column;padding:16px;gap:8px;border-radius:11px}
+  .wb h2{font-size:1rem}
+  .wb p{font-size:.78rem}
+
+  /* ── STAT CARDS ── */
+  .sg{grid-template-columns:1fr 1fr;gap:10px;margin-bottom:13px}
+  .sc{padding:14px 12px;gap:10px}
+  .si{font-size:1.7rem}
+  .sv{font-size:1.4rem}
+  .sl{font-size:.67rem}
+
+  /* ── DASHBOARD GRID ── */
+  #dg2{grid-template-columns:1fr!important}
+
+  /* ── CARDS ── */
+  .card{padding:14px 12px;border-radius:11px;margin-bottom:12px}
+  .ctit{font-size:.9rem}
+
+  /* ── TABLES — hide less important cols ── */
+  .tw{border-radius:8px}
+  table{font-size:.76rem}
+  thead th{padding:9px 8px;font-size:.7rem}
+  tbody td{padding:8px 8px}
+  /* Records table: hide sector, school on mobile */
+  #pg-records .tw thead th:nth-child(5),
+  #pg-records .tw tbody td:nth-child(5),
+  #pg-records .tw thead th:nth-child(6),
+  #pg-records .tw tbody td:nth-child(6){display:none}
+  /* Dashboard recent table: hide school, dist */
+  #pg-dashboard .tw thead th:nth-child(4),
+  #pg-dashboard .tw tbody td:nth-child(4),
+  #pg-dashboard .tw thead th:nth-child(7),
+  #pg-dashboard .tw tbody td:nth-child(7){display:none}
+
+  /* ── FILTER BARS ── */
+  .fr{gap:6px}
+  .fr select,.fr input[type=date]{font-size:.78rem;padding:7px 8px}
+  .srch .fc{font-size:.8rem}
+
+  /* ── TWO-COL INPUT GRID ── */
+  .r2{grid-template-columns:1fr}
+
+  /* ── TRAINER LIST ITEM ── */
+  .tc{flex-direction:column;align-items:flex-start;gap:8px}
+  .tact{width:100%;justify-content:flex-end}
+
+  /* ── MODALS ── */
+  .mov{padding:8px;align-items:flex-end}
+  .mbox{border-radius:18px 18px 0 0;max-width:100%;width:100%;padding:20px 16px;max-height:92vh;overflow-y:auto}
+  .mti{font-size:.97rem}
+
+  /* ── VT DETAILS MODAL ── */
+  .vtd-modal-header{padding:14px 16px 10px!important}
+  .vtd-modal-body{padding:14px 16px 18px!important;max-height:58vh!important}
+  .vtd-ml{min-width:105px;font-size:.78rem}
+  .vtd-mv{font-size:.8rem}
+
+  /* VT action buttons – stack in 2 columns */
+  .vtd-action-row{
+    display:grid!important;
+    grid-template-columns:1fr 1fr!important;
+    gap:8px!important;
+  }
+  .vtd-action-row a,
+  .vtd-action-row button{
+    justify-content:center!important;
+    font-size:.8rem!important;
+    padding:10px 8px!important;
+  }
+  /* Share button full width across both cols */
+  .vtd-share-btn-wrap{grid-column:1/-1!important}
+
+  /* ── TRAINER PROFILE HERO ── */
+  .tphero{flex-direction:column;align-items:flex-start;gap:14px;padding:20px 16px}
+  .tpavt{width:60px;height:60px;font-size:1.5rem}
+  .tpname{font-size:1.1rem}
+  .tpgrid{grid-template-columns:1fr}
+  .tpstats{grid-template-columns:repeat(3,1fr)}
+
+  /* ── MAP PAGE ── */
+  #pg-map .card .ctit{flex-direction:column;align-items:flex-start;gap:8px}
+
+  /* ── VT TABLE (VTs Data page) ── */
+  .vtd-header{padding:22px 14px 18px;border-radius:10px}
+  .vtd-header h2{font-size:1.3rem}
+  .vtd-header-stats{gap:8px}
+  .vtd-hstat{padding:7px 10px;min-width:70px}
+  .vtd-hstat .v{font-size:1rem}
+  .vtd-controls{gap:8px}
+  .vtd-search-wrap{min-width:0;flex:1}
+  .vtd-ctl-select{font-size:.78rem;padding:8px 8px}
+  .vtd-btn-export{padding:8px 12px;font-size:.78rem}
+}
 
 #pg-vtsdata {
   --ink:#0f172a;--ink2:#334155;--ink3:#64748b;--ink4:#94a3b8;
@@ -3318,12 +3439,16 @@ function vtdOpenModal(sno) {
     <div class="vtd-mrow"><span class="vtd-ml">HM/Principal</span><span class="vtd-mv">${v.hm || '—'}</span></div>
     <div class="vtd-mrow"><span class="vtd-ml">HM Phone</span><span class="vtd-mv">${v.hmPhone || '—'}</span></div>
     <div class="vtd-mrow"><span class="vtd-ml">HM Email</span><span class="vtd-mv" style="font-size:.75rem">${v.hmEmail || '—'}</span></div>
-    <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
-      <a href="tel:${v.phone}" class="btn bp" style="padding:8px 16px;text-decoration:none;font-size:.82rem;font-weight:600;display:inline-flex;align-items:center;gap:4px">📞 Call VT</a>
-      <a href="mailto:${v.email}" class="btn bw" style="padding:8px 16px;text-decoration:none;font-size:.82rem;font-weight:600;display:inline-flex;align-items:center;gap:4px">✉️ Email VT</a>
-      <a href="https://www.google.com/maps/search/${encodeURIComponent(v.school + ', ' + v.district + ', Telangana')}" target="_blank" class="btn bo" style="padding:8px 16px;text-decoration:none;font-size:.82rem;font-weight:600;display:inline-flex;align-items:center;gap:4px">📍 Maps</a>
-      <button onclick="trackVTLive('${v.sno}')" class="btn bs" style="padding:8px 16px;text-decoration:none;font-size:.82rem;font-weight:600;display:inline-flex;align-items:center;gap:4px;border:none;cursor:pointer;">🛰️ Live Tracker</button>
-      <button id="vtd-shareBtn" onclick="shareVTDetails()" style="padding:8px 16px;display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#0f9d58,#00796b);color:#fff;border:none;border-radius:9px;font-size:.82rem;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(15,157,88,.22);transition:all .2s">📤 Share</button>
+    <div class="vtd-action-row" style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+      <a href="tel:${v.phone}" class="btn bp" style="padding:9px 16px;text-decoration:none;font-size:.82rem;font-weight:700;display:inline-flex;align-items:center;gap:5px;border-radius:10px">📞 Call VT</a>
+      <a href="mailto:${v.email}" class="btn bw" style="padding:9px 16px;text-decoration:none;font-size:.82rem;font-weight:700;display:inline-flex;align-items:center;gap:5px;border-radius:10px">✉️ Email VT</a>
+      <a href="https://www.google.com/maps/search/${encodeURIComponent(v.school + ', ' + v.district + ', Telangana')}" target="_blank" class="btn bo" style="padding:9px 16px;text-decoration:none;font-size:.82rem;font-weight:700;display:inline-flex;align-items:center;gap:5px;border-radius:10px">📍 Google Maps</a>
+      <button onclick="trackVTLive('${v.sno}')" class="btn bs" style="padding:9px 16px;font-size:.82rem;font-weight:700;display:inline-flex;align-items:center;gap:5px;border:none;cursor:pointer;border-radius:10px">🛰️ Live Tracker</button>
+      <div class="vtd-share-btn-wrap">
+        <button id="vtd-shareBtn" onclick="shareVTDetails()" style="padding:11px 22px;display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#25d366,#128c7e);color:#fff;border:none;border-radius:11px;font-size:.88rem;font-weight:800;cursor:pointer;box-shadow:0 4px 16px rgba(37,211,102,.35);letter-spacing:.3px;transition:all .22s;width:100%">
+          📤 Share VT Details
+        </button>
+      </div>
     </div>`;
   // Store current VT for share function
   window._vtShareData = v;
