@@ -3441,15 +3441,11 @@ function vtdOpenModal(sno) {
     <div class="vtd-mrow"><span class="vtd-ml">HM Phone</span><span class="vtd-mv">${v.hmPhone || '—'}</span></div>
     <div class="vtd-mrow"><span class="vtd-ml">HM Email</span><span class="vtd-mv" style="font-size:.75rem">${v.hmEmail || '—'}</span></div>
     <div class="vtd-action-row" style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
-      <a href="tel:${v.phone}" class="btn bp" style="padding:9px 16px;text-decoration:none;font-size:.82rem;font-weight:700;display:inline-flex;align-items:center;gap:5px;border-radius:10px">📞 Call VT</a>
-      <a href="mailto:${v.email}" class="btn bw" style="padding:9px 16px;text-decoration:none;font-size:.82rem;font-weight:700;display:inline-flex;align-items:center;gap:5px;border-radius:10px">✉️ Email VT</a>
-      <a href="https://www.google.com/maps/search/${encodeURIComponent(v.school + ', ' + v.district + ', Telangana')}" target="_blank" class="btn bo" style="padding:9px 16px;text-decoration:none;font-size:.82rem;font-weight:700;display:inline-flex;align-items:center;gap:5px;border-radius:10px">📍 Google Maps</a>
-      <button onclick="trackVTLive('${v.sno}')" class="btn bs" style="padding:9px 16px;font-size:.82rem;font-weight:700;display:inline-flex;align-items:center;gap:5px;border:none;cursor:pointer;border-radius:10px">🛰️ Live Tracker</button>
-      <div class="vtd-share-btn-wrap">
-        <button id="vtd-shareBtn" onclick="shareVTDetails()" style="padding:11px 22px;display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#25d366,#128c7e);color:#fff;border:none;border-radius:11px;font-size:.88rem;font-weight:800;cursor:pointer;box-shadow:0 4px 16px rgba(37,211,102,.35);letter-spacing:.3px;transition:all .22s;width:100%">
-          📤 Share VT Details
-        </button>
-      </div>
+      <a href="tel:${v.phone}" class="btn bp" style="padding:9px 14px;text-decoration:none;font-size:.82rem;font-weight:700;display:inline-flex;align-items:center;gap:5px;border-radius:10px">📞 Call</a>
+      <a href="mailto:${v.email}" class="btn bw" style="padding:9px 14px;text-decoration:none;font-size:.82rem;font-weight:700;display:inline-flex;align-items:center;gap:5px;border-radius:10px">✉️ Email</a>
+      <a href="https://www.google.com/maps/search/${encodeURIComponent(v.school + ', ' + v.district + ', Telangana')}" target="_blank" class="btn bo" style="padding:9px 14px;text-decoration:none;font-size:.82rem;font-weight:700;display:inline-flex;align-items:center;gap:5px;border-radius:10px">📍 Maps</a>
+      <button onclick="trackVTLive('${v.sno}')" class="btn bs" style="padding:9px 14px;font-size:.82rem;font-weight:700;display:inline-flex;align-items:center;gap:5px;border:none;cursor:pointer;border-radius:10px">🛰️ Track</button>
+      <button id="vtd-shareBtn" onclick="shareVTDetails()" class="vtd-share-btn-wrap" style="padding:9px 14px;display:inline-flex;align-items:center;gap:5px;background:linear-gradient(135deg,#25d366,#128c7e);color:#fff;border:none;border-radius:10px;font-size:.82rem;font-weight:700;cursor:pointer;box-shadow:0 3px 10px rgba(37,211,102,.3);transition:all .22s">📤 Share</button>
     </div>`;
   // Store current VT for share function
   window._vtShareData = v;
