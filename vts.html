@@ -524,7 +524,8 @@ function openModal(sno){
     <a href="tel:${v.phone}" class="btn bp" style="padding:10px 15px;text-decoration:none;font-size:.84rem;font-weight:700;display:inline-flex;align-items:center;gap:6px;border-radius:10px">📞 Call</a>
     <a href="mailto:${v.email}" class="btn bw" style="padding:10px 15px;text-decoration:none;font-size:.84rem;font-weight:700;display:inline-flex;align-items:center;gap:6px;border-radius:10px">✉️ Email</a>
     <a href="${mapLink}" target="_blank" class="btn bo" style="padding:10px 15px;text-decoration:none;font-size:.84rem;font-weight:700;display:inline-flex;align-items:center;gap:6px;border-radius:10px">📍 Maps</a>
-    <button id="vtd-shareBtn" onclick="shareVTDetails()" class="m-share-btn-wrap" style="padding:10px 15px;display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#25d366,#128c7e);color:#fff;border:none;border-radius:10px;font-size:.84rem;font-weight:800;cursor:pointer;box-shadow:0 3px 12px rgba(37,211,102,.4);transition:all .22s">📤 Share</button>
+    <a href="https://wa.me/91${v.phone.replace(/\D/g,'')}" target="_blank" style="padding:10px 15px;text-decoration:none;display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#25d366,#128c7e);color:#fff;border-radius:10px;font-size:.84rem;font-weight:800;box-shadow:0 3px 12px rgba(37,211,102,.35);transition:all .22s">💬 WhatsApp</a>
+    <button id="vtd-shareBtn" onclick="shareVTDetails()" style="padding:10px 15px;display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#0b57d0,#1a73e8);color:#fff;border:none;border-radius:10px;font-size:.84rem;font-weight:800;cursor:pointer;box-shadow:0 3px 12px rgba(11,87,208,.35);transition:all .22s">📤 Share</button>
   `;
 
   window._vtShareData = v;
