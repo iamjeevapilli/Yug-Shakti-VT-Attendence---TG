@@ -499,6 +499,41 @@ function makePgr(){
   document.getElementById('pgr').innerHTML=html;
 }
 
+// ── NEARBY SCHOOLS FEATURE ──
+function getDistanceKm(lat1,lon1,lat2,lon2){
+  const R=6371,dLat=(lat2-lat1)*Math.PI/180,dLon=(lon2-lon1)*Math.PI/180;
+  const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+function getNearbySchoolsHTML(v,allVTs){
+  if(!v.lat||!v.lng)return '';
+  const RADIUS_KM=50,MAX_SCHOOLS=5;
+  const schoolMap={};
+  allVTs.forEach(o=>{
+    if(o.sno===v.sno||!o.lat||!o.lng)return;
+    if((o.school||'').trim().toUpperCase()===(v.school||'').trim().toUpperCase())return;
+    const dist=getDistanceKm(v.lat,v.lng,o.lat,o.lng);
+    if(dist>RADIUS_KM)return;
+    const key=(o.school||'Unknown').trim();
+    if(!schoolMap[key])schoolMap[key]={school:key,district:o.district||'',dist,vts:[]};
+    schoolMap[key].vts.push({name:o.name,sector:o.sector});
+    if(dist<schoolMap[key].dist)schoolMap[key].dist=dist;
+  });
+  const schools=Object.values(schoolMap).sort((a,b)=>a.dist-b.dist).slice(0,MAX_SCHOOLS);
+  if(!schools.length)return `<hr style="border:none;border-top:1px dashed var(--border);margin:10px 0"><div style="font-weight:700;color:var(--ink2);font-size:.82rem;margin-bottom:6px">🏫 Nearby Schools <span style="font-weight:400;color:var(--ink3);font-size:.75rem">(within ${RADIUS_KM}km)</span></div><div style="color:var(--ink3);font-size:.78rem;padding:8px;background:var(--bg);border-radius:8px;text-align:center">No other VT schools within ${RADIUS_KM}km</div>`;
+  let html=`<hr style="border:none;border-top:1px dashed var(--border);margin:10px 0"><div style="font-weight:700;color:var(--ink2);font-size:.82rem;margin-bottom:8px">🏫 Nearby Schools <span style="font-weight:400;color:var(--ink3);font-size:.75rem">(within ${RADIUS_KM}km)</span></div>`;
+  schools.forEach(s=>{
+    html+=`<div style="background:linear-gradient(135deg,#f0fdfa,#e0f2fe);border:1px solid #b2e0f7;border-radius:10px;padding:10px 12px;margin-bottom:7px">`;
+    html+=`<div style="font-weight:700;font-size:.83rem;color:var(--ink);margin-bottom:4px">📍 ${s.school}</div>`;
+    html+=`<div style="font-size:.74rem;color:var(--ink3);margin-bottom:5px">${s.district?s.district+' · ':''}${s.dist.toFixed(1)} km away</div>`;
+    s.vts.forEach(t=>{
+      html+=`<div style="display:flex;align-items:center;gap:6px;font-size:.78rem;color:var(--ink2);margin-top:3px">👤 <strong>${t.name}</strong> <span style="background:#e0f2fe;color:#0369a1;padding:1px 6px;border-radius:20px;font-size:.7rem;font-weight:600">${t.sector}</span></div>`;
+    });
+    html+=`</div>`;
+  });
+  return html;
+}
+
 function openModal(sno){
   const v=VT.find(x=>x.sno===sno);if(!v)return;
   document.getElementById('mAvt').textContent=v.name[0];
@@ -530,7 +565,8 @@ function openModal(sno){
     <hr style="border:none;border-top:1px dashed var(--border);margin:8px 0">
     <div class="mrow"><span class="ml">HM/Principal</span><span class="mv">${v.hm||'—'}</span></div>
     <div class="mrow"><span class="ml">HM Phone</span><span class="mv">${v.hmPhone||'—'}</span></div>
-    <div class="mrow"><span class="ml">HM Email</span><span class="mv" style="font-size:.75rem">${v.hmEmail||'—'}</span></div>`;
+    <div class="mrow"><span class="ml">HM Email</span><span class="mv" style="font-size:.75rem">${v.hmEmail||'—'}</span></div>
+    ${getNearbySchoolsHTML(v,VT)}`;
 
   const mapLink = v.lat&&v.lng ? `https://www.google.com/maps?q=${v.lat},${v.lng}` : `https://www.google.com/maps/search/${encodeURIComponent(v.school+', '+v.district+', Telangana')}`;
   const trackLink = v.lat&&v.lng ? `https://www.google.com/maps/dir/?api=1&destination=${v.lat},${v.lng}` : `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(v.school+', '+v.district+', Telangana')}`;
