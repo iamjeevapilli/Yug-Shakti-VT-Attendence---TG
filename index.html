@@ -2445,13 +2445,13 @@ async function initApp(){
 
   // Migrate teacher plain-text passwords to hashed
   const dataVer=DB.get('dataVer',0);
-  if(dataVer<2){
+  if(dataVer<3){
     const migrated=await Promise.all(SEED.map(async t=>{
       const ph=await sha256(t.pass||'pass123');
       return {...t,passHash:ph,pass:undefined};
     }));
     DB.set('teachers',migrated);
-    DB.set('dataVer',2);
+    DB.set('dataVer',3);
     DB.set('teachersHashed',true);
   }
 
