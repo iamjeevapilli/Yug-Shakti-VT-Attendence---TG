@@ -1828,6 +1828,10 @@ const DB = {
           await docRef.set({ data: localV });
         }
       }
+      if (k === 'teachers' && DB_MEMORY[k] && window.SEED && DB_MEMORY[k].length < window.SEED.length) {
+        console.log("Auto upgrading teachers array");
+        DB.set('teachers', window.SEED);
+      }
       
       docRef.onSnapshot(docSnap => {
         if(docSnap.exists) {
@@ -2753,8 +2757,8 @@ async function forgotPass(role) {
 }
 function doLogout(){stopCam();stopTrainerGPSTracking();resetLoginCheckForm();SESSION.destroy();CU=null;PHOTO=null;LOC=null;$('app').style.display='none';$('loginPg').style.display='flex';}
 function resetAll(){
-  if(confirm('Reset ALL teachers list to original 206 trainers?')){
-    DB.set('teachers',SEED);alert('✅ All 206 trainers reloaded!');rTch();rDash();
+  if(confirm('Reset ALL teachers list to original 249 trainers?')){
+    DB.set('teachers',SEED);alert('✅ All 249 trainers reloaded!');rTch();rDash();
   }
 }
 
