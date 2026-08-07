@@ -260,7 +260,7 @@ tbody td{padding:10px 12px;vertical-align:middle}
 .tps-present{background:#e6f4ea;color:#0f9d58}
 .tps-absent{background:#fce8e6;color:#d93025}
 .tpgrid{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:17px}
-@media(max-width:600px){.tpgrid{grid-template-columns:1fr}}
+@media(max-width:768px){.tpgrid{grid-template-columns:1fr}}
 .tpcard{background:#fff;border-radius:13px;box-shadow:0 2px 12px rgba(0,0,0,.09);padding:20px}
 .tpcard h3{font-size:.82rem;font-weight:800;color:var(--t2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:13px;display:flex;align-items:center;gap:6px}
 .tprow{display:flex;justify-content:space-between;align-items:flex-start;padding:8px 0;border-bottom:1px solid #f1f3f4;font-size:.84rem;gap:8px}
@@ -4986,7 +4986,7 @@ function openTrainer(ph){
       </div>
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px" class="tpgrid">
+    <div class="tpgrid">
       <div class="tpcard" id="tpCalendarBox">
         <!-- Monthly Calendar injected here -->
       </div>
@@ -5024,8 +5024,10 @@ function openTrainer(ph){
     </div>
   `;
 
+  renderTrainerMonthCalendar(ph);
   $('pg-trainer').classList.add('on');
   window.scrollTo(0,0);
+  setTimeout(initReveal, 100);
 }
 
 
