@@ -219,6 +219,9 @@ tbody td strong{color:var(--ink);font-weight:600}
     <span class="si">🔍</span>
     <input id="srch" placeholder="Search by name, phone, school, district, mandal, HM name, UDISE, sector, scheme, qualification…" oninput="filterAll()"/>
   </div>
+  <select class="ctl-select" id="distF" onchange="filterAll()">
+    <option value="">All Districts</option>
+  </select>
   <select class="ctl-select" id="secF" onchange="filterAll()">
     <option value="">All Sectors</option>
     <option value="APPAREL">APPAREL</option>
@@ -243,6 +246,7 @@ tbody td strong{color:var(--ink);font-weight:600}
 </div>
 
 <div class="summary" id="tagRow"></div>
+<div id="districtRow" style="display:flex;flex-wrap:wrap;gap:7px;padding:10px 0 6px;overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:8px"></div>
 
 <!-- TABLE VIEW -->
 <div id="tableView">
@@ -277,6 +281,13 @@ tbody td strong{color:var(--ink);font-weight:600}
       </div>
       <div id="pgr" class="pgr"></div>
     </div>
+  </div>
+</div>
+
+<!-- DISTRICT SCHOOLS VIEW -->
+<div id="districtView" style="display:none">
+  <div id="districtCardsContainer" style="display:grid;grid-template-columns:1fr;gap:20px">
+    <!-- Populated by renderDistrictView() -->
   </div>
 </div>
 
@@ -505,7 +516,8 @@ function filterAll(){
     const match = !q || searchFields.some(f => f.includes(q));
     const secOk=!sec||v.sector===sec;
     const schOk=!scheme||(v.scheme||'').toUpperCase().includes(scheme);
-    return match&&secOk&&schOk;
+    const distOk=!(window._curDistrict)||(v.district||'').toUpperCase()===(window._curDistrict||'').toUpperCase();
+    return match&&secOk&&schOk&&distOk;
   });
   if(sort==='name') FILTERED.sort((a,b)=>a.name.localeCompare(b.name));
   else if(sort==='sector') FILTERED.sort((a,b)=>a.sector.localeCompare(b.sector));
@@ -670,6 +682,132 @@ function shareVTDetails() {
   }
 }
 
+
+function populateDistrictDropdown() {
+  const distSelect = document.getElementById('distF');
+  if(!distSelect) return;
+  const currentVal = distSelect.value;
+  const dists = Array.from(new Set(VT.map(v => (v.district||'').trim().toUpperCase()).filter(Boolean))).sort();
+  let html = '<option value="">All Districts (' + dists.length + ')</option>';
+  dists.forEach(d => {
+    const cnt = VT.filter(v => (v.district||'').trim().toUpperCase() === d).length;
+    html += `<option value="${d}">${d} (${cnt} VTs)</option>`;
+  });
+  distSelect.innerHTML = html;
+  distSelect.value = currentVal;
+}
+
+function renderDistrictView() {
+  const container = document.getElementById('districtCardsContainer');
+  if (!container) return;
+
+  // Group FILTERED VTs by District -> School
+  const distMap = {};
+  FILTERED.forEach(v => {
+    const d = (v.district || 'UNASSIGNED').trim().toUpperCase();
+    const s = (v.school || 'Unknown School').trim();
+    if (!distMap[d]) distMap[d] = {};
+    if (!distMap[d][s]) distMap[d][s] = {
+      name: s,
+      mandal: v.mandal || '',
+      udise: v.udise || '',
+      scheme: v.scheme || '',
+      hm: v.hm || '',
+      hmPhone: v.hmPhone || '',
+      hmEmail: v.hmEmail || '',
+      vts: []
+    };
+    distMap[d][s].vts.push(v);
+  });
+
+  const sortedDists = Object.keys(distMap).sort();
+
+  if (sortedDists.length === 0) {
+    container.innerHTML = `<div class="empty" style="background:#fff;border-radius:12px;padding:30px;text-align:center"><div class="ei">🔍</div><p>No schools found matching your search/filters</p></div>`;
+    return;
+  }
+
+  let html = '';
+  sortedDists.forEach(distName => {
+    const schools = Object.values(distMap[distName]);
+    let totalVTs = 0;
+    schools.forEach(sch => totalVTs += sch.vts.length);
+
+    html += `
+    <div style="background:#fff;border-radius:16px;box-shadow:0 4px 18px rgba(0,0,0,.06);border:1px solid var(--border);overflow:hidden">
+      <!-- District Header -->
+      <div style="background:linear-gradient(135deg,#0b57d0,#1a73e8);color:#fff;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:1.4rem">📍</span>
+          <div>
+            <h2 style="font-size:1.1rem;font-weight:800;margin:0;letter-spacing:.3px">${distName} DISTRICT</h2>
+            <div style="font-size:.78rem;opacity:.9;margin-top:2px">${schools.length} Schools · ${totalVTs} Vocational Trainers</div>
+          </div>
+        </div>
+        <button onclick="filterByDistrict('${distName}')" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);padding:5px 12px;border-radius:20px;font-size:.75rem;font-weight:700;cursor:pointer">Filter Table by ${distName}</button>
+      </div>
+
+      <!-- Schools Grid inside District -->
+      <div style="padding:16px;display:grid;grid-template-columns:repeat(auto-fill, minmax(320px, 1fr));gap:14px">
+    `;
+
+    schools.forEach(sch => {
+      html += `
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:14px;display:flex;flex-direction:column;justify-space-between">
+          <div>
+            <div style="font-weight:800;font-size:.9rem;color:var(--ink);margin-bottom:6px;display:flex;align-items:flex-start;gap:6px">
+              <span>🏫</span>
+              <span>${sch.name}</span>
+            </div>
+            
+            <div style="display:flex;flex-wrap:wrap;gap:6px;font-size:.73rem;color:var(--ink2);margin-bottom:10px">
+              ${sch.mandal ? `<span style="background:#e2e8f0;padding:2px 8px;border-radius:6px;font-weight:600">📍 Mandal: ${sch.mandal}</span>` : ''}
+              ${sch.udise ? `<span style="background:#e0f2fe;color:#0369a1;padding:2px 8px;border-radius:6px;font-weight:700">📋 UDISE: ${sch.udise}</span>` : ''}
+              ${sch.scheme ? `<span style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:6px;font-weight:700">${sch.scheme}</span>` : ''}
+            </div>
+
+            ${sch.hm ? `
+            <div style="font-size:.76rem;background:#fff;border:1px solid #cbd5e1;padding:6px 10px;border-radius:8px;margin-bottom:10px;color:var(--ink2)">
+              <strong>👨‍🏫 HM:</strong> ${sch.hm} ${sch.hmPhone ? `· <a href="tel:${sch.hmPhone}" style="color:var(--p);font-weight:700">${sch.hmPhone}</a>` : ''}
+            </div>` : ''}
+
+            <!-- VTs in this School -->
+            <div style="font-size:.76rem;font-weight:800;color:var(--ink);margin-bottom:6px;border-bottom:1px solid #cbd5e1;padding-bottom:4px">
+              👥 Vocational Trainers (${sch.vts.length}):
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+      `;
+
+      sch.vts.forEach(v => {
+        html += `
+              <div onclick="openModal(${v.sno})" style="background:#fff;border:1px solid #cbd5e1;border-radius:8px;padding:8px 10px;cursor:pointer;transition:all .18s;display:flex;align-items:center;justify-content:space-between;gap:8px" onmouseover="this.style.borderColor='#0b57d0';this.style.boxShadow='0 2px 8px rgba(11,87,208,.12)'" onmouseout="this.style.borderColor='#cbd5e1';this.style.boxShadow='none'">
+                <div>
+                  <div style="font-weight:800;font-size:.82rem;color:var(--p)">${v.name}</div>
+                  <div style="font-size:.73rem;color:var(--ink3)">📞 ${v.phone}</div>
+                </div>
+                <div>
+                  ${secBadge(v.sector)}
+                </div>
+              </div>
+        `;
+      });
+
+      html += `
+            </div>
+          </div>
+        </div>
+      `;
+    });
+
+    html += `
+      </div>
+    </div>
+    `;
+  });
+
+  container.innerHTML = html;
+}
+
 function buildTags(){
   const counts={};
   VT.forEach(v=>{counts[v.sector]=(counts[v.sector]||0)+1});
@@ -727,6 +865,7 @@ function syncVTWithDB() {
 }
 window.syncAndRender = function() {
   syncVTWithDB();
+  populateDistrictDropdown();
   buildTags();
   filterAll();
 };
