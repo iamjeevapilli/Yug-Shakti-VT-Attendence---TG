@@ -505,6 +505,11 @@ function filterAll(){
   const sec=document.getElementById('secF').value;
   const scheme=document.getElementById('schemeF').value.toUpperCase();
   const sort=document.getElementById('sortF').value;
+  const distF = document.getElementById('distF');
+  if (distF && distF.value !== undefined) {
+    window._curDistrict = distF.value;
+  }
+  const dist = (window._curDistrict || '').trim().toUpperCase();
   FILTERED=VT.filter(v=>{
     const searchFields = [
       v.name, v.phone, v.school, v.district, v.mandal, v.block,
@@ -516,7 +521,7 @@ function filterAll(){
     const match = !q || searchFields.some(f => f.includes(q));
     const secOk=!sec||v.sector===sec;
     const schOk=!scheme||(v.scheme||'').toUpperCase().includes(scheme);
-    const distOk=!(window._curDistrict)||(v.district||'').toUpperCase()===(window._curDistrict||'').toUpperCase();
+    const distOk = !dist || (v.district || '').trim().toUpperCase() === dist;
     return match&&secOk&&schOk&&distOk;
   });
   if(sort==='name') FILTERED.sort((a,b)=>a.name.localeCompare(b.name));
