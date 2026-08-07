@@ -217,7 +217,7 @@ tbody td strong{color:var(--ink);font-weight:600}
 <div class="controls">
   <div class="search-wrap">
     <span class="si">🔍</span>
-    <input id="srch" placeholder="Search by name, phone, school, district…" oninput="filterAll()"/>
+    <input id="srch" placeholder="Search by name, phone, school, district, mandal, HM name, UDISE, sector, scheme, qualification…" oninput="filterAll()"/>
   </div>
   <select class="ctl-select" id="secF" onchange="filterAll()">
     <option value="">All Sectors</option>
@@ -495,7 +495,14 @@ function filterAll(){
   const scheme=document.getElementById('schemeF').value.toUpperCase();
   const sort=document.getElementById('sortF').value;
   FILTERED=VT.filter(v=>{
-    const match=!q||v.name.toLowerCase().includes(q)||v.phone.includes(q)||v.school.toLowerCase().includes(q)||(v.district||'').toLowerCase().includes(q)||(v.yug||'').toLowerCase().includes(q);
+    const searchFields = [
+      v.name, v.phone, v.school, v.district, v.mandal, v.block,
+      v.yug, v.sector, v.email, v.aadhar, v.pan,
+      v.udise, v.schoolType, v.scheme, v.hm, v.hmPhone, v.hmEmail,
+      v.qual, v.expCurr, v.expTotal, v.joining, v.dob,
+      String(v.sno||'')
+    ].map(f => (f||'').toLowerCase());
+    const match = !q || searchFields.some(f => f.includes(q));
     const secOk=!sec||v.sector===sec;
     const schOk=!scheme||(v.scheme||'').toUpperCase().includes(scheme);
     return match&&secOk&&schOk;

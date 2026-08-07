@@ -3348,7 +3348,7 @@ function rRec(){
   const fd=$('fD').value,fs=$('fSt').value,fsc=$('fSec').value,q=($('fSr').value||'').toLowerCase();
   if(fd)d=d.filter(a=>a.date===fd);if(fs)d=d.filter(a=>a.status===fs);
   if(fsc)d=d.filter(a=>a.sector===fsc);
-  if(q)d=d.filter(a=>(a.teacherName||'').toLowerCase().includes(q)||(a.teacherID||'').toLowerCase().includes(q));
+  if(q)d=d.filter(a=>(a.teacherName||'').toLowerCase().includes(q)||(a.teacherID||'').toLowerCase().includes(q)||(a.school||'').toLowerCase().includes(q)||(a.sector||'').toLowerCase().includes(q)||(a.date||'').includes(q));
   const pages=Math.ceil(d.length/PP)||1;if(RP>pages)RP=1;
   const sl=d.slice((RP-1)*PP,RP*PP);
   $('aBody').innerHTML=sl.length?sl.map((a,i)=>{
@@ -3382,7 +3382,10 @@ function rRec(){
 function rTch(){
   const all=DB.get('teachers',[]);
   const q=($('tSr').value||'').toLowerCase(),sf=$('tSF').value||'';
-  let list=all.filter(t=>t.name.toLowerCase().includes(q)||(t.ph||'').includes(q));
+  let list=all.filter(t=>{
+    if(!q) return true;
+    return [t.name, t.ph, t.school, t.sector, t.yug, t.district, t.mandal, t.block, t.hm, t.hmPhone, t.email].some(f=>(f||'').toLowerCase().includes(q));
+  });
   if(sf)list=list.filter(t=>t.sector===sf);
   const att=DB.get('att',[]),td=today();
   const pIDs=new Set(att.filter(a=>a.date===td&&a.status==='approved').map(a=>a.teacherID));
