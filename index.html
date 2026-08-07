@@ -3218,102 +3218,7 @@ function swPg(id){
   if(fn[id])fn[id]();
 }
 
-// Open trainer profile subfolder
-function openTrainer(ph){
-  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
-  document.querySelectorAll('.tbtn').forEach(b=>b.classList.remove('on'));
-  const tb=$('tb-teachers');if(tb)tb.classList.add('on');
 
-  const t=DB.get('teachers',[]).find(x=>x.ph===ph);
-  if(!t)return;
-
-  const att=DB.get('att',[]).filter(a=>a.teacherID===ph);
-  const pr=att.filter(a=>a.status==='approved');
-  const td=today();
-  const todayAtt=att.find(a=>a.date===td&&a.status==='approved');
-  const isPresent=!!todayAtt;
-
-  // Last 30 days attendance
-  const last30=[];
-  for(let i=0;i<30;i++){
-    const d=getSecureDate();d.setDate(d.getDate()-i);
-    const ds=d.toISOString().split('T')[0];
-    const a=att.find(x=>x.date===ds&&x.status==='approved');
-    last30.push({date:ds,day:d.toLocaleDateString('en',{weekday:'short'}),present:!!a,rec:a});
-  }
-
-  const mapsUrl=`https://www.google.com/maps?q=${t.lat},${t.lng}`;
-
-  $('tpContent').innerHTML=`
-    <div class="tphero">
-      <div class="tpavt">${t.name[0]}</div>
-      <div style="flex:1">
-        <div class="tpname">${t.name}</div>
-        <div class="tpsub">📱 ${t.ph} &nbsp;·&nbsp; ${t.yug||'—'}</div>
-        <div class="tpsub" style="margin-top:4px">🏫 ${t.school}</div>
-        <div class="tpstatus ${isPresent?'tps-present':'tps-absent'}">${isPresent?'✅ Present Today':'❌ Absent Today'}</div>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:8px">
-        <button class="btn bs" style="background:var(--s);color:#fff;font-size:.8rem;border:none" onclick="trackVTLiveByPhone('${t.ph}')">🛰️ Live Tracker</button>
-        <button class="btn bo" style="background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.4);color:#fff;font-size:.8rem" onclick="oEdit('${t.ph}')">✏️ Edit</button>
-        <button class="btn bd2" style="font-size:.8rem" onclick="delTfromProfile('${t.ph}')">🗑️ Delete</button>
-      </div>
-    </div>
-
-    <div class="tpstats">
-      <div class="tpstat"><div class="v" style="color:var(--s)">${pr.length}</div><div class="l">Days Present</div></div>
-      <div class="tpstat"><div class="v" style="color:var(--p)">${att.length}</div><div class="l">Total Records</div></div>
-      <div class="tpstat"><div class="v" style="color:var(--o)">${att.length?Math.round(pr.length/att.length*100):0}%</div><div class="l">Attendance Rate</div></div>
-    </div>
-
-    <div class="tpgrid">
-      <div class="tpcard">
-        <h3>👤 Personal Details</h3>
-        <div class="tprow"><span class="tprl">Phone</span><span class="tprv">${t.ph}</span></div>
-        <div class="tprow"><span class="tprl">Full Name</span><span class="tprv">${t.name}</span></div>
-        <div class="tprow"><span class="tprl">Sector</span><span class="tprv">${sBadge(t.sector)}</span></div>
-        <div class="tprow"><span class="tprl">YUG ID</span><span class="tprv" style="font-size:.76rem">${t.yug||'—'}</span></div>
-      </div>
-      <div class="tpcard">
-        <h3>🏫 School Details</h3>
-        <div class="tprow"><span class="tprl">School</span><span class="tprv">${t.school}</span></div>
-        <div class="tprow"><span class="tprl">Latitude</span><span class="tprv">${t.lat||'—'}</span></div>
-        <div class="tprow"><span class="tprl">Longitude</span><span class="tprv">${t.lng||'—'}</span></div>
-        <div class="tprow"><span class="tprl">Maps</span><span class="tprv"><a href="${mapsUrl}" target="_blank" style="color:var(--p);font-weight:700;font-size:.8rem">📍 Open in Maps</a></span></div>
-      </div>
-    </div>
-
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px" class="tpgrid">
-      <div class="tpcard">
-        <h3>📅 Last 30 Days</h3>
-        <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:4px">
-          ${last30.reverse().map(d=>`<div title="${d.date} (${d.day})" style="width:28px;height:28px;border-radius:5px;background:${d.present?'#0f9d58':'#fce8e6'};display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:800;color:${d.present?'#fff':'#d93025'};cursor:default" title="${d.date}">${d.day[0]}</div>`).join('')}
-        </div>
-        <p style="font-size:.72rem;color:var(--t2);margin-top:10px">🟢 Present &nbsp; 🔴 Absent/No record</p>
-      </div>
-      <div class="tpcard">
-        <h3>📋 Recent Attendance</h3>
-        <div class="tpattlist">
-          ${att.length===0?'<p style="color:var(--t2);font-size:.82rem;padding:10px 0">No records found</p>'
-          :att.slice(-10).reverse().map(a=>`
-            <div class="tpattrow">
-              <div>
-                <div style="font-weight:700;font-size:.82rem">${a.date} <span style="color:var(--t2);font-weight:400">${a.time}</span></div>
-                <div style="font-size:.73rem;color:var(--t2)">${a.distance!=null?a.distance+'m from school':''}</div>
-              </div>
-              <div style="display:flex;align-items:center;gap:7px">
-                <span class="badge ${a.status==='approved'?'bg-g':'bg-r'}">${a.status==='approved'?'✅':'❌'}</span>
-                ${a.photo?`<img class="pthmb" style="width:32px;height:32px" src="${a.photo}" onclick="vPh('${a.photo}','${t.name}','${a.date} ${a.time}')"/>`:''}
-              </div>
-            </div>`).join('')}
-        </div>
-      </div>
-    </div>
-  `;
-
-  $('pg-trainer').classList.add('on');
-  window.scrollTo(0,0);
-}
 
 function delTfromProfile(ph){
   if(!confirm('Delete this trainer?'))return;
@@ -4907,6 +4812,125 @@ function rHist(){
   :`<tr><td colspan="8"><div class="emp"><div class="ei">📭</div><p>No history yet</p></div></td></tr>`;
 }
 
+
+function renderTrainerMonthCalendar(ph, ym) {
+  const container = document.getElementById('tpCalendarBox');
+  if (!container) return;
+
+  const t = DB.get('teachers', []).find(x => x.ph === ph);
+  if (!t) return;
+
+  const att = DB.get('att', []).filter(a => a.teacherID === ph && a.status === 'approved');
+  const attMap = {};
+  att.forEach(a => { attMap[a.date] = a; });
+
+  const now = getSecureDate();
+  const currentYM = now.toISOString().slice(0, 7);
+  const todayStr = now.toISOString().split('T')[0];
+
+  if (!ym) ym = currentYM;
+
+  const [yStr, mStr] = ym.split('-');
+  const year = parseInt(yStr, 10);
+  const month = parseInt(mStr, 10);
+
+  const firstDay = new Date(year, month - 1, 1).getDay();
+  const totalDays = new Date(year, month, 0).getDate();
+
+  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  const monthName = monthNames[month - 1];
+
+  let presentCount = 0;
+  let absentCount = 0;
+  let sundayCount = 0;
+
+  let daysHtml = '';
+  const headers = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  let headersHtml = headers.map(h => `<div style="text-align:center;font-size:.7rem;font-weight:800;color:${h==='Sun'?'#d93025':'var(--t2)'};padding:4px 0">${h}</div>`).join('');
+
+  for (let i = 0; i < firstDay; i++) {
+    daysHtml += `<div style="background:transparent;border:1px dashed transparent"></div>`;
+  }
+
+  for (let d = 1; d <= totalDays; d++) {
+    const dayTwo = d.toString().padStart(2, '0');
+    const dateStr = `${ym}-${dayTwo}`;
+    const dateObj = new Date(year, month - 1, d);
+    const isSunday = dateObj.getDay() === 0;
+    const isFuture = dateStr > todayStr;
+    const rec = attMap[dateStr];
+
+    let bg = '#fff';
+    let border = '1px solid #e0e0e0';
+    let iconHtml = '';
+    let textColor = 'var(--t)';
+
+    if (rec) {
+      presentCount++;
+      bg = '#e6f4ea';
+      border = '1px solid #34a853';
+      iconHtml = '<span style="color:#137333;font-size:.85rem;margin-top:2px">✅</span>';
+      textColor = '#137333';
+    } else if (isSunday) {
+      sundayCount++;
+      bg = '#f1f3f4';
+      border = '1px solid #dadce0';
+      iconHtml = '<span style="color:#70757a;font-size:.62rem;margin-top:2px;font-weight:700">SUN</span>';
+      textColor = '#70757a';
+    } else if (!isFuture) {
+      absentCount++;
+      bg = '#fce8e6';
+      border = '1px solid #f5c6cb';
+      iconHtml = '<span style="color:#c5221f;font-size:.85rem;margin-top:2px">❌</span>';
+      textColor = '#c5221f';
+    } else {
+      bg = '#fafafa';
+      textColor = '#9aa0a6';
+    }
+
+    const titleText = rec ? `${dateStr}: Checked in at ${rec.checkInTime || rec.time}` : (isSunday ? `${dateStr}: Sunday` : (isFuture ? `${dateStr}: Upcoming` : `${dateStr}: Absent / No Record`));
+
+    daysHtml += `
+      <div title="${titleText}" style="background:${bg};border:${border};border-radius:8px;padding:4px 2px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:44px;cursor:pointer;transition:.15s" ${rec&&rec.checkInPhoto?`onclick="vPh('${rec.checkInPhoto}','${t.name}','${dateStr}')"`:''}>
+        <span style="font-size:.78rem;font-weight:800;color:${textColor}">${d}</span>
+        ${iconHtml}
+      </div>
+    `;
+  }
+
+  let monthOptions = '';
+  for (let i = 0; i < 12; i++) {
+    const optDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const optYM = optDate.toISOString().slice(0, 7);
+    const optName = optDate.toLocaleDateString('en', { month: 'long', year: 'numeric' });
+    monthOptions += `<option value="${optYM}" ${optYM===ym?'selected':''}>${optName}</option>`;
+  }
+
+  container.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+      <div>
+        <h3 style="margin:0;font-size:.95rem">📅 Monthly Attendance</h3>
+        <div style="font-size:.74rem;color:var(--t2);margin-top:2px">${monthName} ${year} Calendar</div>
+      </div>
+      <select onchange="renderTrainerMonthCalendar('${ph}', this.value)" style="padding:5px 10px;border-radius:8px;border:1.5px solid var(--bd);font-size:.82rem;font-weight:700;background:#fff;cursor:pointer">
+        ${monthOptions}
+      </select>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(7, 1fr);gap:4px;margin-bottom:12px">
+      ${headersHtml}
+      ${daysHtml}
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:space-around;background:#f8f9fa;padding:8px 10px;border-radius:8px;font-size:.76rem;font-weight:700">
+      <span style="color:#137333">✅ Present: ${presentCount}d</span>
+      <span style="color:#c5221f">❌ Absent: ${absentCount}d</span>
+      <span style="color:#70757a">🌴 Sundays: ${sundayCount}d</span>
+    </div>
+  `;
+}
+
+
 function openTrainer(ph){
   document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
   document.querySelectorAll('.tbtn').forEach(b=>b.classList.remove('on'));
@@ -4920,14 +4944,6 @@ function openTrainer(ph){
   const td=today();
   const todayAtt=att.find(a=>a.date===td&&a.status==='approved');
   const isPresent=!!todayAtt;
-
-  const last30=[];
-  for(let i=0;i<30;i++){
-    const d=getSecureDate();d.setDate(d.getDate()-i);
-    const ds=d.toISOString().split('T')[0];
-    const a=att.find(x=>x.date===ds&&x.status==='approved');
-    last30.push({date:ds,day:d.toLocaleDateString('en',{weekday:'short'}),present:!!a,rec:a});
-  }
 
   const mapsUrl=`https://www.google.com/maps?q=${t.lat},${t.lng}`;
 
@@ -4971,12 +4987,8 @@ function openTrainer(ph){
     </div>
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px" class="tpgrid">
-      <div class="tpcard">
-        <h3>📅 Last 30 Days</h3>
-        <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:4px">
-          ${last30.reverse().map(d=>`<div title="${d.date} (${d.day})" style="width:28px;height:28px;border-radius:5px;background:${d.present?'#0f9d58':'#fce8e6'};display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:800;color:${d.present?'#fff':'#d93025'};cursor:default" title="${d.date}">${d.day[0]}</div>`).join('')}
-        </div>
-        <p style="font-size:.72rem;color:var(--t2);margin-top:10px">🟢 Present &nbsp; 🔴 Absent/No record</p>
+      <div class="tpcard" id="tpCalendarBox">
+        <!-- Monthly Calendar injected here -->
       </div>
       <div class="tpcard">
         <h3>📋 Recent Attendance</h3>
