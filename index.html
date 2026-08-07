@@ -3245,7 +3245,12 @@ function rDash(){
     :`<div style="font-size:.8rem;font-weight:800;color:var(--d);margin-bottom:6px">⚠️ ${absent.length} trainers absent</div>`
     +absent.slice(0,8).map(t=>`<div style="padding:5px 0;border-bottom:1px solid var(--bd);font-size:.81rem;cursor:pointer" onclick="openTrainer('${t.ph}')"><strong>${t.name}</strong> <span class="badge bg-b">${t.ph}</span><br><span style="font-size:.72rem;color:var(--t2)">${t.school}</span></div>`).join('')
     +(absent.length>8?`<p style="color:var(--t2);font-size:.76rem;margin-top:6px">+${absent.length-8} more</p>`:'');
-  $('rBody').innerHTML=att.slice(-10).reverse().map(a=>`<tr><td>${a.photo?`<img class="pthmb" src="${a.photo}" onclick="vPh('${a.photo}','${a.teacherName}','${a.date} ${a.time}')">`:'—'}</td><td><strong style="cursor:pointer;color:var(--p)" onclick="openTrainer('${a.teacherID}')">${a.teacherName||'?'}</strong></td><td><span class="badge bg-b">${a.teacherID}</span></td><td style="font-size:.76rem">${a.school||'—'}</td><td>${a.time}</td><td><span class="badge ${a.status==='approved'?'bg-g':'bg-r'}">${a.status==='approved'?'✅':'❌'}</span></td><td>${a.distance!=null?a.distance+'m':'—'}</td></tr>`).join('')
+  $('rBody').innerHTML=att.slice(-10).reverse().map(a=>{
+    const pUrl = a.checkInPhoto || a.checkOutPhoto || a.photo || '';
+    const tDisp = a.checkInTime || a.time || '—';
+    const dDisp = a.checkInDistance != null ? a.checkInDistance + 'm' : (a.distance != null ? a.distance + 'm' : '—');
+    return `<tr><td>${pUrl ? `<img class="pthmb" src="${pUrl}" onclick="vPh('${pUrl}','${a.teacherName}','${a.date} ${tDisp}')">` : '—'}</td><td><strong style="cursor:pointer;color:var(--p)" onclick="openTrainer('${a.teacherID}')">${a.teacherName||'?'}</strong></td><td><span class="badge bg-b">${a.teacherID}</span></td><td style="font-size:.76rem">${a.school||'—'}</td><td>${tDisp}</td><td><span class="badge ${a.status==='approved'?'bg-g':'bg-r'}">${a.status==='approved'?'✅':'❌'}</span></td><td>${dDisp}</td></tr>`;
+  }).join('')
   ||`<tr><td colspan="7"><div class="emp"><div class="ei">📭</div><p>No records yet today</p></div></td></tr>`;
 
   const logs=DB.get('loginLogs',[]);
@@ -4125,7 +4130,12 @@ function rHist(){
       <div style="font-size:.7rem;opacity:.85;margin-top:2px">Day Streak</div>
     </div>
     <div style="flex:1;min-width:100%;background:rgba(255,255,255,.12);border-radius:10px;padding:8px 12px;text-align:center;font-size:.78rem;font-weight:700">${badge}</div>`;
-  $('hBody').innerHTML=att.length?att.map((a,i)=>`<tr><td>${i+1}</td><td>${a.date}</td><td>${dayN(a.date)}</td><td>${a.time}</td><td><span class="badge ${a.status==='approved'?'bg-g':'bg-r'}">${a.status==='approved'?'✅ Present':'❌ '+( a.reason||'Rejected')}</span></td><td>${a.distance!=null?a.distance+'m':'—'}</td><td>${a.photo?`<img class="pthmb" src="${a.photo}" onclick="vPh('${a.photo}','${CU.name}','${a.date}')"/>`:'—'}</td></tr>`).join('')
+  $('hBody').innerHTML=att.length?att.map((a,i)=>{
+    const pUrl = a.checkInPhoto || a.checkOutPhoto || a.photo || '';
+    const tDisp = a.checkInTime || a.time || '—';
+    const dDisp = a.checkInDistance != null ? a.checkInDistance + 'm' : (a.distance != null ? a.distance + 'm' : '—');
+    return `<tr><td>${i+1}</td><td>${a.date}</td><td>${dayN(a.date)}</td><td>${tDisp}</td><td><span class="badge ${a.status==='approved'?'bg-g':'bg-r'}">${a.status==='approved'?'✅ Present':'❌ '+( a.reason||'Rejected')}</span></td><td>${dDisp}</td><td>${pUrl?`<img class="pthmb" src="${pUrl}" onclick="vPh('${pUrl}','${CU.name}','${a.date} ${tDisp}')"/>`:'—'}</td></tr>`;
+  }).join('')
     :`<tr><td colspan="7"><div class="emp"><div class="ei">📭</div><p>No history yet</p></div></td></tr>`;
 }
 function expCSV(){
