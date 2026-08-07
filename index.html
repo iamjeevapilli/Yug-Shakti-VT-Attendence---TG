@@ -2550,63 +2550,73 @@ function updateSyncedUI() {
 }
 
 async function syncSecureTime() {
-  const endpoints = [
-    { url: 'https://worldtimeapi.org/api/timezone/Asia/Kolkata', type: 'worldtime' },
-    { url: 'https://timeapi.io/api/time/current/zone?timeZone=Asia/Kolkata', type: 'timeapi' },
-    { url: 'https://now.httpbin.org/', type: 'httpbin' }
-  ];
-
   let synced = false;
-  for (const ep of endpoints) {
-    try {
-      console.log("Attempting secure time sync via:", ep.url);
-      const res = await fetch(ep.url);
-      if (!res.ok) throw new Error('Response not ok');
-      const data = await res.json();
-      let ts = null;
-      if (ep.type === 'worldtime' && data.datetime) {
-        ts = new Date(data.datetime).getTime();
-      } else if (ep.type === 'timeapi' && data.dateTime) {
-        ts = new Date(data.dateTime).getTime();
-      } else if (ep.type === 'jsontest' && data.date && data.time) {
-        const [m, d, y] = data.date.split('-');
-        ts = new Date(`${y}-${m}-${d} ${data.time}`).getTime();
-      }
-      
-      if (ts && !isNaN(ts)) {
-        secureServerTime = ts;
-        secureLoadTicks = performance.now();
-        isTimeSynced = true;
+  let serverTs = null;
+
+  // 1. Primary: Fresh, uncached HEAD request to origin server with cache buster
+  try {
+    const freshUrl = window.location.origin + window.location.pathname + '?_t=' + Date.now();
+    const res = await fetch(freshUrl, {
+      method: 'HEAD',
+      cache: 'no-store',
+      headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache' }
+    });
+    const dateStr = res.headers.get('date');
+    if (dateStr) {
+      const ts = new Date(dateStr).getTime();
+      if (!isNaN(ts) && ts > 0) {
+        serverTs = ts;
         synced = true;
-        console.log("Time synchronized securely with:", ep.url, new Date(secureServerTime).toString());
-        break;
+        console.log("Time synchronized securely with origin server:", dateStr);
       }
-    } catch (err) {
-      console.warn("Failed sync with endpoint:", ep.url, err);
+    }
+  } catch (e) {
+    console.warn("Origin HEAD time sync failed:", e);
+  }
+
+  // 2. Secondary fallback: Third-party APIs if origin HEAD fails
+  if (!synced) {
+    const endpoints = [
+      { url: 'https://worldtimeapi.org/api/timezone/Asia/Kolkata', type: 'worldtime' },
+      { url: 'https://timeapi.io/api/time/current/zone?timeZone=Asia/Kolkata', type: 'timeapi' }
+    ];
+    for (const ep of endpoints) {
+      try {
+        const res = await fetch(ep.url, { cache: 'no-store' });
+        if (!res.ok) continue;
+        const data = await res.json();
+        let ts = null;
+        if (ep.type === 'worldtime' && data.datetime) ts = new Date(data.datetime).getTime();
+        else if (ep.type === 'timeapi' && data.dateTime) ts = new Date(data.dateTime).getTime();
+        if (ts && !isNaN(ts)) {
+          serverTs = ts;
+          synced = true;
+          break;
+        }
+      } catch (err) {}
     }
   }
 
-  if (synced) {
-    updateSyncedUI();
-  } else {
-    console.warn("All timezone API syncs failed, trying origin HEAD fallback.");
-    try {
-      const res = await fetch(window.location.href, { method: 'HEAD' });
-      const dateStr = res.headers.get('date');
-      if (dateStr) {
-        secureServerTime = new Date(dateStr).getTime();
-        secureLoadTicks = performance.now();
-        isTimeSynced = true;
-        console.log("Time synchronized securely with local server origin header:", dateStr);
-        updateSyncedUI();
-        return;
-      }
-    } catch (e2) {
-      console.warn("HEAD fallback failed:", e2);
+  // 3. Prevent clock rewinding & apply synced time safely
+  const deviceNow = Date.now();
+  if (synced && serverTs) {
+    const currentMs = secureServerTime + (performance.now() - secureLoadTicks);
+    // Never allow server time sync to set time backwards by more than 60 seconds
+    if (serverTs >= currentMs - 60000) {
+      secureServerTime = serverTs;
+      secureLoadTicks = performance.now();
+      isTimeSynced = true;
+    } else {
+      console.warn("Rejected stale time sync header (" + new Date(serverTs).toLocaleTimeString() + ") vs current (" + new Date(currentMs).toLocaleTimeString() + ")");
     }
-    secureServerTime = Date.now();
-    secureLoadTicks = performance.now();
+  } else {
+    if (!isTimeSynced) {
+      secureServerTime = deviceNow;
+      secureLoadTicks = performance.now();
+    }
   }
+
+  updateSyncedUI();
 }
 syncSecureTime();
 
