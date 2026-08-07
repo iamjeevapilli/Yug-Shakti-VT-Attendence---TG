@@ -1819,8 +1819,13 @@ const DB = {
       const snap = await docRef.get();
       if(snap.exists) {
         const cloudData = snap.data().data;
-        DB_MEMORY[k] = JSON.parse(cloudData);
-        localStorage.setItem('yugg_'+k, cloudData);
+        const parsedSnap = JSON.parse(cloudData);
+        if (k === 'teachers' && window.SEED && Array.isArray(parsedSnap) && parsedSnap.length < window.SEED.length) {
+          console.warn('Ignoring stale cloud teachers on load (' + parsedSnap.length + '). Will upgrade.');
+        } else {
+          DB_MEMORY[k] = parsedSnap;
+          localStorage.setItem('yugg_'+k, cloudData);
+        }
       } else {
         const localV = localStorage.getItem('yugg_'+k);
         if(localV) {
@@ -1836,9 +1841,15 @@ const DB = {
       docRef.onSnapshot(docSnap => {
         if(docSnap.exists) {
           const cloudData = docSnap.data().data;
-          DB_MEMORY[k] = JSON.parse(cloudData);
-          localStorage.setItem('yugg_'+k, cloudData);
-          if (typeof updateSyncedUI === 'function') updateSyncedUI();
+          const parsed = JSON.parse(cloudData);
+          if (k === 'teachers' && window.SEED && Array.isArray(parsed) && parsed.length < window.SEED.length) {
+            console.warn('Ignoring stale cloud teachers (' + parsed.length + ' < ' + window.SEED.length + '). Pushing fresh data.');
+            DB.set('teachers', DB_MEMORY['teachers']);
+          } else {
+            DB_MEMORY[k] = parsed;
+            localStorage.setItem('yugg_'+k, cloudData);
+            if (typeof updateSyncedUI === 'function') updateSyncedUI();
+          }
         }
       });
     } catch(e) {
@@ -2443,9 +2454,10 @@ async function initApp(){
     localStorage.removeItem('yugg_adminPass');
   }
 
-  // Migrate teacher plain-text passwords to hashed
+    // Migrate teacher plain-text passwords to hashed, and force-upgrade if count is stale
   const dataVer=DB.get('dataVer',0);
-  if(dataVer<3){
+  const currentTeachers=DB.get('teachers',[]);
+  if(dataVer<3 || currentTeachers.length < SEED.length){
     const migrated=await Promise.all(SEED.map(async t=>{
       const ph=await sha256(t.pass||'pass123');
       return {...t,passHash:ph,pass:undefined};
@@ -2453,6 +2465,7 @@ async function initApp(){
     DB.set('teachers',migrated);
     DB.set('dataVer',3);
     DB.set('teachersHashed',true);
+    console.log('✅ Teachers upgraded to '+migrated.length+' records');
   }
 
   const s=DB.get('settings',{
