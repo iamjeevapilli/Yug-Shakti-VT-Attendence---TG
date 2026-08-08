@@ -1525,7 +1525,7 @@ tbody tr:nth-child(8){animation-delay:.32s}
         <span style="font-size:1.5rem">📢</span>
         <div>
           <div style="font-weight:800;font-size:.85rem;margin-bottom:2px">Evening Check-Out Policy</div>
-          <div style="font-size:.76rem;line-height:1.4">Evening Check-Out must be completed between <strong>4:30 PM (16:30)</strong> and <strong>5:00 PM (17:00)</strong> to secure your daily attendance status.</div>
+          <div style="font-size:.76rem;line-height:1.4">Evening Check-Out must be completed starting from <strong>5:00 PM (17:00)</strong> onwards to secure your daily attendance status.</div>
         </div>
       </div>
 
@@ -4318,7 +4318,7 @@ function isAttendanceLocked(mode){
   const s=DB.get('settings',{});
   const openTime = s.open || '08:30';
   const closeTime = s.close || '18:30';
-  const checkOutStart = '16:30'; // 4:30 PM
+  const checkOutStart = '17:00'; // 5:00 PM
   
   const now = getSecureDate();
   const hhmm = now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
@@ -4337,7 +4337,7 @@ function isAttendanceLocked(mode){
     }
   } else if (mode === 'checkout') {
     if (hhmm < checkOutStart) {
-      return { locked: true, reason: `Check-Out window opens at 16:30 PM (4:30 PM).`, openTime, closeTime };
+      return { locked: true, reason: `Check-Out window opens at 5:00 PM (17:00).`, openTime, closeTime };
     }
     if (hhmm > closeTime) {
       return { locked: true, reason: `Check-Out window closed at ${closeTime}.`, openTime, closeTime };
