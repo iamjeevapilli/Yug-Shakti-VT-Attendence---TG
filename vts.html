@@ -659,6 +659,9 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
 function shareVTDetails() {
   const v = window._vtShareData;
   if (!v) return;
+  const mapLink = v.lat && v.lng 
+    ? `https://www.google.com/maps?q=${v.lat},${v.lng}` 
+    : `https://www.google.com/maps/search/${encodeURIComponent((v.school||'') + ', ' + (v.district||'') + ', Telangana')}`;
   const text = `👤 VT Details — Yug Shakti VET\n\n` +
     `Name: ${v.name}\n` +
     `Phone: ${v.phone}\n` +
@@ -670,6 +673,7 @@ function shareVTDetails() {
     `District: ${v.district || '—'}, Mandal: ${v.mandal || '—'}\n` +
     `UDISE: ${v.udise || '—'}\n` +
     `HM/Principal: ${v.hm || '—'} (${v.hmPhone || '—'})\n` +
+    `📍 Location: ${mapLink}\n` +
     `\n— Shared via Yug Shakti Geo-FRS Portal`;
   const btn = document.getElementById('vtd-shareBtn');
   if (navigator.share) {
