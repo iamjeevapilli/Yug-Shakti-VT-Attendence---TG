@@ -662,23 +662,21 @@ function shareVTDetails() {
   const mapLink = v.lat && v.lng 
     ? `https://www.google.com/maps?q=${v.lat},${v.lng}` 
     : `https://www.google.com/maps/search/${encodeURIComponent((v.school||'') + ', ' + (v.district||'') + ', Telangana')}`;
-  const text = `📌 VOCATIONAL TRAINER PROFILE\n` +
-    `====================================\n` +
-    `👤 VT Name        : ${v.name}\n` +
-    `📞 Phone          : ${v.phone}\n` +
-    `📧 Email          : ${v.email || '—'}\n` +
-    `🛠️ Sector         : ${v.sector || '—'}\n` +
-    `🆔 YUG EMP ID     : ${v.yug || '—'}\n` +
-    `📅 Joining Date   : ${formatDate(v.joining)}\n\n` +
-    `🏫 School Name    : ${v.school}\n` +
-    `📍 District       : ${v.district || '—'}\n` +
-    `📌 Mandal         : ${v.mandal || '—'}\n` +
-    `🔢 UDISE Code     : ${v.udise || '—'}\n\n` +
-    `👨‍🏫 HM / Principal : ${v.hm || '—'}\n` +
-    `📱 HM Phone       : ${v.hmPhone || '—'}\n\n` +
-    `🗺️ Google Maps    : ${mapLink}\n` +
-    `====================================\n` +
-    `— Yug Shakti Vocational Education Portal`;
+  const text = `📌 *VOCATIONAL TRAINER PROFILE*\n\n` +
+    `👤 *VT Name:* ${v.name}\n` +
+    `📞 *Phone:* ${v.phone}\n` +
+    `📧 *Email:* ${v.email || '—'}\n` +
+    `🛠️ *Sector:* ${v.sector || '—'}\n` +
+    `🆔 *YUG EMP ID:* ${v.yug || '—'}\n` +
+    `📅 *Joining Date:* ${formatDate(v.joining)}\n\n` +
+    `🏫 *School Name:* ${v.school}\n` +
+    `📍 *District:* ${v.district || '—'}\n` +
+    `📌 *Mandal:* ${v.mandal || '—'}\n` +
+    `🔢 *UDISE Code:* ${v.udise || '—'}\n\n` +
+    `👨‍🏫 *HM / Principal:* ${v.hm || '—'}\n` +
+    `📱 *HM Phone:* ${v.hmPhone || '—'}\n\n` +
+    `🗺️ *Google Maps Location:*\n${mapLink}\n\n` +
+    `— _Yug Shakti Geo-FRS Portal_`;
   const btn = document.getElementById('vtd-shareBtn');
   if (navigator.share) {
     navigator.share({ title: `VT: ${v.name}`, text: text })
