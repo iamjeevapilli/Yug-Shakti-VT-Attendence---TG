@@ -1817,11 +1817,12 @@ const DB = {
     try {
       const docRef = db.collection('yug_data').doc(k);
       const snap = await docRef.get();
+      const isStaleT = (arr) => k === 'teachers' && window.SEED && Array.isArray(arr) && (arr.length < window.SEED.length || arr.some(t => t.phone === '6304174585' || t.name === 'SAMILETI LALITHA' || t.ph === '6304174585'));
       if(snap.exists) {
         const cloudData = snap.data().data;
         const parsedSnap = JSON.parse(cloudData);
-        if (k === 'teachers' && window.SEED && Array.isArray(parsedSnap) && parsedSnap.length < window.SEED.length) {
-          console.warn('Ignoring stale cloud teachers on load (' + parsedSnap.length + '). Will upgrade.');
+        if (isStaleT(parsedSnap)) {
+          console.warn('Ignoring stale cloud teachers on load. Will upgrade.');
         } else {
           DB_MEMORY[k] = parsedSnap;
           localStorage.setItem('yugg_'+k, cloudData);
@@ -1833,8 +1834,8 @@ const DB = {
           await docRef.set({ data: localV });
         }
       }
-      if (k === 'teachers' && DB_MEMORY[k] && window.SEED && DB_MEMORY[k].length < window.SEED.length) {
-        console.log("Auto upgrading teachers array");
+      if (isStaleT(DB_MEMORY[k])) {
+        console.log("Auto upgrading teachers array for Kudumula Nagamani");
         DB.set('teachers', window.SEED);
       }
       
@@ -1842,9 +1843,9 @@ const DB = {
         if(docSnap.exists) {
           const cloudData = docSnap.data().data;
           const parsed = JSON.parse(cloudData);
-          if (k === 'teachers' && window.SEED && Array.isArray(parsed) && parsed.length < window.SEED.length) {
-            console.warn('Ignoring stale cloud teachers (' + parsed.length + ' < ' + window.SEED.length + '). Pushing fresh data.');
-            DB.set('teachers', DB_MEMORY['teachers']);
+          if (isStaleT(parsed)) {
+            console.warn('Ignoring stale cloud teachers. Pushing fresh data.');
+            DB.set('teachers', window.SEED || DB_MEMORY['teachers']);
           } else {
             DB_MEMORY[k] = parsed;
             localStorage.setItem('yugg_'+k, cloudData);
@@ -2454,18 +2455,19 @@ async function initApp(){
     localStorage.removeItem('yugg_adminPass');
   }
 
-    // Migrate teacher plain-text passwords to hashed, and force-upgrade if count is stale
+    // Migrate teacher plain-text passwords to hashed, and force-upgrade if count is stale or has old data
   const dataVer=DB.get('dataVer',0);
-  const currentTeachers=DB.get('teachers',[]);
-  if(dataVer<3 || currentTeachers.length < SEED.length){
+  let currentTeachers=DB.get('teachers',[]);
+  const hasOldLalitha = currentTeachers.some(t => t.ph === '6304174585' || t.name === 'SAMILETI LALITHA' || (t.yug === 'YUG/HR/25-26/TG/HC-15' && t.name !== 'KUDUMULA NAGAMANI'));
+  if(dataVer<5 || currentTeachers.length < SEED.length || hasOldLalitha){
     const migrated=await Promise.all(SEED.map(async t=>{
       const ph=await sha256(t.pass||'pass123');
       return {...t,passHash:ph,pass:undefined};
     }));
     DB.set('teachers',migrated);
-    DB.set('dataVer',3);
+    DB.set('dataVer',5);
     DB.set('teachersHashed',true);
-    console.log('✅ Teachers upgraded to '+migrated.length+' records');
+    console.log('✅ Teachers upgraded to '+migrated.length+' records (Kudumula Nagamani migrated)');
   }
 
   const s=DB.get('settings',{
