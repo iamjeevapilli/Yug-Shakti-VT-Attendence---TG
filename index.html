@@ -1319,6 +1319,25 @@ tbody tr:nth-child(8){animation-delay:.32s}
     </div>
   </div>
 
+  <!-- SCHOOL VISITS -->
+  <div class="pg" id="pg-visits">
+    <div class="card" style="margin-bottom:12px">
+      <div class="ctit" style="justify-content:space-between;flex-wrap:wrap;gap:8px">
+        <span>🏫 School Visit Planner</span>
+        <button class="btn bp" style="font-size:.78rem;padding:7px 14px" onclick="rVisits()">📍 Refresh Distances</button>
+      </div>
+      <p style="font-size:.8rem;color:var(--t2);margin:4px 0 12px">All schools sorted by distance from your current location. Tap any school to navigate.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+        <input id="vis-srch" type="text" placeholder="🔍 Search school, VT, district..." oninput="filterVisits()" style="flex:1;min-width:160px;padding:8px 12px;border:1.5px solid var(--bd);border-radius:8px;font-size:.83rem;outline:none"/>
+        <select id="vis-dist" onchange="filterVisits()" style="padding:8px 10px;border:1.5px solid var(--bd);border-radius:8px;font-size:.83rem;background:#fff">
+          <option value="">All Districts</option>
+        </select>
+      </div>
+      <div id="vis-status" style="font-size:.78rem;color:var(--t2);margin-bottom:8px">Getting your location...</div>
+      <div id="vis-list"></div>
+    </div>
+  </div>
+
   <!-- REPORTS -->
   <div class="pg" id="pg-reports">
     <div class="card"><div class="ctit">📈 Attendance Reports</div>
@@ -3189,7 +3208,7 @@ function boot(){
 }
 function buildTabs(){
   const tabs=CU.role==='admin'
-    ?[['dashboard','📊 Dashboard'],['records','📁 Records'],['teachers','👩‍🏫 Trainers'],['vtsdata','📁 Vt\'s Details'],['reports','📈 Reports'],['settings','⚙️ Settings']]
+    ?[['dashboard','📊 Dashboard'],['records','📁 Records'],['teachers','👩‍🏫 Trainers'],['vtsdata','📁 Vt\'s Details'],['visits','🏫 School Visits'],['reports','📈 Reports'],['settings','⚙️ Settings']]
     :[['checkin','🌅 Morning Check-In'],['checkout','🌇 Evening Check-Out'],['history','📅 My History']];
   $('tabBar').innerHTML=tabs.map(([id,l])=>`<button class="tbtn" id="tb-${id}" onclick="swPg('${id}')">${l}</button>`).join('');
 }
@@ -3210,6 +3229,7 @@ function swPg(id){
     teachers:rTch,
     map:initLiveMap,
     vtsdata:rVtsData,
+    visits:rVisits,
     reports:()=>{},
     settings:loadSet,
     mark:resetMark,
@@ -3644,6 +3664,154 @@ function rVtsData() {
   }
 }
 
+// ── School Visit Planner ─────────────────────────────────────────────
+let _visSchools = [];
+let _visMyLat = null, _visMyLng = null;
+
+function visDist(lat1, lng1, lat2, lng2) {
+  const R = 6371000;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function visDistLabel(m) {
+  if (m == null) return '—';
+  if (m < 1000) return Math.round(m) + ' m';
+  return (m/1000).toFixed(1) + ' km';
+}
+
+function rVisits() {
+  const seed = window.SEED || [];
+  // Build school map from SEED
+  const schoolMap = {};
+  seed.forEach(t => {
+    const key = (t.school || '').trim().toUpperCase();
+    if (!key) return;
+    if (!schoolMap[key]) {
+      schoolMap[key] = {
+        school: t.school || '',
+        district: t.district || '',
+        mandal: t.mandal || '',
+        lat: t.lat || null,
+        lng: t.lng || null,
+        udise: t.udise || '',
+        scheme: t.scheme || '',
+        hm: t.hm || '',
+        hmPhone: t.hmPhone || '',
+        vts: []
+      };
+    }
+    schoolMap[key].vts.push({ name: t.name, phone: t.phone, sector: t.sector, yug: t.yug });
+  });
+  _visSchools = Object.values(schoolMap);
+
+  // Populate district dropdown
+  const dists = [...new Set(_visSchools.map(s => s.district).filter(Boolean))].sort();
+  const sel = $('vis-dist');
+  sel.innerHTML = '<option value="">All Districts</option>' + dists.map(d => `<option value="${d}">${d}</option>`).join('');
+
+  // Get current location then render
+  $('vis-status').textContent = '📍 Getting your location...';
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(pos => {
+      _visMyLat = pos.coords.latitude;
+      _visMyLng = pos.coords.longitude;
+      $('vis-status').textContent = `✅ Location found — showing distances from your position`;
+      // Sort by distance
+      _visSchools.forEach(s => {
+        s._dist = (s.lat && s.lng && _visMyLat) ? visDist(_visMyLat, _visMyLng, s.lat, s.lng) : null;
+      });
+      _visSchools.sort((a, b) => {
+        if (a._dist == null && b._dist == null) return 0;
+        if (a._dist == null) return 1;
+        if (b._dist == null) return -1;
+        return a._dist - b._dist;
+      });
+      filterVisits();
+    }, () => {
+      _visMyLat = null; _visMyLng = null;
+      $('vis-status').textContent = '⚠️ Location unavailable — distances not shown';
+      _visSchools.sort((a, b) => (a.school||'').localeCompare(b.school||''));
+      filterVisits();
+    }, { timeout: 8000 });
+  } else {
+    $('vis-status').textContent = '⚠️ Geolocation not supported';
+    filterVisits();
+  }
+}
+
+function filterVisits() {
+  const q = ($('vis-srch').value || '').toLowerCase();
+  const dist = ($('vis-dist').value || '').toUpperCase();
+  const sectorColors = {
+    'APPAREL':'#7c3aed','HEALTH CARE':'#dc2626','AUTOMOTIVE':'#d97706',
+    'IT/ITES':'#2563eb','BEAUTY AND WELLNESS':'#db2777','ELECTRONICS AND HARDWARE':'#059669'
+  };
+
+  const filtered = _visSchools.filter(s => {
+    const distOk = !dist || (s.district||'').toUpperCase() === dist;
+    if (!distOk) return false;
+    if (!q) return true;
+    const hay = [s.school, s.district, s.mandal, s.udise, s.hm, ...s.vts.map(v=>v.name+' '+v.sector)].join(' ').toLowerCase();
+    return hay.includes(q);
+  });
+
+  if (!filtered.length) {
+    $('vis-list').innerHTML = `<div style="text-align:center;padding:32px;color:var(--t2);font-size:.85rem">🔍 No schools found</div>`;
+    return;
+  }
+
+  $('vis-list').innerHTML = filtered.map((s, i) => {
+    const distLabel = visDistLabel(s._dist);
+    const distColor = s._dist == null ? '#94a3b8' : s._dist < 10000 ? '#16a34a' : s._dist < 50000 ? '#d97706' : '#ef4444';
+    const mapsUrl = s.lat && s.lng
+      ? `https://www.google.com/maps/dir/?api=1&destination=${s.lat},${s.lng}`
+      : `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(s.school+', '+s.district+', Telangana')}`;
+
+    const vtRows = s.vts.map(v => {
+      const sc = sectorColors[v.sector] || '#64748b';
+      return `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f1f5f9;gap:8px;flex-wrap:wrap">
+          <div>
+            <div style="font-weight:700;font-size:.83rem;color:#0f172a">${v.name}</div>
+            <div style="display:flex;align-items:center;gap:6px;margin-top:3px">
+              <span style="background:${sc}18;color:${sc};padding:2px 8px;border-radius:12px;font-size:.7rem;font-weight:700">${v.sector}</span>
+              <span style="font-size:.73rem;color:#64748b">${v.yug||''}</span>
+            </div>
+          </div>
+          <a href="tel:${v.phone}" style="display:inline-flex;align-items:center;gap:5px;background:#16a34a;color:#fff;padding:6px 12px;border-radius:8px;font-size:.78rem;font-weight:700;text-decoration:none;white-space:nowrap">📞 ${v.phone}</a>
+        </div>`;
+    }).join('');
+
+    const hmRow = s.hm ? `<div style="font-size:.76rem;color:#475569;margin:6px 0 0;display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+        <span>👤 HM: <strong>${s.hm}</strong></span>
+        ${s.hmPhone ? `<a href="tel:${s.hmPhone}" style="color:#2563eb;font-weight:700;text-decoration:none">📞 ${s.hmPhone}</a>` : ''}
+      </div>` : '';
+
+    return `
+      <div style="background:#fff;border:1.5px solid #e2e8f0;border-radius:14px;padding:14px 16px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.05)">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:.68rem;font-weight:800;letter-spacing:1px;color:#94a3b8;text-transform:uppercase;margin-bottom:3px">#${i+1}</div>
+            <div style="font-weight:800;font-size:.92rem;color:#0f172a;line-height:1.3">${s.school}</div>
+            <div style="font-size:.77rem;color:#64748b;margin-top:3px">📍 ${[s.mandal, s.district].filter(Boolean).join(', ')}</div>
+            ${s.udise ? `<div style="font-size:.72rem;color:#94a3b8;margin-top:2px">UDISE: ${s.udise}</div>` : ''}
+            ${hmRow}
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+            <div style="font-size:1.05rem;font-weight:900;color:${distColor}">${distLabel}</div>
+            <a href="${mapsUrl}" target="_blank" style="display:inline-flex;align-items:center;gap:5px;background:linear-gradient(135deg,#1d4ed8,#2563eb);color:#fff;padding:8px 14px;border-radius:10px;font-size:.8rem;font-weight:800;text-decoration:none;white-space:nowrap;box-shadow:0 3px 10px rgba(37,99,235,.3)">🗺️ Navigate</a>
+          </div>
+        </div>
+        <div style="margin-top:10px;border-top:1px dashed #e2e8f0;padding-top:8px">
+          <div style="font-size:.72rem;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">${s.vts.length} VT${s.vts.length>1?'s':''} at this school</div>
+          ${vtRows}
+        </div>
+      </div>`;
+  }).join('');
+}
 
 // ── Teacher Data Validation ──────────────────────────────────────────
 function validateTeacherData(t, all, isEdit){
