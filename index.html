@@ -64,7 +64,7 @@ if ('caches' in window) {
 <meta name="twitter:description" content="Official Geo-FRS Attendance Portal for Yug Shakti Vocational Education Trainers in Telangana." />
 <meta name="twitter:image" content="https://yugshaktivtattendancetg.vercel.app/ys_preview_hd.png" />
 <!-- Face Recognition AI Library -->
-<script src="js/face-api.min.js"></script>
+<script src="js/face-api.min.js" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js';"></script>
 
 <!-- Google Structured Data (JSON-LD) for SEO -->
 <script type="application/ld+json">
@@ -4094,15 +4094,26 @@ async function frsLoadModels(){
   FRS_LOADING=true;
   const st=$('frsStatus');
   if(st){st.style.display='block';st.textContent='🤖 Loading AI Face Recognition Models...';st.style.background='#fff8e1';st.style.color='#f9ab00';st.style.borderColor='#fde68a';}
-  try{
-    const MODEL_URL='./models';
-    await faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL);
-    await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
-    await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
-    FRS_READY=true;
-    if(st){st.textContent='✅ Face AI Ready! Look at camera and click Verify & Capture';st.style.background='#e8f5e9';st.style.color='#0f9d58';st.style.borderColor='#a5d6a7';}
-  }catch(e){
-    console.error('FRS model load error:',e);
+  const sources = [
+    './models',
+    'https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights',
+    'https://cdn.jsdelivr.net/gh/cTFh/face-api.js@master/weights'
+  ];
+  let loaded = false;
+  for (const src of sources) {
+    try {
+      await faceapi.nets.ssdMobilenetv1.loadFromUri(src);
+      await faceapi.nets.faceLandmark68Net.loadFromUri(src);
+      await faceapi.nets.faceRecognitionNet.loadFromUri(src);
+      loaded = true;
+      FRS_READY = true;
+      if(st){st.textContent='✅ Face AI Ready! Look at camera and click Verify & Capture';st.style.background='#e8f5e9';st.style.color='#0f9d58';st.style.borderColor='#a5d6a7';}
+      break;
+    } catch(err) {
+      console.warn('Failed loading FRS models from ' + src + ', trying fallback...', err);
+    }
+  }
+  if (!loaded) {
     if(st){st.textContent='⚠️ Face AI unavailable — attendance allowed without face check';st.style.background='#fff3e0';st.style.color='#e65100';st.style.borderColor='#ffcc02';}
   }
   FRS_LOADING=false;
@@ -4855,15 +4866,26 @@ async function frsLoadModels(){
   FRS_LOADING=true;
   const st=$_('frsStatus');
   if(st){st.style.display='block';st.textContent='🤖 Loading AI Face Recognition Models...';st.style.background='#fff8e1';st.style.color='#f9ab00';st.style.borderColor='#fde68a';}
-  try{
-    const MODEL_URL='./models';
-    await faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL);
-    await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
-    await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
-    FRS_READY=true;
-    if(st){st.textContent='✅ Face AI Ready! Look at camera and click Verify & Capture';st.style.background='#e8f5e9';st.style.color='#0f9d58';st.style.borderColor='#a5d6a7';}
-  }catch(e){
-    console.error('FRS model load error:',e);
+  const sources = [
+    './models',
+    'https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights',
+    'https://cdn.jsdelivr.net/gh/cTFh/face-api.js@master/weights'
+  ];
+  let loaded = false;
+  for (const src of sources) {
+    try {
+      await faceapi.nets.ssdMobilenetv1.loadFromUri(src);
+      await faceapi.nets.faceLandmark68Net.loadFromUri(src);
+      await faceapi.nets.faceRecognitionNet.loadFromUri(src);
+      loaded = true;
+      FRS_READY = true;
+      if(st){st.textContent='✅ Face AI Ready! Look at camera and click Verify & Capture';st.style.background='#e8f5e9';st.style.color='#0f9d58';st.style.borderColor='#a5d6a7';}
+      break;
+    } catch(err) {
+      console.warn('Failed loading FRS models from ' + src + ', trying fallback...', err);
+    }
+  }
+  if (!loaded) {
     if(st){st.textContent='⚠️ Face AI unavailable — attendance allowed without face check';st.style.background='#fff3e0';st.style.color='#e65100';st.style.borderColor='#ffcc02';}
   }
   FRS_LOADING=false;
