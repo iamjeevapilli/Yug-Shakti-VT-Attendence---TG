@@ -247,6 +247,45 @@ tbody td{padding:10px 12px;vertical-align:middle}
 .pthmb{width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid var(--bd);cursor:pointer;transition:.2s}
 .pthmb:hover{transform:scale(1.15);border-color:var(--p)}
 
+/* ── SAAS ANIMATIONS & LIQUID METAL LOGIN ── */
+.odos { font-variant-numeric: tabular-nums; display: inline-block; }
+.odo { display: inline-block; height: 1em; overflow: hidden; vertical-align: top; }
+.odo span { display: block; white-space: pre; text-align: center; }
+
+.stack { position: relative; width: 340px; height: 210px; margin: 15px auto; }
+.liquid { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.half { position: absolute; overflow: hidden; background: linear-gradient(180deg, #222731 0%, #1B1F27 100%); }
+.half .metal { position: absolute; inset: 0; border-radius: inherit; background-color: #CDD2D9;
+  background-image: repeating-linear-gradient(0deg, rgba(255,255,255,.022) 0 1px, rgba(0,0,0,0) 1px 2px),
+                    linear-gradient(180deg, #EDF0F4 0%, #D6DBE1 38%, #C5CBD3 62%, #DADEE4 100%);
+  background-size: 100% 58px, 100% 58px; background-repeat: repeat, no-repeat; }
+#bot .metal { background-position: 0 -29px, 0 -29px; }
+.half label { position: absolute; left: 18px; top: 10px; font-size: 12px; color: #7A8290; pointer-events: none; }
+.half input { position: absolute; left: 18px; right: 18px; bottom: 9px; border: 0; outline: 0; background: none;
+  color: #F3F5F8; font: 500 16px/1.2 system-ui, sans-serif; caret-color: #34D399; }
+.half input::placeholder { color: #4A515C; }
+.cap { position: absolute; display: flex; align-items: center; justify-content: center; gap: 8px;
+  border: 0; background: none; cursor: pointer; font: 600 17px/1 system-ui, sans-serif; letter-spacing: -.015em;
+  color: #1A1D23; text-shadow: 0 1px 0 rgba(255,255,255,.55); z-index: 3; }
+.cap svg { width: 18px; height: 18px; }
+.cap path { stroke-dasharray: 18; stroke-dashoffset: 18; transition: stroke-dashoffset .35s ease-out; }
+[data-state="done"] .cap path { stroke-dashoffset: 0; }
+.seam { position: absolute; height: 2px; border-radius: 2px; pointer-events: none;
+  background: linear-gradient(90deg, rgba(232,244,255,0), #EAF6FF 30%, #EAF6FF 70%, rgba(232,244,255,0)); }
+
+.speedo .track { fill: none; stroke: rgba(255,255,255,.2); stroke-width: 9; stroke-linecap: round; }
+.speedo .val { fill: none; stroke: #fff; stroke-width: 9; stroke-linecap: round; stroke-dasharray: 1; }
+.speedo .tick { stroke: rgba(255,255,255,.3); stroke-width: 1.5; stroke-linecap: round; }
+.speedo .tick.major { stroke: rgba(255,255,255,.6); stroke-width: 2; }
+.speedo .needle { transform-origin: 66px 66px; transition: transform 1.2s cubic-bezier(.23, 1, .32, 1); }
+.speedo .needle path { fill: #fff; }
+.speedo .hub { fill: #fff; stroke: var(--p); stroke-width: 3; }
+
+.tbar { position: relative; }
+.tbar-pill { position: absolute; border-radius: 9px; background: var(--p); transition: all 0.4s cubic-bezier(.23, 1, .32, 1); pointer-events: none; z-index: 0; }
+.tbtn { position: relative; z-index: 1; background: none; border: 0; }
+.tbtn.on { color: #fff !important; background: transparent !important; }
+
 /* ── TRAINER PROFILE PAGE ── */
 #pg-trainer{display:none;padding:22px 15px;max-width:860px;margin:0 auto;animation:fi .3s}
 #pg-trainer.on{display:block}
@@ -1011,34 +1050,54 @@ tbody tr:nth-child(8){animation-delay:.32s}
       <p>Yug shakti Vocational Education - Telangana</p>
     </div>
     <div class="rtabs">
-      <button class="rtab on" onclick="swR('admin')">🛡️ Admin</button>
-      <button class="rtab" onclick="swR('teacher')">👩‍🏫 Teacher</button>
+      <button class="rtab on" id="rtab-admin" onclick="swR('admin')">🛡️ Admin</button>
+      <button class="rtab" id="rtab-teacher" onclick="swR('teacher')">👩‍🏫 Teacher</button>
     </div>
     <div id="lgAlt"></div>
-    <div id="aForm">
-      <div class="fg"><label>Username</label><input class="fc" id="aU" placeholder="Enter username"/></div>
-      <div class="fg"><label>Password</label><input class="fc" type="password" id="aP" placeholder="Enter password"/></div>
-      <button class="btn bp bfull" onclick="doLogin('admin')">🔐 Admin Login</button>
-      <div style="text-align:center;margin-top:12px;display:flex;justify-content:center;gap:18px">
-        <a href="#" onclick="forgotPass('admin')" style="font-size:.82rem;color:var(--p);text-decoration:none;font-weight:600">Forgot Password?</a>
-      </div>
+
+    <!-- Hidden fallback inputs for form sync -->
+    <div style="display:none">
+      <input id="aU"><input type="password" id="aP">
+      <input id="tU"><input type="password" id="tP">
     </div>
-    <div id="tForm" style="display:none">
-      <!-- Security badge -->
-      <div style="background:linear-gradient(135deg,#e8f5e9,#e3f2fd);border-radius:12px;padding:10px 13px;margin-bottom:14px;display:flex;align-items:center;gap:10px;border:1px solid #c8e6c9">
-        <span style="font-size:1.4rem">🛡️</span>
-        <div>
-          <div style="font-size:.78rem;font-weight:800;color:#1b5e20">SECURE GEO-FRS PORTAL</div>
-          <div style="font-size:.7rem;color:#2e7d32;margin-top:1px">📍 GPS Geofencing &nbsp;•&nbsp; 🤖 AI Face ID for Attendance</div>
+
+    <!-- Liquid Metal Morphing Login Box -->
+    <form id="liquidLoginForm" novalidate style="display:flex;flex-direction:column;align-items:center;margin-top:10px">
+      <div class="stack" id="loginStack" data-state="idle">
+        <svg class="liquid" id="liquidSvg">
+          <defs>
+            <linearGradient id="mg" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#EDF0F4"/><stop offset="38%" stop-color="#D6DBE1"/>
+              <stop offset="62%" stop-color="#C5CBD3"/><stop offset="100%" stop-color="#DADEE4"/>
+            </linearGradient>
+          </defs>
+          <path id="bridge" fill="url(#mg)"/>
+          <g id="drops" fill="url(#mg)"></g>
+        </svg>
+
+        <div class="half" id="top">
+          <div class="metal"></div>
+          <label for="loginUserField" id="lblUserField">🛡️ Username</label>
+          <input id="loginUserField" type="text" autocomplete="username" placeholder="Enter Login ID">
         </div>
+        <div class="half" id="bot">
+          <div class="metal"></div>
+          <label for="loginPassField">🔑 Password</label>
+          <input id="loginPassField" type="password" autocomplete="current-password" placeholder="••••••••">
+        </div>
+
+        <div class="seam" id="seam"></div>
+        <button type="button" class="cap" id="capBtn">
+          <svg viewBox="0 0 18 18" id="checkSvg" hidden><path d="M3.5 9.6 L7.3 13.2 L14.5 5.2" fill="none" stroke="#0E7A55" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span id="capText">Sign in</span>
+        </button>
+        <button type="submit" class="sr">Submit</button>
       </div>
-      <div class="fg"><label>📱 Phone Number (Login ID)</label><input class="fc" id="tU" placeholder="e.g. 9985649547" inputmode="numeric"/></div>
-      <div class="fg"><label>🔑 Password</label><input class="fc" type="password" id="tP" placeholder="Enter your password"/></div>
-      <div style="text-align:right;margin-top:-8px;margin-bottom:14px"><a href="#" onclick="forgotPass('teacher')" style="font-size:.78rem;color:var(--p);text-decoration:none;font-weight:600">Forgot Password?</a></div>
-      
-      <button class="btn bs bfull" id="btnLgAction" onclick="handleTeacherLogin()" style="padding:13px;font-size:1rem;letter-spacing:.3px">🔐 Trainer Login</button>
-      <p style="text-align:center;margin-top:10px;font-size:.76rem;color:var(--t2)">🔒 Secure Portal Login</p>
-    </div>
+      <div style="display:flex;justify-content:space-between;width:100%;max-width:320px;margin-top:10px;font-size:12px">
+        <a href="#" onclick="forgotPass(currentRole)" style="color:var(--p);text-decoration:none;font-weight:600">Forgot Password?</a>
+        <span style="color:var(--t2)">🔒 Secure Portal</span>
+      </div>
+    </form>
     <div class="lcopy">©Copyright 2026-Yug Shakti • Powered by @iamjeevapilli • All Rights Reserved</div>
   </div>
 </div>
@@ -3277,12 +3336,19 @@ function rDash(){
   const ap=ta.filter(a=>a.status==='approved');
   const pct=tch.length?Math.round(ap.length/tch.length*100):0;
   const s=DB.get('settings',{});
-  $('wBanner').innerHTML=`<div class="wb"><div><h2>👋 Welcome, Administrator!</h2><p>${s.name||'Yug Shakti Vocational Education Telangana'} — ${getSecureDate().toLocaleDateString('en',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</p></div><span style="font-size:2.8rem">🏫</span></div>`;
+  $('wBanner').innerHTML=`<div class="wb"><div><h2>👋 Welcome, Administrator!</h2><p>${s.name||'Yug Shakti Vocational Education Telangana'} — ${getSecureDate().toLocaleDateString('en',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</p></div>${speedo(pct / 100)}</div>`;
   $('sGrid').innerHTML=`
-    <div class="sc cb"><span class="si">👩‍🏫</span><div><div class="sv">${tch.length}</div><div class="sl">Total Trainers</div></div></div>
-    <div class="sc cg"><span class="si">✅</span><div><div class="sv">${ap.length}</div><div class="sl">Present Today</div></div></div>
-    <div class="sc cr"><span class="si">❌</span><div><div class="sv">${tch.length-ap.length}</div><div class="sl">Absent Today</div></div></div>
-    <div class="sc co"><span class="si">📊</span><div><div class="sv">${pct}%</div><div class="sl">Rate</div></div></div>`;
+    <div class="sc cb"><span class="si">👩‍🏫</span><div><div class="sv" id="stat-total" data-text="${tch.length}">${tch.length}</div><div class="sl">Total Trainers</div></div></div>
+    <div class="sc cg"><span class="si">✅</span><div><div class="sv" id="stat-present" data-text="${ap.length}">${ap.length}</div><div class="sl">Present Today</div></div></div>
+    <div class="sc cr"><span class="si">❌</span><div><div class="sv" id="stat-absent" data-text="${tch.length-ap.length}">${tch.length-ap.length}</div><div class="sl">Absent Today</div></div></div>
+    <div class="sc co"><span class="si">📊</span><div><div class="sv" id="stat-rate" data-text="${pct}%">${pct}%</div><div class="sl">Rate</div></div></div>`;
+  
+  setTimeout(() => {
+    odometer($('stat-total'), String(tch.length));
+    odometer($('stat-present'), String(ap.length));
+    odometer($('stat-absent'), String(tch.length - ap.length));
+    odometer($('stat-rate'), pct + '%');
+  }, 100);
   $('progA').innerHTML=`<div style="display:flex;justify-content:space-between;font-weight:800;font-size:.86rem;margin-bottom:5px"><span>Attendance Rate</span><span style="color:var(--p)">${pct}%</span></div><div class="pw"><div class="pb" style="width:${pct}%"></div></div><p style="color:var(--t2);font-size:.78rem;margin-top:6px">${ap.length} of ${tch.length} trainers present</p><hr style="margin:12px 0;border:none;border-top:1px solid var(--bd)"><div style="font-size:.81rem;line-height:1.9"><div>🕐 Window: ${s.open||'06:00'} – ${s.close||'18:30'}</div><div>📍 Radius: ${s.radius||300}m per school</div><div>👥 Total Staff: ${tch.length}</div></div>`;
   const marked=new Set(ta.map(a=>a.teacherID));
   const absent=tch.filter(t=>!marked.has(t.ph));
@@ -5375,6 +5441,225 @@ if(typeof _origSwPg==='function'){
 }
 document.addEventListener('DOMContentLoaded',()=>setTimeout(initReveal,300));
 window.addEventListener('load',()=>setTimeout(initReveal,300));
+
+/* ── LIQUID METAL LOGIN & SAAS DASHBOARD ANIMATIONS ── */
+const lSpring = { k: 55, damping: 11 };
+const NECK = 0.34, PULL = 26;
+const PW = 240, PH = 58, FW = 320, FH = 64, GAP = 12;
+const CX = 170, CY = 105;
+
+let g = 0, v = 0, target = 0;
+let prevWaist = 0, dropT = -1, last = performance.now();
+
+const patchAt = q => lerp(PW, PW * NECK, clamp(q * 1.4));
+const waistAt = q => patchAt(q) * Math.pow(clamp(1 - q / .80), 1.6);
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const lerp = (a, b, k) => a + (b - a) * k;
+
+function bridge(q, yTop, yBot) {
+  const el = $('bridge'), gh = yBot - yTop, wPatch = patchAt(q), waist = waistAt(q);
+  if (!el || gh <= .5 || waist <= .6) { if(el) el.setAttribute('d', ''); return 0; }
+  const half = wPatch / 2, hw = waist / 2, ym = (yTop + yBot) / 2, c = gh * .34;
+  el.setAttribute('d',
+    `M ${CX - half} ${yTop} C ${CX - half} ${yTop + c} ${CX - hw} ${ym - c} ${CX - hw} ${ym}` +
+    ` C ${CX - hw} ${ym + c} ${CX - half} ${yBot - c} ${CX - half} ${yBot}` +
+    ` L ${CX + half} ${yBot} C ${CX + half} ${yBot - c} ${CX + hw} ${ym + c} ${CX + hw} ${ym}` +
+    ` C ${CX + hw} ${ym - c} ${CX + half} ${yTop + c} ${CX + half} ${yTop} Z`);
+  return waist;
+}
+
+function drops(age, yTop, yBot) {
+  const box = $('drops'); if(!box) return;
+  if (age < 0 || age > 1) { box.innerHTML = ''; return; }
+  const k = 1 - Math.pow(1 - age, 3), ym = (yTop + yBot) / 2;
+  let out = '';
+  for (let i = 0; i < 3; i++) {
+    const up = i % 2 === 0, x = CX + (up ? -1 : 1) * PW * .17 * (.4 + (i + 1) / 4);
+    const y = lerp(ym, up ? yTop : yBot, k), r = Math.max(0, (3.4 - i * .5) * (1 - age * .7));
+    out += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(2)}" opacity="${(1 - age * .5).toFixed(2)}"/>`;
+  }
+  box.innerHTML = out;
+}
+
+function liquidFrame(now) {
+  const stack = $('loginStack');
+  if(!stack) return;
+  const dt = Math.min((now - last) / 1000, 1 / 30); last = now;
+  v += (lSpring.k * (target - g) - lSpring.damping * v) * dt;
+  g = clamp(g + v * dt, -.02, 1.05);
+
+  const topHalf = $('top'), botHalf = $('bot'), cap = $('capBtn');
+  if(!topHalf || !botHalf || !cap) return;
+
+  const m = clamp((g - .8) / .18);
+  const w = lerp(PW, FW, g), hTop = lerp(PH / 2, FH, g);
+  const pull = PULL * Math.sin(Math.PI * clamp(g / .8));
+  const cTop = lerp(CY - PH / 4, CY - FH / 2 - GAP / 2, g) - pull / 2;
+  const cBot = lerp(CY + PH / 4, CY + FH / 2 + GAP / 2, g) + pull / 2;
+  const rOut = clamp(lerp(PH / 2, 18, g), 16, 29), rIn = clamp(lerp(0, 18, g), 0, 18);
+
+  for (const [el, cy, isTop] of [[topHalf, cTop, true], [botHalf, cBot, false]]) {
+    el.style.left = (CX - w / 2) + 'px'; el.style.width = w + 'px';
+    el.style.top = (cy - hTop / 2) + 'px'; el.style.height = hTop + 'px';
+    el.style.borderRadius = isTop ? `${rOut}px ${rOut}px ${rIn}px ${rIn}px` : `${rIn}px ${rIn}px ${rOut}px ${rOut}px`;
+    const metal = el.querySelector('.metal'); if(metal) metal.style.opacity = 1 - m;
+    el.style.boxShadow = `0 0 0 1px rgba(255,255,255,${.10 * m}), inset 0 1px 0 rgba(255,255,255,${.7 * (1 - m) + .05 * m}), 0 18px 34px -14px rgba(3,6,10,.8)`;
+  }
+
+  const yTop = cTop + hTop / 2, yBot = cBot - hTop / 2;
+  const bridgeEl = $('bridge');
+  const waist = m < .98 ? bridge(g, yTop, yBot) : (bridgeEl && bridgeEl.setAttribute('d', ''), 0);
+  if (prevWaist > 0 && waist === 0) dropT = now;
+  prevWaist = waist;
+  drops(dropT < 0 ? -1 : (now - dropT) / 300, yTop, yBot);
+
+  const capA = clamp(1 - g * 14), fieldA = clamp((g - .82) / .14);
+  cap.style.opacity = capA; cap.style.pointerEvents = capA > .5 ? 'auto' : 'none';
+  cap.style.left = (CX - w / 2) + 'px'; cap.style.top = (CY - 11) + 'px'; cap.style.width = w + 'px';
+  for (const el of [topHalf, botHalf]) {
+    const lbl = el.querySelector('label'); if(lbl) lbl.style.opacity = fieldA;
+    const inp = el.querySelector('input');
+    if(inp) { inp.style.opacity = fieldA; inp.style.pointerEvents = fieldA > .5 ? 'auto' : 'none'; }
+  }
+  const seam = $('seam');
+  if(seam) {
+    const sw = w - 30;
+    seam.style.width = sw + 'px'; seam.style.left = (CX - sw / 2) + 'px'; seam.style.top = (CY - 1) + 'px';
+    seam.style.opacity = stack.dataset.state === 'loading' ? .9 : 0;
+  }
+
+  requestAnimationFrame(liquidFrame);
+}
+requestAnimationFrame(liquidFrame);
+
+// Liquid Login Interactions
+const capBtn = $('capBtn');
+if (capBtn) {
+  capBtn.addEventListener('click', () => {
+    const stack = $('loginStack');
+    if (!stack) return;
+    if (stack.dataset.state === 'done') {
+      const checkSvg = $('checkSvg'); if(checkSvg) checkSvg.hidden = true;
+      const capText = $('capText'); if(capText) capText.textContent = 'Sign in';
+      const uIn = $('loginUserField'), pIn = $('loginPassField');
+      if(uIn) uIn.value = ''; if(pIn) pIn.value = '';
+      target = 0; stack.dataset.state = 'idle';
+    } else if (target === 0) {
+      stack.dataset.state = 'open'; target = 1;
+      const uIn = $('loginUserField'); if(uIn) setTimeout(() => uIn.focus(), 260);
+    }
+  });
+}
+
+const liquidForm = $('liquidLoginForm');
+if (liquidForm) {
+  liquidForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const stack = $('loginStack');
+    const uIn = $('loginUserField'), pIn = $('loginPassField');
+    const userVal = uIn ? uIn.value.trim() : '';
+    const passVal = pIn ? pIn.value : '';
+
+    if (!userVal || !passVal) {
+      sAlt('lgAlt', '⚠️ Please enter both login ID and password.', 'error');
+      if (stack) stack.dataset.state = 'open'; target = 1;
+      return;
+    }
+
+    if (stack) stack.dataset.state = 'loading'; target = 0;
+
+    if (currentRole === 'admin') {
+      if ($('aU')) $('aU').value = userVal;
+      if ($('aP')) $('aP').value = passVal;
+      setTimeout(async () => {
+        await doLogin('admin');
+        if (CU && CU.role === 'admin') {
+          if (stack) stack.dataset.state = 'done';
+          const capText = $('capText'); if(capText) capText.textContent = 'Signed in';
+          const checkSvg = $('checkSvg'); if(checkSvg) checkSvg.hidden = false;
+        } else {
+          if (stack) stack.dataset.state = 'open'; target = 1;
+        }
+      }, 600);
+    } else {
+      if ($('tU')) $('tU').value = userVal;
+      if ($('tP')) $('tP').value = passVal;
+      setTimeout(async () => {
+        const res = await handleTeacherLogin();
+        if (res !== false && CU) {
+          if (stack) stack.dataset.state = 'done';
+          const capText = $('capText'); if(capText) capText.textContent = 'Signed in';
+          const checkSvg = $('checkSvg'); if(checkSvg) checkSvg.hidden = false;
+        } else {
+          if (stack) stack.dataset.state = 'open'; target = 1;
+        }
+      }, 600);
+    }
+  });
+}
+
+// Update login label on role switch
+const _origSwR = window.swR;
+window.swR = function(role) {
+  if (typeof _origSwR === 'function') _origSwR(role);
+  const lbl = $('lblUserField');
+  if (lbl) lbl.textContent = role === 'admin' ? '🛡️ Username' : '📱 Phone Number (Login ID)';
+};
+
+// Odometer & Speedometer Helper Functions
+const speedo = pct => {
+  const ticks = Array.from({ length: 9 }, (_, i) => {
+    const r = Math.PI * (1 + i / 8), c = Math.cos(r), s = Math.sin(r), l = i % 4 ? 44 : 40;
+    return `<line class="tick${i % 4 ? '' : ' major'}" x1="${(66 + 49 * c).toFixed(1)}" y1="${(66 + 49 * s).toFixed(1)}" x2="${(66 + l * c).toFixed(1)}" y2="${(66 + l * s).toFixed(1)}"/>`;
+  }).join('');
+  const angle = (180 * Math.min(1, Math.max(0, pct)) - 90).toFixed(1);
+  return `<svg class="speedo" width="96" height="56" viewBox="0 0 132 76" aria-hidden="true" style="flex-shrink:0;margin-left:10px">${ticks}
+  <path class="track" d="M10 66a56 56 0 0 1 112 0"/><path class="val" d="M10 66a56 56 0 0 1 112 0" pathLength="1" style="stroke-dashoffset:${(1 - pct).toFixed(2)}"/>
+  <g class="needle" style="transform:rotate(${angle}deg)"><path d="M63.5 66 L66 24 L68.5 66 Z"/></g><circle class="hub" cx="66" cy="66" r="6"/></svg>`;
+};
+
+const odoMeasure = document.createElement('canvas').getContext('2d');
+function odometer(el, text) {
+  if (!el) return;
+  let said = el.querySelector('.sr'), shown = el.querySelector('.odos');
+  if (!shown) {
+    el.textContent = '';
+    said = Object.assign(document.createElement('span'), { className: 'sr' });
+    shown = Object.assign(document.createElement('span'), { className: 'odos' });
+    shown.setAttribute('aria-hidden', 'true');
+    el.append(said, shown);
+  }
+  if (said.textContent === text && shown.childNodes.length) return;
+  said.textContent = text;
+  const shape = text.replace(/\d/g, '0');
+  if (shown.dataset.shape !== shape) {
+    shown.dataset.shape = shape;
+    shown.textContent = '';
+    const cs = getComputedStyle(el);
+    odoMeasure.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+    const wide = Math.max(...'0123456789'.split('').map(c => odoMeasure.measureText(c).width));
+    for (const ch of text) {
+      if (!/\d/.test(ch)) { shown.append(ch); continue; }
+      const col = document.createElement('span'), strip = document.createElement('span');
+      col.className = 'odo';
+      col.style.width = (wide / (parseFloat(cs.fontSize) || 14)) + 'em';
+      strip.textContent = '0\n1\n2\n3\n4\n5\n6\n7\n8\n9';
+      col.append(strip); shown.append(col);
+    }
+  }
+  const digits = text.replace(/\D/g, '');
+  shown.querySelectorAll('.odo span').forEach((strip, i) => {
+    const now = new DOMMatrix(getComputedStyle(strip).transform).f;
+    const em = parseFloat(getComputedStyle(strip).fontSize) || 14;
+    strip.getAnimations().forEach(a => a.cancel());
+    const from = { transform: `translateY(${now / em}em)` };
+    const to = { transform: `translateY(${-digits[i]}em)` };
+    strip.animate([from, to], {
+      duration: 800 + i * 60,
+      easing: 'cubic-bezier(.23, 1, .32, 1)', fill: 'both',
+    });
+  });
+}
 </script>
 
 </body>
