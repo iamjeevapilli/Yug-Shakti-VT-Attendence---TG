@@ -1050,54 +1050,34 @@ tbody tr:nth-child(8){animation-delay:.32s}
       <p>Yug shakti Vocational Education - Telangana</p>
     </div>
     <div class="rtabs">
-      <button class="rtab on" id="rtab-admin" onclick="swR('admin')">🛡️ Admin</button>
-      <button class="rtab" id="rtab-teacher" onclick="swR('teacher')">👩‍🏫 Teacher</button>
+      <button class="rtab on" onclick="swR('admin')">🛡️ Admin</button>
+      <button class="rtab" onclick="swR('teacher')">👩‍🏫 Teacher</button>
     </div>
     <div id="lgAlt"></div>
-
-    <!-- Hidden fallback inputs for form sync -->
-    <div style="display:none">
-      <input id="aU"><input type="password" id="aP">
-      <input id="tU"><input type="password" id="tP">
+    <div id="aForm">
+      <div class="fg"><label>Username</label><input class="fc" id="aU" placeholder="Enter username"/></div>
+      <div class="fg"><label>Password</label><input class="fc" type="password" id="aP" placeholder="Enter password"/></div>
+      <button class="btn bp bfull" onclick="doLogin('admin')">🔐 Admin Login</button>
+      <div style="text-align:center;margin-top:12px;display:flex;justify-content:center;gap:18px">
+        <a href="#" onclick="forgotPass('admin')" style="font-size:.82rem;color:var(--p);text-decoration:none;font-weight:600">Forgot Password?</a>
+      </div>
     </div>
-
-    <!-- Liquid Metal Morphing Login Box -->
-    <form id="liquidLoginForm" novalidate style="display:flex;flex-direction:column;align-items:center;margin-top:10px">
-      <div class="stack" id="loginStack" data-state="idle">
-        <svg class="liquid" id="liquidSvg">
-          <defs>
-            <linearGradient id="mg" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stop-color="#EDF0F4"/><stop offset="38%" stop-color="#D6DBE1"/>
-              <stop offset="62%" stop-color="#C5CBD3"/><stop offset="100%" stop-color="#DADEE4"/>
-            </linearGradient>
-          </defs>
-          <path id="bridge" fill="url(#mg)"/>
-          <g id="drops" fill="url(#mg)"></g>
-        </svg>
-
-        <div class="half" id="top">
-          <div class="metal"></div>
-          <label for="loginUserField" id="lblUserField">🛡️ Username</label>
-          <input id="loginUserField" type="text" autocomplete="username" placeholder="Enter Login ID">
+    <div id="tForm" style="display:none">
+      <!-- Security badge -->
+      <div style="background:linear-gradient(135deg,#e8f5e9,#e3f2fd);border-radius:12px;padding:10px 13px;margin-bottom:14px;display:flex;align-items:center;gap:10px;border:1px solid #c8e6c9">
+        <span style="font-size:1.4rem">🛡️</span>
+        <div>
+          <div style="font-size:.78rem;font-weight:800;color:#1b5e20">SECURE GEO-FRS PORTAL</div>
+          <div style="font-size:.7rem;color:#2e7d32;margin-top:1px">📍 GPS Geofencing &nbsp;•&nbsp; 🤖 AI Face ID for Attendance</div>
         </div>
-        <div class="half" id="bot">
-          <div class="metal"></div>
-          <label for="loginPassField">🔑 Password</label>
-          <input id="loginPassField" type="password" autocomplete="current-password" placeholder="••••••••">
-        </div>
-
-        <div class="seam" id="seam"></div>
-        <button type="button" class="cap" id="capBtn">
-          <svg viewBox="0 0 18 18" id="checkSvg" hidden><path d="M3.5 9.6 L7.3 13.2 L14.5 5.2" fill="none" stroke="#0E7A55" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          <span id="capText">Sign in</span>
-        </button>
-        <button type="submit" class="sr">Submit</button>
       </div>
-      <div style="display:flex;justify-content:space-between;width:100%;max-width:320px;margin-top:10px;font-size:12px">
-        <a href="#" onclick="forgotPass(currentRole)" style="color:var(--p);text-decoration:none;font-weight:600">Forgot Password?</a>
-        <span style="color:var(--t2)">🔒 Secure Portal</span>
-      </div>
-    </form>
+      <div class="fg"><label>📱 Phone Number (Login ID)</label><input class="fc" id="tU" placeholder="e.g. 9985649547" inputmode="numeric"/></div>
+      <div class="fg"><label>🔑 Password</label><input class="fc" type="password" id="tP" placeholder="Enter your password"/></div>
+      <div style="text-align:right;margin-top:-8px;margin-bottom:14px"><a href="#" onclick="forgotPass('teacher')" style="font-size:.78rem;color:var(--p);text-decoration:none;font-weight:600">Forgot Password?</a></div>
+      
+      <button class="btn bs bfull" id="btnLgAction" onclick="handleTeacherLogin()" style="padding:13px;font-size:1rem;letter-spacing:.3px">🔐 Trainer Login</button>
+      <p style="text-align:center;margin-top:10px;font-size:.76rem;color:var(--t2)">🔒 Secure Portal Login</p>
+    </div>
     <div class="lcopy">©Copyright 2026-Yug Shakti • Powered by @iamjeevapilli • All Rights Reserved</div>
   </div>
 </div>
@@ -2759,7 +2739,6 @@ function swR(r){
   $('tForm').style.display=r==='teacher'?'block':'none';
   $('lgAlt').innerHTML='';
   resetLoginCheckForm();
-  // Preload FRS models as soon as Teacher tab is clicked
   if(r==='teacher' && typeof faceapi!=='undefined') frsLoadModels();
 }
 
@@ -5441,170 +5420,6 @@ if(typeof _origSwPg==='function'){
 }
 document.addEventListener('DOMContentLoaded',()=>setTimeout(initReveal,300));
 window.addEventListener('load',()=>setTimeout(initReveal,300));
-
-/* ── LIQUID METAL LOGIN & SAAS DASHBOARD ANIMATIONS ── */
-const lSpring = { k: 55, damping: 11 };
-const NECK = 0.34, PULL = 26;
-const PW = 240, PH = 58, FW = 320, FH = 64, GAP = 12;
-const CX = 170, CY = 105;
-
-let g = 0, v = 0, target = 0;
-let prevWaist = 0, dropT = -1, last = performance.now();
-
-const patchAt = q => lerp(PW, PW * NECK, clamp(q * 1.4));
-const waistAt = q => patchAt(q) * Math.pow(clamp(1 - q / .80), 1.6);
-const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
-const lerp = (a, b, k) => a + (b - a) * k;
-
-function bridge(q, yTop, yBot) {
-  const el = $('bridge'), gh = yBot - yTop, wPatch = patchAt(q), waist = waistAt(q);
-  if (!el || gh <= .5 || waist <= .6) { if(el) el.setAttribute('d', ''); return 0; }
-  const half = wPatch / 2, hw = waist / 2, ym = (yTop + yBot) / 2, c = gh * .34;
-  el.setAttribute('d',
-    `M ${CX - half} ${yTop} C ${CX - half} ${yTop + c} ${CX - hw} ${ym - c} ${CX - hw} ${ym}` +
-    ` C ${CX - hw} ${ym + c} ${CX - half} ${yBot - c} ${CX - half} ${yBot}` +
-    ` L ${CX + half} ${yBot} C ${CX + half} ${yBot - c} ${CX + hw} ${ym + c} ${CX + hw} ${ym}` +
-    ` C ${CX + hw} ${ym - c} ${CX + half} ${yTop + c} ${CX + half} ${yTop} Z`);
-  return waist;
-}
-
-function drops(age, yTop, yBot) {
-  const box = $('drops'); if(!box) return;
-  if (age < 0 || age > 1) { box.innerHTML = ''; return; }
-  const k = 1 - Math.pow(1 - age, 3), ym = (yTop + yBot) / 2;
-  let out = '';
-  for (let i = 0; i < 3; i++) {
-    const up = i % 2 === 0, x = CX + (up ? -1 : 1) * PW * .17 * (.4 + (i + 1) / 4);
-    const y = lerp(ym, up ? yTop : yBot, k), r = Math.max(0, (3.4 - i * .5) * (1 - age * .7));
-    out += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(2)}" opacity="${(1 - age * .5).toFixed(2)}"/>`;
-  }
-  box.innerHTML = out;
-}
-
-function liquidFrame(now) {
-  const stack = $('loginStack');
-  if(!stack) return;
-  const dt = Math.min((now - last) / 1000, 1 / 30); last = now;
-  v += (lSpring.k * (target - g) - lSpring.damping * v) * dt;
-  g = clamp(g + v * dt, -.02, 1.05);
-
-  const topHalf = $('top'), botHalf = $('bot'), cap = $('capBtn');
-  if(!topHalf || !botHalf || !cap) return;
-
-  const m = clamp((g - .8) / .18);
-  const w = lerp(PW, FW, g), hTop = lerp(PH / 2, FH, g);
-  const pull = PULL * Math.sin(Math.PI * clamp(g / .8));
-  const cTop = lerp(CY - PH / 4, CY - FH / 2 - GAP / 2, g) - pull / 2;
-  const cBot = lerp(CY + PH / 4, CY + FH / 2 + GAP / 2, g) + pull / 2;
-  const rOut = clamp(lerp(PH / 2, 18, g), 16, 29), rIn = clamp(lerp(0, 18, g), 0, 18);
-
-  for (const [el, cy, isTop] of [[topHalf, cTop, true], [botHalf, cBot, false]]) {
-    el.style.left = (CX - w / 2) + 'px'; el.style.width = w + 'px';
-    el.style.top = (cy - hTop / 2) + 'px'; el.style.height = hTop + 'px';
-    el.style.borderRadius = isTop ? `${rOut}px ${rOut}px ${rIn}px ${rIn}px` : `${rIn}px ${rIn}px ${rOut}px ${rOut}px`;
-    const metal = el.querySelector('.metal'); if(metal) metal.style.opacity = 1 - m;
-    el.style.boxShadow = `0 0 0 1px rgba(255,255,255,${.10 * m}), inset 0 1px 0 rgba(255,255,255,${.7 * (1 - m) + .05 * m}), 0 18px 34px -14px rgba(3,6,10,.8)`;
-  }
-
-  const yTop = cTop + hTop / 2, yBot = cBot - hTop / 2;
-  const bridgeEl = $('bridge');
-  const waist = m < .98 ? bridge(g, yTop, yBot) : (bridgeEl && bridgeEl.setAttribute('d', ''), 0);
-  if (prevWaist > 0 && waist === 0) dropT = now;
-  prevWaist = waist;
-  drops(dropT < 0 ? -1 : (now - dropT) / 300, yTop, yBot);
-
-  const capA = clamp(1 - g * 14), fieldA = clamp((g - .82) / .14);
-  cap.style.opacity = capA; cap.style.pointerEvents = capA > .5 ? 'auto' : 'none';
-  cap.style.left = (CX - w / 2) + 'px'; cap.style.top = (CY - 11) + 'px'; cap.style.width = w + 'px';
-  for (const el of [topHalf, botHalf]) {
-    const lbl = el.querySelector('label'); if(lbl) lbl.style.opacity = fieldA;
-    const inp = el.querySelector('input');
-    if(inp) { inp.style.opacity = fieldA; inp.style.pointerEvents = fieldA > .5 ? 'auto' : 'none'; }
-  }
-  const seam = $('seam');
-  if(seam) {
-    const sw = w - 30;
-    seam.style.width = sw + 'px'; seam.style.left = (CX - sw / 2) + 'px'; seam.style.top = (CY - 1) + 'px';
-    seam.style.opacity = stack.dataset.state === 'loading' ? .9 : 0;
-  }
-
-  requestAnimationFrame(liquidFrame);
-}
-requestAnimationFrame(liquidFrame);
-
-// Liquid Login Interactions
-const capBtn = $('capBtn');
-if (capBtn) {
-  capBtn.addEventListener('click', () => {
-    const stack = $('loginStack');
-    if (!stack) return;
-    if (stack.dataset.state === 'done') {
-      const checkSvg = $('checkSvg'); if(checkSvg) checkSvg.hidden = true;
-      const capText = $('capText'); if(capText) capText.textContent = 'Sign in';
-      const uIn = $('loginUserField'), pIn = $('loginPassField');
-      if(uIn) uIn.value = ''; if(pIn) pIn.value = '';
-      target = 0; stack.dataset.state = 'idle';
-    } else if (target === 0) {
-      stack.dataset.state = 'open'; target = 1;
-      const uIn = $('loginUserField'); if(uIn) setTimeout(() => uIn.focus(), 260);
-    }
-  });
-}
-
-const liquidForm = $('liquidLoginForm');
-if (liquidForm) {
-  liquidForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const stack = $('loginStack');
-    const uIn = $('loginUserField'), pIn = $('loginPassField');
-    const userVal = uIn ? uIn.value.trim() : '';
-    const passVal = pIn ? pIn.value : '';
-
-    if (!userVal || !passVal) {
-      sAlt('lgAlt', '⚠️ Please enter both login ID and password.', 'error');
-      if (stack) stack.dataset.state = 'open'; target = 1;
-      return;
-    }
-
-    if (stack) stack.dataset.state = 'loading'; target = 0;
-
-    if (currentRole === 'admin') {
-      if ($('aU')) $('aU').value = userVal;
-      if ($('aP')) $('aP').value = passVal;
-      setTimeout(async () => {
-        await doLogin('admin');
-        if (CU && CU.role === 'admin') {
-          if (stack) stack.dataset.state = 'done';
-          const capText = $('capText'); if(capText) capText.textContent = 'Signed in';
-          const checkSvg = $('checkSvg'); if(checkSvg) checkSvg.hidden = false;
-        } else {
-          if (stack) stack.dataset.state = 'open'; target = 1;
-        }
-      }, 600);
-    } else {
-      if ($('tU')) $('tU').value = userVal;
-      if ($('tP')) $('tP').value = passVal;
-      setTimeout(async () => {
-        const res = await handleTeacherLogin();
-        if (res !== false && CU) {
-          if (stack) stack.dataset.state = 'done';
-          const capText = $('capText'); if(capText) capText.textContent = 'Signed in';
-          const checkSvg = $('checkSvg'); if(checkSvg) checkSvg.hidden = false;
-        } else {
-          if (stack) stack.dataset.state = 'open'; target = 1;
-        }
-      }, 600);
-    }
-  });
-}
-
-// Update login label on role switch
-const _origSwR = window.swR;
-window.swR = function(role) {
-  if (typeof _origSwR === 'function') _origSwR(role);
-  const lbl = $('lblUserField');
-  if (lbl) lbl.textContent = role === 'admin' ? '🛡️ Username' : '📱 Phone Number (Login ID)';
-};
 
 // Odometer & Speedometer Helper Functions
 const speedo = pct => {
