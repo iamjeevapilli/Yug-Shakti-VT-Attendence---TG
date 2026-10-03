@@ -139,12 +139,27 @@ if ('caches' in window) {
 *{margin:0;padding:0;box-sizing:border-box}
 :root{--p:#1a73e8;--s:#0f9d58;--d:#d93025;--o:#f9ab00;--bg:#f0f4f8;--w:#fff;--bd:#dadce0;--t:#202124;--t2:#5f6368}
 body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--t);min-height:100vh}
-#loader{position:fixed;inset:0;background:#fff;display:flex;align-items:center;justify-content:center;z-index:9999;overflow:hidden}
-#loaderCanvas{display:block;width:100%;height:100%;max-width:800px;max-height:600px;background:transparent}
-.lwrap{min-height:100vh;background:radial-gradient(circle,rgba(255,255,255,0.94) 30%,rgba(240,244,248,0.98) 100%),url('logo.png') no-repeat center;background-size:50% auto;display:flex;align-items:center;justify-content:center;padding:20px}
-.lbox{background:#fff;border-radius:20px;padding:40px 36px;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,.28);border:1px solid rgba(0,0,0,0.08)}
-.llogo{text-align:center;margin-bottom:24px}
-.llogo .li{font-size:3.5rem}
+#loader{position:fixed;inset:0;background:linear-gradient(135deg,#0d47a1 0%,#1a73e8 50%,#0f9d58 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;overflow:hidden}
+#loader::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 30% 40%,rgba(255,255,255,.08) 0%,transparent 60%),radial-gradient(circle at 70% 60%,rgba(255,255,255,.05) 0%,transparent 50%);pointer-events:none}
+.loader-logo{height:110px;object-fit:contain;animation:logoPulse 1.8s ease-in-out infinite;filter:drop-shadow(0 8px 32px rgba(255,255,255,.35));position:relative;z-index:1}
+.loader-ring{width:130px;height:130px;border-radius:50%;border:3px solid rgba(255,255,255,.15);border-top:3px solid #fff;animation:loaderSpin 1s linear infinite;position:absolute;z-index:0}
+.loader-text{color:rgba(255,255,255,.9);font-size:.85rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;margin-top:20px;animation:fadeUpIn 1s ease forwards;opacity:0;animation-delay:.4s;position:relative;z-index:1}
+.loader-dots{display:flex;gap:6px;margin-top:10px;position:relative;z-index:1}
+.loader-dots span{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.7);animation:dotBounce .9s ease-in-out infinite}
+.loader-dots span:nth-child(2){animation-delay:.15s}
+.loader-dots span:nth-child(3){animation-delay:.3s}
+@keyframes logoPulse{0%,100%{transform:scale(1) translateY(0);filter:drop-shadow(0 8px 32px rgba(255,255,255,.35))}50%{transform:scale(1.06) translateY(-6px);filter:drop-shadow(0 16px 48px rgba(255,255,255,.55))}}
+@keyframes loaderSpin{to{transform:rotate(360deg)}}
+@keyframes dotBounce{0%,80%,100%{transform:scale(1);opacity:.7}40%{transform:scale(1.4);opacity:1}}
+@keyframes fadeUpIn{from{opacity:0;transform:translateY(10px)}to{opacity:.9;transform:none}}
+.lwrap{min-height:100vh;background:#f0f4f8;display:flex;align-items:center;justify-content:center;padding:20px;position:relative;overflow:hidden}
+.lwrap::before{display:none}
+.lwrap::after{display:none}
+.lbox{background:#fff;backdrop-filter:none;border-radius:24px;padding:36px 32px;width:100%;max-width:420px;box-shadow:0 8px 40px rgba(0,0,0,.13),0 0 0 1px rgba(0,0,0,.06);animation:boxEntrance .6s cubic-bezier(.22,1,.36,1) forwards}
+@keyframes boxEntrance{from{opacity:0;transform:translateY(30px) scale(.97)}to{opacity:1;transform:none}}
+.llogo{text-align:center;margin-bottom:22px}
+.llogo .li{margin-bottom:12px;animation:logoFloat 3.5s ease-in-out infinite}
+@keyframes logoFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
 .llogo h1{font-size:1.5rem;font-weight:900;color:var(--p);margin:8px 0 4px}
 .llogo p{color:var(--t2);font-size:.85rem}
 .lcopy{text-align:center;margin-top:18px;font-size:.73rem;color:var(--t2);letter-spacing:.3px}
@@ -604,8 +619,11 @@ tbody td{padding:10px 12px;vertical-align:middle}
 </script>
 </head>
 <body>
-<div id="loader" style="display:flex;align-items:center;justify-content:center;position:fixed;inset:0;background:#fff;z-index:9999">
-  <img src="logo.png" alt="Loading..." style="height:120px;object-fit:contain">
+<div id="loader">
+  <div class="loader-ring"></div>
+  <img src="logo.png" alt="Loading..." class="loader-logo">
+  <div class="loader-text">Geo-FRS Portal</div>
+  <div class="loader-dots"><span></span><span></span><span></span></div>
 </div>
 
 
@@ -1819,7 +1837,7 @@ window.VTS_FULL=[
 {"sno":203,"name":"MUTHYAM PRATHYUSHA","phone":"7801046971","aadhar":"984948072131","pan":"EIKPM5298C","sector":"AUTOMOTIVE","email":"muthyamprathyusha20@gmail.com","yug":"YUG/HR/25-26/TG/AU-3","joining":"2024-02-02 00:00:00","dob":"1997-12-08 00:00:00","qual":"Diploma in  Mechanical Engineering  , BSC ( Computers)","expCurr":"2 years","expTotal":"2yeras","school":"TGRS&JC(B) NANDI MEDARAM","district":"PEDDAPALLI","mandal":"Dharmaram","block":"Dharmaram","udise":"36070100408","schoolType":"TGRS","scheme":"Samagra","hm":"K Vidya sagar","hmPhone":"7702100881","hmEmail":"tsrsmedaram@gmail.com","lat":18.71935,"lng":79.234375},
 {"sno":204,"name":"BONDUGULA SABITHA","phone":"9849071878","aadhar":"489342495437","pan":"UMYPS0820J","sector":"BEAUTY AND WELLNESS","email":"bondugulasabitha@gmail.com","yug":"YUG/HR/25-26/TG/BW-67/P-3","joining":"2025-01-11 00:00:00","dob":"15/06/1988","qual":"Degree . (D. ed) Diploma in beautician","expCurr":"7 months","expTotal":"2years","school":"PM SHRI ZPHS SINGANAGUDA","district":"SIDDIPET","mandal":"Mulugu","block":"Singannaguda","udise":"36181500802","schoolType":"ZPHS","scheme":"PMSHRI","hm":"MD. raheem","hmPhone":"9440297725","hmEmail":"zphssingannaguda01@gmail.com","lat":17.722814,"lng":78.545389},
 {"sno":205,"name":"PABBA SREELATHA","phone":"9550327064","aadhar":"8052 9636 9848","pan":"FXQPK5888G","sector":"AUTOMOTIVE","email":"kolchelmasrilatha@gmail.com","yug":"YUG/HR/25-26/TG/AU-47","joining":"31.01.2026","dob":"10.03.1987","qual":"BA(B.Ed), DIPLAMA IN AITOMOTIVE TECHNOLOGY","expCurr":"4 MONTS","expTotal":"4 MONTHS","school":"PM SREE ZPHS SINGANNAGUDA","district":"SIDDIPET","mandal":"Mulugu","block":"Singannaguda","udise":"36181500802","schoolType":"ZPHS","scheme":"PMSHRI","hm":"MD. RAHEEM","hmPhone":"9440297725","hmEmail":"zphssingannaguda01@gmail.com","lat":17.722814,"lng":78.545389},
-{"sno":206,"name":"MUKKERA SINDHUJA","phone":"8985920047","aadhar":"5940 3972 1379","pan":"BTZPM9221J","sector":"BEAUTY AND WELLNESS","email":"sindhukiranmukkerar5551@ email.com","yug":"YUG/HR/25-26/TG/BW-134","joining":"2026-07-01 00:00:00","dob":"01.05. 1994","qual":"DEGREE b. com","expCurr":"9 year","expTotal":"9 year","school":"PM SHRI ZPHS GUMADIDHALA","district":"SANGAREDDY","mandal":"Gumadidhala","block":"Gumadidhala","udise":"36162100905","schoolType":"ZPHS","scheme":"Pmshri","hm":"K. Subba lakshmi","hmPhone":"9542809388","hmEmail":"gummadidalazphs@gmail.com","lat":17.67685,"lng":78.363127},
+{"sno":206,"name":"Aadi Jagadamba","phone":"9392396366","aadhar":"636563213691","pan":"","sector":"BEAUTY AND WELLNESS","email":"sony.102k@gmail.com","yug":"YUG/HR/25-26/TG/BW-134","joining":"1/10/2026","dob":"6/1/2000","qual":"Degree In Beautician","expCurr":"1 year","expTotal":"1 year","school":"PM SHRI ZPHS GUMADIDHALA","district":"SANGAREDDY","mandal":"Gumadidhala","block":"Gumadidhala","udise":"36162100905","schoolType":"ZPHS","scheme":"Pmshri","hm":"K. Subba lakshmi","hmPhone":"9542809388","hmEmail":"gummadidalazphs@gmail.com","lat":17.67685,"lng":78.363127},
 {"sno":250,"name":"K. KAMALA","phone":"9550297918","aadhar":"845260","pan":"IBGPK0555R","sector":"HEALTH CARE","email":"kodemkamala55@gmail.com","yug":"","joining":"01-09-2026","dob":"12-08-1994","qual":"","expCurr":"","expTotal":"","school":"KGBV GANGARAM","district":"MAHABUBABAD","mandal":"GANGARAM","block":"GANGARAM","udise":"36100201908","schoolType":"KGBV","scheme":"SAMAGRA","hm":"vanka. Sujatha","hmPhone":"9492110408","hmEmail":"Kgbvgangaram@gmail.com","lat":17.814162,"lng":80.204166},
 {"sno":251,"name":"E Vanamala","phone":"8096042374","aadhar":"481688","pan":"BNOPV89408","sector":"HEALTH CARE","email":"vanamalaevanamalae@gmail.com","yug":"","joining":"01-09-2026","dob":"13-05-1997","qual":"GNM","expCurr":"","expTotal":"","school":"ZPHS Marikal","district":"NARAYANPET","mandal":"","block":"","udise":"","schoolType":"","scheme":"","hm":"","hmPhone":"","hmEmail":"zphsmarikal@gmail.com","lat":16.897308,"lng":77.716869},
 {"sno":252,"name":"ANITHA","phone":"9177775059","aadhar":"834913869224","pan":"BSGPC2979F","sector":"ELECTRONICS AND HARDWARE","email":"www.chepurianitha1@gmail.com","yug":"","joining":"27-07-2026","dob":"02-08-1989","qual":"B.sc B.Ed","expCurr":"","expTotal":"","school":"ZPHS boys SHABAD","district":"RANGA REDDY","mandal":"Shabad","block":"shabad","udise":"36232202021","schoolType":"ZPHS","scheme":"PMSHRI","hm":"K.Balraj","hmPhone":"9441496224","hmEmail":"Kavalibalrajhm@mail.com","lat":17.1621806,"lng":78.132872},
@@ -2078,7 +2096,7 @@ window.SEED=[
 {ph:"7801046971",name:"MUTHYAM PRATHYUSHA",sector:"AUTOMOTIVE",school:"TGRS&JC(B) NANDI MEDARAM",yug:"YUG/HR/25-26/TG/AU-3",lat:18.71935,lng:79.234375,pass:"pass123"},
 {ph:"9849071878",name:"BONDUGULA SABITHA",sector:"BEAUTY AND WELLNESS",school:"PM SHRI ZPHS SINGANAGUDA",yug:"YUG/HR/25-26/TG/BW-67/P-3",lat:17.722814,lng:78.545389,pass:"pass123"},
 {ph:"9550327064",name:"PABBA SREELATHA",sector:"AUTOMOTIVE",school:"PM SREE ZPHS SINGANNAGUDA",yug:"YUG/HR/25-26/TG/AU-47",lat:17.722814,lng:78.545389,pass:"pass123"},
-{ph:"8985920047",name:"MUKKERA SINDHUJA",sector:"BEAUTY AND WELLNESS",school:"PM SHRI ZPHS GUMADIDHALA",yug:"YUG/HR/25-26/TG/BW-134",lat:17.67685,lng:78.363127,pass:"pass123"},
+{ph:"9392396366",name:"Aadi Jagadamba",sector:"BEAUTY AND WELLNESS",school:"PM SHRI ZPHS GUMADIDHALA",yug:"YUG/HR/25-26/TG/BW-134",lat:17.67685,lng:78.363127,pass:"pass123"},
 {ph:"9550297918",name:"K. KAMALA",sector:"HEALTH CARE",school:"KGBV GANGARAM",yug:"",lat:17.814162,lng:80.204166,pass:"pass123"},
 {ph:"8096042374",name:"E Vanamala",sector:"HEALTH CARE",school:"ZPHS Marikal",yug:"",lat:16.897308,lng:77.716869,pass:"pass123"},
 {ph:"9177775059",name:"ANITHA",sector:"ELECTRONICS AND HARDWARE",school:"ZPHS boys SHABAD",yug:"",lat:17.1621806,lng:78.132872,pass:"pass123"},
@@ -2107,13 +2125,13 @@ async function initApp(){
   const dataVer=DB.get('dataVer',0);
   let currentTeachers=DB.get('teachers',[]);
   const hasStaleDetails = currentTeachers.some(t => t.ph === '6304174585' || t.name === 'SAMILETI LALITHA' || t.name === 'THOPARAPU LOKESH' || t.name === 'VADTHYA KALPANA' || t.name === 'KALPANA VADITYA' || t.name === 'OGGU MOHAN' || t.name === 'SANDRU MADHAVI' || t.name === 'DASARI SARITHA' || t.name === 'GOUNDLA SHARADHA' || t.name === 'VALGOT VINAY' || t.name === 'BALEMLA ASHWINI' || (t.name === 'DOMALAPALLY CHIRANJEEVI' && t.hmPhone !== '8977674919'));
-  if(dataVer<17 || currentTeachers.length < SEED.length || hasStaleDetails){
+  if(dataVer<18 || currentTeachers.length < SEED.length || hasStaleDetails){
     const migrated=await Promise.all(SEED.map(async t=>{
       const ph=await sha256(t.pass||'pass123');
       return {...t,passHash:ph,pass:undefined};
     }));
     DB.set('teachers',migrated);
-    DB.set('dataVer',17);
+    DB.set('dataVer',18);
     DB.set('teachersHashed',true);
     console.log('✅ Teachers upgraded to '+migrated.length+' records (All recent VT replacements synced)');
   }
