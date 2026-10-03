@@ -29,6 +29,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="YS Geo-FRS" />
 <link rel="apple-touch-icon" href="/logo.png" />
+<script src="https://unpkg.com/lucide@latest"></script>
 
 <script>
 // Force-clear service workers and caches to prevent development/testing cache issues
@@ -139,10 +140,10 @@ if ('caches' in window) {
 *{margin:0;padding:0;box-sizing:border-box}
 :root{--p:#1a73e8;--s:#0f9d58;--d:#d93025;--o:#f9ab00;--bg:#f0f4f8;--w:#fff;--bd:#dadce0;--t:#202124;--t2:#5f6368}
 body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--t);min-height:100vh}
-#loader{position:fixed;inset:0;background:linear-gradient(135deg,#0d47a1 0%,#1a73e8 50%,#0f9d58 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;overflow:hidden}
+#loader{display:none!important}
 #loader::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 30% 40%,rgba(255,255,255,.08) 0%,transparent 60%),radial-gradient(circle at 70% 60%,rgba(255,255,255,.05) 0%,transparent 50%);pointer-events:none}
-.loader-logo{height:110px;object-fit:contain;animation:logoPulse 1.8s ease-in-out infinite;filter:drop-shadow(0 8px 32px rgba(255,255,255,.35));position:relative;z-index:1}
-.loader-ring{width:130px;height:130px;border-radius:50%;border:3px solid rgba(255,255,255,.15);border-top:3px solid #fff;animation:loaderSpin 1s linear infinite;position:absolute;z-index:0}
+.loader-logo{height:80px;max-width:110px;object-fit:contain;animation:logoPulse 1.8s ease-in-out infinite;mix-blend-mode:multiply;position:relative;z-index:1;background:#fff;border-radius:14px;padding:6px 12px;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.loader-ring{width:160px;height:160px;border-radius:50%;border:3px solid rgba(255,255,255,.2);border-top:3px solid #fff;border-right:3px solid rgba(255,255,255,.7);animation:loaderSpin 1s linear infinite;position:absolute;z-index:0}
 .loader-text{color:rgba(255,255,255,.9);font-size:.85rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;margin-top:20px;animation:fadeUpIn 1s ease forwards;opacity:0;animation-delay:.4s;position:relative;z-index:1}
 .loader-dots{display:flex;gap:6px;margin-top:10px;position:relative;z-index:1}
 .loader-dots span{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.7);animation:dotBounce .9s ease-in-out infinite}
@@ -167,7 +168,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--t)
 .rtabs{display:flex;border-radius:10px;overflow:hidden;border:2px solid var(--bd);margin-bottom:22px}
 .rtab{flex:1;padding:11px;border:none;background:#f8f9fa;font-size:.88rem;font-weight:700;cursor:pointer;color:var(--t2);transition:.2s}
 .rtab.on{background:var(--p);color:#fff}
-.nav{background:linear-gradient(135deg,#1a73e8,#0d47a1);color:#fff;padding:0 18px;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 10px rgba(0,0,0,.2)}
+.old-nav-disabled{display:none}
 .nbrand{font-size:1.15rem;font-weight:900;display:flex;align-items:center;gap:8px}
 .nr{display:flex;align-items:center;gap:10px}
 .nu{font-size:.84rem;opacity:.9}
@@ -262,7 +263,290 @@ tbody td{padding:10px 12px;vertical-align:middle}
 .pthmb{width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid var(--bd);cursor:pointer;transition:.2s}
 .pthmb:hover{transform:scale(1.15);border-color:var(--p)}
 
-/* ── TRAINER PROFILE PAGE ── */
+/* ══════════════════════════════════════
+   FRONTEND JOE - SIDEBAR PART 14 DESIGN
+══════════════════════════════════════ */
+:root {
+  --blue: #3d7af5;
+  --page: #f8fafc;
+  --card: #ffffff;
+  --text: #1e293b;
+  --muted: #94a3b8;
+  --band: #eff6ff;
+  --band-text: #2563eb;
+  --divider: #f1f5f9;
+  --surface: #f8fafc;
+  --surface-hover: #f1f5f9;
+  --pad: 24px;
+  --icon: 22px;
+  --row: 54px;
+  --avatar: 46px;
+  --sidebar-left: 24px;
+}
+
+#app {
+  display: flex;
+  min-height: 100vh;
+  background: var(--page);
+}
+
+.sidebar {
+  position: fixed;
+  top: 24px;
+  bottom: 24px;
+  left: var(--sidebar-left);
+  height: calc(100vh - 48px);
+  width: 280px;
+  overflow: hidden;
+  border-radius: 24px;
+  background: var(--card);
+  transition: width 0.35s ease, background 0.3s, box-shadow 0.3s;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+  z-index: 1000;
+}
+
+.sidebar.collapsed {
+  width: 70px;
+}
+
+.sidebar-inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 22px 0;
+  position: relative;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 var(--pad);
+  margin-bottom: 16px;
+  color: var(--blue);
+  font-weight: 800;
+  height: 40px;
+}
+
+.brand-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.brand-name {
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: #0f172a;
+  letter-spacing: -0.3px;
+}
+
+.sidebar.collapsed .brand-name,
+.sidebar.collapsed .profile-text,
+.sidebar.collapsed .label {
+  display: none !important;
+}
+
+.collapse-btn {
+  position: absolute;
+  top: 20px;
+  right: 16px;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--muted);
+  border: none;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  z-index: 10;
+}
+
+.collapse-btn:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+.sidebar.collapsed .collapse-btn {
+  right: 15px;
+}
+
+.divider {
+  border: none;
+  height: 1px;
+  background: var(--divider);
+  margin: 12px var(--pad);
+}
+
+.profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 var(--pad);
+  margin-bottom: 20px;
+}
+
+.avatar {
+  flex: 0 0 auto;
+  width: var(--avatar);
+  height: var(--avatar);
+  border-radius: 50%;
+  border: 3px solid var(--card);
+  overflow: hidden;
+  background: var(--card);
+  box-shadow: 0 6px 16px rgb(31 26 74 / 12%);
+  transition: border-color 0.3s, background 0.3s;
+}
+
+.avatar img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-text {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.profile-name {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.profile-role {
+  font-size: 0.75rem;
+  color: var(--muted);
+  font-weight: 600;
+  margin-top: 1px;
+}
+
+.sb-nav-list {
+  position: relative;
+  flex: 1 1 auto;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  scrollbar-width: none;
+  display: flex;
+  flex-direction: column;
+  --active-row: 0;
+}
+
+.sb-nav-list::-webkit-scrollbar {
+  display: none;
+}
+
+.sb-nav-list li {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+.sb-nav-list button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  height: var(--row);
+  padding: 0 var(--pad);
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  transition: background 0.25s, color 0.25s;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.92rem;
+  text-align: left;
+  z-index: 2;
+}
+
+.sb-nav-list button .label {
+  flex: 1 1 auto;
+  white-space: nowrap;
+}
+
+.sb-nav-list button:hover {
+  color: var(--text);
+}
+
+.sb-nav-list button.active {
+  color: var(--band-text);
+  font-weight: 700;
+}
+
+.indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--row);
+  translate: 0 calc(var(--active-row) * var(--row));
+  background: var(--band);
+  transition: translate 0.38s cubic-bezier(0.34, 1.16, 0.42, 1), background 0.3s;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.indicator::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 0;
+  translate: 0 -50%;
+  width: 6px;
+  height: 18px;
+  border-radius: 12px 0 0 12px;
+  background: var(--blue);
+}
+
+.sidebar [data-lucide], .sidebar svg {
+  flex: 0 0 auto;
+  width: var(--icon);
+  height: var(--icon);
+  stroke-width: 2;
+}
+
+.app-main-content {
+  flex: 1;
+  margin-left: 324px;
+  padding: 24px 24px 24px 0;
+  transition: margin-left 0.35s ease;
+  min-height: 100vh;
+}
+
+.sidebar-is-collapsed .app-main-content {
+  margin-left: 114px;
+}
+
+@media(max-width: 768px) {
+  .sidebar {
+    top: auto; bottom: 0; left: 0; right: 0;
+    width: 100% !important; height: 62px;
+    border-radius: 0;
+    margin: 0;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+  }
+  .sidebar-inner { flex-direction: row; padding: 0; align-items: center; }
+  .brand, .profile, .collapse-btn, .divider { display: none !important; }
+  .sb-nav-list { display: flex; flex-direction: row; width: 100%; height: 100%; align-items: center; justify-content: space-around; }
+  .sb-nav-list button { height: 100%; flex-direction: column; gap: 3px; justify-content: center; padding: 4px; font-size: 0.65rem; }
+  .sb-nav-list button .label { display: block !important; font-size: 0.65rem; }
+  .indicator { display: none; }
+  .app-main-content { margin-left: 0 !important; padding: 16px 16px 80px; }
+}
 #pg-trainer{display:none;padding:22px 15px;max-width:860px;margin:0 auto;animation:fi .3s}
 #pg-trainer.on{display:block}
 .tpback{display:flex;align-items:center;gap:9px;color:var(--p);font-weight:800;font-size:.9rem;cursor:pointer;margin-bottom:16px;width:fit-content}
@@ -301,7 +585,7 @@ tbody td{padding:10px 12px;vertical-align:middle}
 @media(max-width:600px){
 
   /* ── NAV BAR ── */
-  .nav{height:auto;padding:10px 14px;flex-wrap:wrap;gap:6px}
+  .old-mobile-nav-disabled{display:none}
   .nbrand{font-size:.96rem}
   .nbrand img{height:24px}
   #clk{display:none}
@@ -668,11 +952,49 @@ tbody td{padding:10px 12px;vertical-align:middle}
 </div>
 
 <div id="app" style="display:none">
-  <nav class="nav">
-    <div class="nbrand" style="display:flex;align-items:center;gap:6px"><img src="logo.png" alt="Logo" style="height:28px;object-fit:contain"> Geo-FRS Portal <span id="nRole" style="font-size:.72rem;opacity:.75;font-weight:400;margin-left:3px"></span></div>
-    <div class="nr"><span id="clk"></span><span class="nu" id="nUser"></span><button class="blo" onclick="doLogout()">⬅️ Logout</button></div>
-  </nav>
-  <div class="tbar" id="tabBar"></div>
+  <!-- SIDEBAR (Frontend Joe Part 14 Implementation) -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-inner">
+      <div class="brand">
+        <span class="brand-mark">
+          <img src="logo.png" alt="Logo" style="height:32px;width:auto;object-fit:contain">
+        </span>
+        <span class="brand-name label">Geo-FRS Portal</span>
+      </div>
+      <button type="button" class="collapse-btn" id="collapseBtn" aria-label="Toggle sidebar">
+        <i data-lucide="panel-left"></i>
+      </button>
+      <hr class="divider" />
+      <div class="profile">
+        <span class="avatar">
+          <div id="sbAvatar" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:#fff;font-weight:900;font-size:1.1rem">A</div>
+        </span>
+        <span class="profile-text label">
+          <span class="profile-name" id="sbUname">Admin</span>
+          <span class="profile-role" id="sbUrole">Administrator</span>
+        </span>
+      </div>
+      <ul class="sb-nav-list" id="tabBarNav">
+        <li class="indicator" aria-hidden="true"></li>
+      </ul>
+      <button type="button" class="theme-toggle nav-btn" id="logoutBtn" data-tip="Logout" aria-label="Logout" onclick="doLogout()" style="margin-top:auto;display:flex;align-items:center;gap:16px;padding:0 var(--pad);height:var(--row);background:none;border:none;color:var(--rose,#e11d48);cursor:pointer;font-weight:700">
+        <i data-lucide="log-out"></i>
+        <span class="theme-label label">Logout</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT AREA -->
+  <div class="app-main-content">
+    <div class="top-header" style="background:#fff;border-radius:18px;padding:14px 24px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 4px 20px rgba(0,0,0,.04);border:1px solid #f1f5f9">
+      <div style="font-size:1.1rem;font-weight:900;color:var(--text);display:flex;align-items:center;gap:8px" id="sbPageTitle">
+        📊 Dashboard
+      </div>
+      <div style="display:flex;align-items:center;gap:16px">
+        <span id="clk" style="font-size:.82rem;font-weight:700;color:var(--muted)"></span>
+        <span class="nu" id="nUser" style="font-size:.88rem;font-weight:800;color:var(--text);background:var(--surface);padding:6px 14px;border-radius:12px;border:1px solid #e2e8f0"></span>
+      </div>
+    </div>
 
   <!-- DASHBOARD -->
   <div class="pg on" id="pg-dashboard">
@@ -2176,22 +2498,14 @@ function onAppReady() {
 }
 
 window.checkAndDismissLoader = function() {
-  if (appInitialized && window.animationReady) {
-    const l = document.getElementById('loader');
-    if (l && l.style.display !== 'none') {
-      l.style.transition = 'opacity .6s ease';
-      l.style.opacity = '0';
-      setTimeout(() => {
-        l.style.display = 'none';
-        const sess = SESSION.validate();
-        if (sess) {
-          CU = sess;
-          boot();
-        } else {
-          document.getElementById('loginPg').style.display = 'flex';
-        }
-      }, 600);
-    }
+  const l = document.getElementById('loader');
+  if (l) l.style.display = 'none';
+  const sess = SESSION.validate();
+  if (sess) {
+    CU = sess;
+    boot();
+  } else {
+    document.getElementById('loginPg').style.display = 'flex';
   }
 };
 
@@ -2846,28 +3160,79 @@ function toggleGPSSimulation() {
   }
 }
 function boot(){
-  $('loginPg').style.display='none';$('app').style.display='block';
-  $('nUser').textContent=CU.name;
-  $('nRole').textContent=CU.role==='admin'?'(Admin)':'(Teacher)';
+  $('loginPg').style.display='none';$('app').style.display='flex';
+  if($('nUser')) $('nUser').textContent=CU.name;
+  if($('nRole')) $('nRole').textContent=CU.role==='admin'?'(Admin)':'(Teacher)';
   buildTabs();swPg(CU.role==='admin'?'dashboard':'checkin');
   if(CU.role==='admin'){loadSet();rDash();}
 }
+function initSidebarEvents() {
+  const sidebar = document.querySelector(".sidebar");
+  const collapseBtn = document.getElementById("collapseBtn");
+  
+  if (collapseBtn && sidebar) {
+    collapseBtn.addEventListener("click", () => {
+      sidebar.classList.toggle("collapsed");
+      const isCollapsed = sidebar.classList.contains("collapsed");
+      document.body.classList.toggle("sidebar-is-collapsed", isCollapsed);
+      const icon = collapseBtn.querySelector("[data-lucide]");
+      if (icon) {
+        icon.setAttribute("data-lucide", isCollapsed ? "panel-right" : "panel-left");
+        if (window.lucide) lucide.createIcons();
+      }
+    });
+  }
+}
+
 function buildTabs(){
   const tabs=CU.role==='admin'
-    ?[['dashboard','📊 Dashboard'],['records','📁 Records'],['teachers','👩‍🏫 Trainers'],['vtsdata','📁 Vt\'s Details'],['visits','🏫 School Visits'],['reports','📈 Reports'],['settings','⚙️ Settings']]
-    :[['checkin','🌅 Morning Check-In'],['checkout','🌇 Evening Check-Out'],['history','📅 My History']];
-  $('tabBar').innerHTML=tabs.map(([id,l])=>`<button class="tbtn" id="tb-${id}" onclick="swPg('${id}')">${l}</button>`).join('');
+    ?[['dashboard','layout-grid','Dashboard'],['records','folder','Records'],['teachers','users','Trainers'],['vtsdata','clipboard-list','VT Details'],['visits','building-2','School Visits'],['reports','trending-up','Reports'],['settings','settings','Settings']]
+    :[['checkin','sun','Morning Check-In'],['checkout','moon','Evening Check-Out'],['history','calendar','My History']];
+
+  const navEl = $('tabBarNav');
+  if(navEl) {
+    navEl.innerHTML = `<li class="indicator" aria-hidden="true"></li>` + tabs.map(([id,icon,label], idx)=>`
+      <li>
+        <button type="button" class="nav-btn ${idx===0?'active':''}" id="tb-${id}" onclick="swPg('${id}')" data-tip="${label}">
+          <i data-lucide="${icon}"></i>
+          <span class="label">${label}</span>
+        </button>
+      </li>
+    `).join('');
+  }
+
+  // set avatar & names
+  const av=$('sbAvatar'),un=$('sbUname'),ur=$('sbUrole');
+  if(av)av.textContent=(CU.name||'?')[0].toUpperCase();
+  if(un)un.textContent=CU.name||'';
+  if(ur)ur.textContent=CU.role==='admin'?'Administrator':'Trainer';
+
+  if (window.lucide) lucide.createIcons();
+  initSidebarEvents();
 }
+
+const PAGE_TITLES={'dashboard':'📊 Dashboard','records':'📁 Records','teachers':'👩‍🏫 Trainers','vtsdata':'📋 VT Details','visits':'🏫 School Visits','reports':'📈 Reports','settings':'⚙️ Settings','checkin':'🌅 Morning Check-In','checkout':'🌇 Evening Check-Out','history':'📅 My History'};
 
 // Hide trainer page from regular page switching
 function swPg(id){
   document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
-  document.querySelectorAll('.tbtn').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   $('pg-trainer').classList.remove('on');
 
   const pg=$('pg-'+id),tb=$('tb-'+id);
   if(pg)pg.classList.add('on');
-  if(tb)tb.classList.add('on');
+  if(tb)tb.classList.add('active');
+
+  const nav = document.getElementById("tabBarNav");
+  if(nav && tb){
+    const buttons = [...nav.querySelectorAll(".nav-btn")];
+    const idx = buttons.indexOf(tb);
+    if(idx !== -1){
+      nav.style.setProperty("--active-row", idx);
+    }
+  }
+
+  if($('sbPageTitle')) $('sbPageTitle').textContent = PAGE_TITLES[id] || 'Geo-FRS Portal';
 
   const fn={
     dashboard:rDash,
