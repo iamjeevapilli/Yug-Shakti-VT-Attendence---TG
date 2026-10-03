@@ -533,19 +533,31 @@ tbody td{padding:10px 12px;vertical-align:middle}
 
 @media(max-width: 768px) {
   .sidebar {
-    top: auto; bottom: 0; left: 0; right: 0;
-    width: 100% !important; height: 62px;
-    border-radius: 0;
-    margin: 0;
-    box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+    top: 12px;
+    bottom: 12px;
+    left: 12px;
+    width: 260px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+    z-index: 1000;
   }
-  .sidebar-inner { flex-direction: row; padding: 0; align-items: center; }
-  .brand, .profile, .collapse-btn, .divider { display: none !important; }
-  .sb-nav-list { display: flex; flex-direction: row; width: 100%; height: 100%; align-items: center; justify-content: space-around; }
-  .sb-nav-list button { height: 100%; flex-direction: column; gap: 3px; justify-content: center; padding: 4px; font-size: 0.65rem; }
-  .sb-nav-list button .label { display: block !important; font-size: 0.65rem; }
-  .indicator { display: none; }
-  .app-main-content { margin-left: 0 !important; padding: 16px 16px 80px; }
+  .sidebar.collapsed {
+    width: 64px;
+  }
+  .app-main-content {
+    margin-left: 284px;
+    padding: 12px 12px 24px 0;
+    transition: margin-left 0.35s ease;
+  }
+  .sidebar-is-collapsed .app-main-content {
+    margin-left: 88px;
+  }
+  .top-header {
+    padding: 10px 14px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
 }
 #pg-trainer{display:none;padding:22px 15px;max-width:860px;margin:0 auto;animation:fi .3s}
 #pg-trainer.on{display:block}
@@ -3171,6 +3183,14 @@ function initSidebarEvents() {
   const collapseBtn = document.getElementById("collapseBtn");
   
   if (collapseBtn && sidebar) {
+    if (window.innerWidth <= 768 && !sidebar.dataset.initMobile) {
+      sidebar.dataset.initMobile = 'true';
+      sidebar.classList.add("collapsed");
+      document.body.classList.add("sidebar-is-collapsed");
+      const icon = collapseBtn.querySelector("[data-lucide]");
+      if (icon) icon.setAttribute("data-lucide", "panel-right");
+    }
+
     collapseBtn.addEventListener("click", () => {
       sidebar.classList.toggle("collapsed");
       const isCollapsed = sidebar.classList.contains("collapsed");
