@@ -189,14 +189,13 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--t)
 .fc{width:100%;padding:10px 12px;border:1.5px solid var(--bd);border-radius:8px;font-size:.92rem;background:#fafafa;color:var(--t);transition:.2s}
 .fc:focus{outline:none;border-color:var(--p);box-shadow:0 0 0 3px rgba(26,115,232,.13);background:#fff}
 .r2{display:grid;grid-template-columns:1fr 1fr;gap:13px}
-@media(max-width:540px){.r2{grid-template-columns:1fr}}
-.btn{padding:10px 17px;border:none;border-radius:8px;cursor:pointer;font-size:.88rem;font-weight:700;transition:.2s;display:inline-flex;align-items:center;gap:7px}
+.btn{padding:10px 17px;border:none;border-radius:8px;cursor:pointer;font-size:.88rem;font-weight:700;transition:.2s;display:inline-flex;align-items:center;justify-content:center;gap:7px;box-sizing:border-box;line-height:1.3;white-space:nowrap;max-height:54px;align-self:center}
 .bp{background:var(--p);color:#fff}.bp:hover{background:#1558b0;transform:translateY(-1px)}
 .bs{background:var(--s);color:#fff}.bs:hover{background:#0b8a4d;transform:translateY(-1px)}
 .bd2{background:var(--d);color:#fff}.bd2:hover{background:#b52820}
 .bo{background:transparent;color:var(--p);border:2px solid var(--p)}.bo:hover{background:#eef2ff}
 .bw{background:var(--o);color:#fff}
-.bfull{width:100%;justify-content:center;padding:12px;font-size:.96rem}
+.bfull{width:100%;justify-content:center;padding:12px 16px;font-size:.96rem;min-height:44px;max-height:50px}
 .btn:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
 .sg{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:14px;margin-bottom:19px}
 .sc{background:#fff;border-radius:13px;padding:19px 15px;box-shadow:0 2px 12px rgba(0,0,0,.09);display:flex;align-items:center;gap:14px;transition:.2s}
@@ -2841,7 +2840,7 @@ async function forgotPass(role) {
     alert("👩‍🏫 TEACHER RECOVERY\n\nPlease contact your Administrator. The Admin can instantly reset your password from the 'Manage Trainers' tab inside their Dashboard.");
   }
 }
-function doLogout(){closeMobileDrawer();stopCam();stopTrainerGPSTracking();resetLoginCheckForm();SESSION.destroy();CU=null;PHOTO=null;LOC=null;$('app').style.display='none';$('loginPg').style.display='flex';}
+function doLogout(){closeMobileDrawer();stopCam();stopTrainerGPSTracking();resetLoginCheckForm();SESSION.destroy();CU=null;PHOTO=null;LOC=null;$('app').style.display='none';$('loginPg').style.display='flex';window.scrollTo(0,0);}
 function resetAll(){
   if(confirm('Reset ALL teachers list to original 249 trainers?')){
     DB.set('teachers',SEED);alert('✅ All 249 trainers reloaded!');rTch();rDash();
