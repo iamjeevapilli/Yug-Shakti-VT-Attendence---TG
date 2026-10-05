@@ -217,7 +217,7 @@ tbody td strong{color:var(--ink);font-weight:600}
 <div class="controls">
   <div class="search-wrap">
     <span class="si">🔍</span>
-    <input id="srch" placeholder="Search by name, phone, school, district, mandal, HM name, UDISE, sector, scheme, qualification…" oninput="filterAll()"/>
+    <input id="srch" placeholder="🔍 Quick search by name (first & last), mobile no, school, HM/principal, UDISE, district, trade, mandal, YUG ID..." oninput="filterAll()"/>
   </div>
   <select class="ctl-select" id="distF" onchange="filterAll()">
     <option value="">All Districts</option>
@@ -713,38 +713,72 @@ function renderMapMarkers() {
 }
 
 function filterAll(){
-  const q=document.getElementById('srch').value.toLowerCase();
-  const sec=document.getElementById('secF').value;
-  const scheme=document.getElementById('schemeF').value.toUpperCase();
-  const sort=document.getElementById('sortF').value;
+  const rawQ = document.getElementById('srch').value || '';
+  const q = rawQ.trim().toLowerCase();
+  const sec = document.getElementById('secF').value;
+  const scheme = document.getElementById('schemeF').value.toUpperCase();
+  const sort = document.getElementById('sortF').value;
   const distF = document.getElementById('distF');
   if (distF && distF.value !== undefined) {
     window._curDistrict = distF.value;
   }
   const dist = (window._curDistrict || '').trim().toUpperCase();
-  FILTERED=VT.filter(v=>{
-    const searchFields = [
-      v.name, v.phone, v.school, v.district, v.mandal, v.block,
-      v.yug, v.sector, v.email, v.aadhar, v.pan,
-      v.udise, v.schoolType, v.scheme, v.hm, v.hmPhone, v.hmEmail,
-      v.qual, v.expCurr, v.expTotal, v.joining, v.dob,
-      String(v.sno||'')
-    ].map(f => (f||'').toLowerCase());
-    const match = !q || searchFields.some(f => f.includes(q));
-    const secOk=!sec||v.sector===sec;
-    const schOk=!scheme||(v.scheme||'').toUpperCase().includes(scheme);
+
+  const tokens = q ? q.split(/\s+/).filter(Boolean) : [];
+
+  FILTERED = VT.filter(v => {
+    // Dropdown filters
+    const secOk = !sec || v.sector === sec;
+    const schOk = !scheme || (v.scheme || '').toUpperCase().includes(scheme);
     const distOk = !dist || (v.district || '').trim().toUpperCase() === dist;
-    return match&&secOk&&schOk&&distOk;
+    if (!secOk || !schOk || !distOk) return false;
+
+    if (!tokens.length) return true;
+
+    // Build comprehensive haystack for quick search:
+    // Name (First/Last name), Mobile No, School Name, Principal/HM Name, HM Mobile, HM Email,
+    // UDISE Code, District, Trade/Sector, Mandal, Block, YUG ID, Email, Aadhaar, PAN,
+    // Qualification, Scheme, School Type, Experience, Joining Date, DOB, S.No
+    const haystack = [
+      v.name,
+      v.phone,
+      v.school,
+      v.hm,
+      v.hmPhone,
+      v.hmEmail,
+      v.udise,
+      v.district,
+      v.mandal,
+      v.block,
+      v.sector,
+      v.yug,
+      v.email,
+      v.aadhar,
+      v.pan,
+      v.schoolType,
+      v.scheme,
+      v.qual,
+      v.expCurr,
+      v.expTotal,
+      v.joining,
+      v.dob,
+      String(v.sno || '')
+    ].filter(Boolean).join(' ').toLowerCase();
+
+    // Every typed token must match somewhere in the record haystack
+    return tokens.every(token => haystack.includes(token));
   });
-  if(sort==='name') FILTERED.sort((a,b)=>a.name.localeCompare(b.name));
-  else if(sort==='sector') FILTERED.sort((a,b)=>a.sector.localeCompare(b.sector));
-  else if(sort==='district') FILTERED.sort((a,b)=>(a.district||'').localeCompare(b.district||''));
-  else FILTERED.sort((a,b)=>a.sno-b.sno);
-  CUR=1;
-  document.getElementById('countBadge').textContent=`${FILTERED.length} records`;
-  document.getElementById('hShowing').textContent=FILTERED.length;
+
+  if (sort === 'name') FILTERED.sort((a,b) => a.name.localeCompare(b.name));
+  else if (sort === 'sector') FILTERED.sort((a,b) => a.sector.localeCompare(b.sector));
+  else if (sort === 'district') FILTERED.sort((a,b) => (a.district || '').localeCompare(b.district || ''));
+  else FILTERED.sort((a,b) => a.sno - b.sno);
+
+  CUR = 1;
+  document.getElementById('countBadge').textContent = `${FILTERED.length} records`;
+  document.getElementById('hShowing').textContent = FILTERED.length;
   render();
-  if(mapInst) renderMapMarkers();
+  if (mapInst) renderMapMarkers();
 }
 
 function render(){
