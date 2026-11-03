@@ -51,10 +51,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
 .hstat .l{font-size:.72rem;color:#94a3b8;font-weight:500;letter-spacing:.5px;text-transform:uppercase;margin-top:1px}
 
 /* TABS */
-.tabs{max-width:1200px;margin:0 auto;padding:16px 16px 0;display:flex;gap:8px}
-.tab{padding:9px 20px;border-radius:10px;border:1.5px solid var(--border);background:var(--surface);color:var(--ink3);font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:600;cursor:pointer;transition:.15s;display:flex;align-items:center;gap:6px}
-.tab:hover{border-color:var(--teal);color:var(--teal)}
-.tab.active{background:var(--teal);border-color:var(--teal);color:#fff}
+.tabs{max-width:1200px;margin:0 auto;padding:16px 16px 0;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.tab{padding:9px 16px;border-radius:12px;border:1.5px solid var(--border);background:var(--surface);color:var(--ink2);font-family:'DM Sans',sans-serif;font-size:.84rem;font-weight:700;cursor:pointer;transition:all .18s ease;display:inline-flex;align-items:center;gap:8px;white-space:nowrap;line-height:1;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.tab:hover{border-color:var(--teal);color:var(--teal);transform:translateY(-1px);box-shadow:0 3px 8px rgba(13,148,136,.15)}
+.tab.active{background:linear-gradient(135deg,#0d9488,#0f766e);border-color:#0d9488;color:#fff;box-shadow:0 4px 12px rgba(13,148,136,.3)}
+.tab-pill{display:inline-flex;align-items:center;justify-content:center;padding:2px 8px;border-radius:20px;font-size:.74rem;font-weight:800;background:rgba(15,23,42,.08);color:inherit}
+.tab.active .tab-pill{background:rgba(255,255,255,.25);color:#fff}
 
 /* CONTROLS */
 .controls{max-width:1200px;margin:12px auto 0;padding:0 16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
@@ -216,10 +218,10 @@ tbody td strong{color:var(--ink);font-weight:600}
 </div>
 
 <div class="tabs">
-  <button class="tab active" onclick="switchTab('table')" id="tabTable">📋 All VTs (<span id="tabCountAll">254</span>)</button>
-  <button class="tab" onclick="switchTab('hs')" id="tabHS">🏫 HS · Level 1 & 2 (9th & 10th) (<span id="tabCountHS">134</span>)</button>
-  <button class="tab" onclick="switchTab('hss')" id="tabHSS">🎓 HSS · Level 3 & 4 (11th & 12th) (<span id="tabCountHSS">120</span>)</button>
-  <button class="tab" onclick="switchTab('schools')" id="tabSchools">🏛️ Schools (<span id="tabCountSchools">246</span>)</button>
+  <button class="tab active" onclick="switchTab('table')" id="tabTable">📋 All VTs <span class="tab-pill" id="tabCountAll">254</span></button>
+  <button class="tab" onclick="switchTab('hs')" id="tabHS">🏫 HS · L1 &amp; L2 (9th &amp; 10th) <span class="tab-pill" id="tabCountHS">134</span></button>
+  <button class="tab" onclick="switchTab('hss')" id="tabHSS">🎓 HSS · L3 &amp; L4 (11th &amp; 12th) <span class="tab-pill" id="tabCountHSS">120</span></button>
+  <button class="tab" onclick="switchTab('schools')" id="tabSchools">🏛️ Schools <span class="tab-pill" id="tabCountSchools">246</span></button>
   <button class="tab" onclick="switchTab('map')" id="tabMap">🗺️ Map View</button>
 </div>
 
