@@ -274,12 +274,13 @@ tbody td strong{color:var(--ink);font-weight:600}
               <th>S.No</th>
               <th>Name &amp; Contact</th>
               <th>Sector</th>
-              <th>YUG Contract ID</th>
+              <th>Level / Classes</th>
               <th>School</th>
               <th>District</th>
               <th>Mandal</th>
               <th>Scheme</th>
               <th>UDISE</th>
+              <th>YUG Contract ID</th>
               <th>Joining Date</th>
               <th>DOB</th>
               <th>Qualification</th>
@@ -955,7 +956,7 @@ function filterAll(){
 
   CUR = 1;
   document.getElementById('countBadge').textContent = `${FILTERED.length} records`;
-  document.getElementById('hShowing').textContent = FILTERED.length;
+  const elHShowing = document.getElementById('hShowing'); if(elHShowing) elHShowing.textContent = FILTERED.length;
   render();
   if (mapInst) renderMapMarkers();
 }
@@ -968,12 +969,13 @@ function render(){
       <td class="sno">${v.sno}</td>
       <td><strong>${v.name}</strong><br><span class="phone">${v.phone}</span></td>
       <td>${secBadge(v.sector)}</td>
-      <td class="yug">${v.yug||'—'}</td>
-      <td class="school">${v.school}</td>
+      <td>${getVTLevelInfo(v).badgeHtml}</td>
+      <td class="school"><strong>${v.school}</strong></td>
       <td class="district">${v.district||'—'}</td>
       <td class="district">${v.mandal||'—'}</td>
       <td>${schemeBadge(v.scheme)}</td>
       <td><span class="udise">${v.udise||'—'}</span></td>
+      <td class="yug">${v.yug||'—'}</td>
       <td class="joining">${formatDate(v.joining)}</td>
       <td class="dob">${formatDate(v.dob)}</td>
       <td class="qual">${v.qual||'—'}</td>
