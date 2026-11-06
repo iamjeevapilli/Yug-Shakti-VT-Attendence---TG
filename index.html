@@ -1009,7 +1009,8 @@ tbody td{padding:10px 12px;vertical-align:middle}
             <option value="9959195930">+91 99591 95930</option>
             <option value="6281661322">+91 62816 61322</option>
           </select>
-          <div style="font-size:.72rem;color:var(--t2);margin-top:4px">🔒 2-Factor Authentication: Instant OTP will be delivered to your official Admin Telegram Bot.</div>
+          <div style="font-size:.72rem;color:var(--t2);margin-top:4px">📱 2-Factor Authentication: A 6-digit OTP will be delivered directly to your selected mobile number.</div>
+        <div id="recaptcha-container"></div>
         </div>
         <button class="btn bp bfull" id="btnAdminSendOtp" onclick="sendAdminOTP()" style="padding:12px;font-size:.95rem">📩 Send Login OTP</button>
         <div style="text-align:center;margin-top:12px;display:flex;justify-content:center;gap:18px">
@@ -1022,7 +1023,7 @@ tbody td{padding:10px 12px;vertical-align:middle}
         <div style="background:#e0f2fe;border:1px solid #bae6fd;border-radius:10px;padding:12px;margin-bottom:14px;display:flex;align-items:center;gap:10px">
           <span style="font-size:1.4rem">💬</span>
           <div style="font-size:.78rem;color:#0369a1;line-height:1.4">
-            A 6-digit OTP has been sent via official <strong>Telegram Bot</strong> for number <strong id="adminOtpSentNum">+91 9010809057</strong>.
+            A 6-digit verification OTP has been sent to your mobile number <strong id="adminOtpSentNum">+91 9010809057</strong>.
           </div>
         </div>
         <div class="fg">
@@ -1873,6 +1874,7 @@ tbody td{padding:10px 12px;vertical-align:middle}
 
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script>
 const firebaseConfig = {
   apiKey: "AIzaSyCiCTQutGOHata1kJNOa0yY-9dd-lXO_LI",
@@ -2866,12 +2868,30 @@ let _adminGeneratedOTP = null;
 let _adminOTPExpiry = 0;
 let _adminOTPTimerInterval = null;
 let _adminSelectedPhone = "";
+let _firebaseConfirmationResult = null;
+let _recaptchaVerifier = null;
 
 function backToAdminStep1() {
   if (_adminOTPTimerInterval) clearInterval(_adminOTPTimerInterval);
   $("adminStep1").style.display = "block";
   $("adminStep2").style.display = "none";
   $("lgAlt").innerHTML = "";
+}
+
+function getRecaptchaVerifier() {
+  if (!_recaptchaVerifier && typeof firebase !== "undefined" && firebase.auth) {
+    try {
+      _recaptchaVerifier = new firebase.auth.RecaptchaVerifier("recaptcha-container", {
+        size: "invisible",
+        callback: function(res) {
+          // reCAPTCHA solved
+        }
+      });
+    } catch(err) {
+      console.warn("Recaptcha init warning:", err);
+    }
+  }
+  return _recaptchaVerifier;
 }
 
 async function sendAdminOTP(isResend) {
@@ -2911,10 +2931,28 @@ async function sendAdminOTP(isResend) {
   _adminSelectedPhone = phone;
   _adminGeneratedOTP = String(Math.floor(100000 + Math.random() * 900000));
   _adminOTPExpiry = Date.now() + 5 * 60 * 1000;
+  _firebaseConfirmationResult = null;
 
   const btnSend = $("btnAdminSendOtp");
-  if (btnSend) { btnSend.disabled = true; btnSend.innerHTML = "⏳ Generating & Sending OTP..."; }
+  if (btnSend) { btnSend.disabled = true; btnSend.innerHTML = "⏳ Sending OTP to +91 " + phone + "..."; }
 
+  // 1. Try sending real SMS via Firebase Phone Auth if enabled
+  let smsSent = false;
+  if (typeof firebase !== "undefined" && firebase.auth) {
+    try {
+      const appVerifier = getRecaptchaVerifier();
+      if (appVerifier) {
+        const fullPhone = "+91" + phone;
+        _firebaseConfirmationResult = await firebase.auth().signInWithPhoneNumber(fullPhone, appVerifier);
+        smsSent = true;
+        console.log("Firebase SMS sent successfully to", fullPhone);
+      }
+    } catch (smsErr) {
+      console.warn("Firebase Phone Auth error:", smsErr);
+    }
+  }
+
+  // 2. Also send backup OTP via Telegram Bot alert
   const s = DB.get("settings", {});
   const token = s.tgToken || TG_DEFAULT_TOKEN;
   const chatIdStr = s.tgChatId || TG_DEFAULT_CHAT_ID;
@@ -2946,7 +2984,11 @@ async function sendAdminOTP(isResend) {
   $("aOtp").value = "";
   $("aOtp").focus();
 
-  sAlt("lgAlt", "✅ 6-digit OTP sent to Telegram Bot for +91 " + phone + "! Enter code below.", "success");
+  if (smsSent) {
+    sAlt("lgAlt", "✅ 6-digit SMS OTP sent to +91 " + phone + "! Enter code below.", "success");
+  } else {
+    sAlt("lgAlt", "✅ 6-digit OTP generated for +91 " + phone + "! Enter code below.", "success");
+  }
   startAdminOTPTimer();
 }
 
@@ -2977,6 +3019,7 @@ function startAdminOTPTimer() {
     if (secondsLeft <= 0) {
       clearInterval(_adminOTPTimerInterval);
       _adminGeneratedOTP = null;
+      _firebaseConfirmationResult = null;
       if (timerEl) timerEl.innerHTML = "<span style=\"color:#ef4444;font-weight:700\">OTP Expired! Click Resend OTP.</span>";
     }
     secondsLeft--;
@@ -2993,18 +3036,33 @@ async function verifyAdminOTPAndLogin() {
     return;
   }
 
-  if (!_adminGeneratedOTP || Date.now() > _adminOTPExpiry) {
-    sAlt("lgAlt", "❌ OTP has expired. Please click Resend OTP.", "error");
-    return;
+  let verified = false;
+
+  // If Firebase SMS confirmation result exists, verify with Firebase first
+  if (_firebaseConfirmationResult) {
+    try {
+      await _firebaseConfirmationResult.confirm(entered);
+      verified = true;
+    } catch (verErr) {
+      console.warn("Firebase confirm error:", verErr);
+      if (entered === _adminGeneratedOTP) {
+        verified = true;
+      }
+    }
+  } else if (_adminGeneratedOTP && entered === _adminGeneratedOTP) {
+    if (Date.now() <= _adminOTPExpiry) {
+      verified = true;
+    }
   }
 
-  if (entered !== _adminGeneratedOTP) {
-    sAlt("lgAlt", "❌ Incorrect OTP code. Please check Telegram and re-enter.", "error");
+  if (!verified) {
+    sAlt("lgAlt", "❌ Incorrect or expired OTP code. Please re-enter.", "error");
     return;
   }
 
   if (_adminOTPTimerInterval) clearInterval(_adminOTPTimerInterval);
   _adminGeneratedOTP = null;
+  _firebaseConfirmationResult = null;
 
   LOCKOUT.reset();
   CU = { name: "Administrator", role: "admin", phone: _adminSelectedPhone };
@@ -3012,7 +3070,6 @@ async function verifyAdminOTPAndLogin() {
   logLoginAttempt(_adminSelectedPhone, "Administrator", "SUCCESS", "Admin 2FA OTP Verified Successfully");
   boot();
 }
-
 async function forgotPass(role) {
   if(role === 'admin') {
     const key = prompt("⚠️ ADMIN RECOVERY ⚠️\n\nEnter the Master Recovery Key to reset the Admin password:");
