@@ -2860,134 +2860,124 @@ async function doLogin(r){
   }
 }
 
-
-// ── LIFETIME FREE ADMIN OTP (2FA) ──
-const ADMIN_ALLOWED_NUMBERS = ['9010809057', '8897430557', '9959195930', '6281661322'];
+// -- LIFETIME FREE ADMIN OTP (2FA) --
+const ADMIN_ALLOWED_NUMBERS = ["9010809057", "8897430557", "9959195930", "6281661322"];
 let _adminGeneratedOTP = null;
 let _adminOTPExpiry = 0;
 let _adminOTPTimerInterval = null;
-let _adminSelectedPhone = '';
+let _adminSelectedPhone = "";
 
 function backToAdminStep1() {
   if (_adminOTPTimerInterval) clearInterval(_adminOTPTimerInterval);
-  $('adminStep1').style.display = 'block';
-  $('adminStep2').style.display = 'none';
-  $('lgAlt').innerHTML = '';
+  $("adminStep1").style.display = "block";
+  $("adminStep2").style.display = "none";
+  $("lgAlt").innerHTML = "";
 }
 
-async function sendAdminOTP(isResend = false) {
-  // Check lockout
+async function sendAdminOTP(isResend) {
   const locked = LOCKOUT.isLocked();
   if (locked) {
-    sAlt('lgAlt', `🔒 Too many failed attempts. Try again in ${locked} minute${locked > 1 ? 's' : ''}.`, 'error');
+    sAlt("lgAlt", "🔒 Too many failed attempts. Try again in " + locked + " minute" + (locked > 1 ? "s" : "") + ".", "error");
     return;
   }
 
-  const u = $('aU').value.trim();
-  const p = $('aP').value;
+  const u = $("aU").value.trim();
+  const p = $("aP").value;
   if (!u || !p) {
-    sAlt('lgAlt', '⚠️ Please enter username and password first.', 'error');
+    sAlt("lgAlt", "⚠️ Please enter username and password first.", "error");
     return;
   }
 
   const inputHash = await sha256(p);
-  const storedHash = DB.get('adminPassHash', null);
+  const storedHash = DB.get("adminPassHash", null);
 
-  if (u !== 'admin' || inputHash !== storedHash) {
+  if (u !== "admin" || inputHash !== storedHash) {
     const d = LOCKOUT.record();
     const rem = LOCKOUT.remaining();
     if (rem <= 0) {
-      sAlt('lgAlt', '🔒 Account locked for 15 minutes due to too many failed attempts.', 'error');
+      sAlt("lgAlt", "🔒 Account locked for 15 minutes due to too many failed attempts.", "error");
     } else {
-      sAlt('lgAlt', `❌ Invalid username or password. ${rem} attempt${rem > 1 ? 's' : ''} remaining.`, 'error');
+      sAlt("lgAlt", "❌ Invalid username or password. " + rem + " attempt" + (rem > 1 ? "s" : "") + " remaining.", "error");
     }
     return;
   }
 
-  const phone = $('aPhone').value.trim().replace(/\D/g, '');
+  const phone = $("aPhone").value.trim().replace(/\D/g, "");
   if (!ADMIN_ALLOWED_NUMBERS.includes(phone)) {
-    sAlt('lgAlt', '❌ This mobile number is not authorized for Admin access.', 'error');
+    sAlt("lgAlt", "❌ This mobile number is not authorized for Admin access.", "error");
     return;
   }
 
   _adminSelectedPhone = phone;
-
-  // Generate secure 6-digit OTP
   _adminGeneratedOTP = String(Math.floor(100000 + Math.random() * 900000));
-  _adminOTPExpiry = Date.now() + 5 * 60 * 1000; // 5 minutes validity
+  _adminOTPExpiry = Date.now() + 5 * 60 * 1000;
 
-  const btnSend = $('btnAdminSendOtp');
-  if (btnSend) { btnSend.disabled = true; btnSend.innerHTML = '⏳ Generating & Sending OTP...'; }
+  const btnSend = $("btnAdminSendOtp");
+  if (btnSend) { btnSend.disabled = true; btnSend.innerHTML = "⏳ Generating & Sending OTP..."; }
 
-  // Send OTP to Telegram Bot
-  const s = DB.get('settings', {});
+  const s = DB.get("settings", {});
   const token = s.tgToken || TG_DEFAULT_TOKEN;
   const chatIdStr = s.tgChatId || TG_DEFAULT_CHAT_ID;
-  const chatIds = chatIdStr.split(',').map(id => id.trim()).filter(Boolean);
+  const chatIds = chatIdStr.split(",").map(function(id) { return id.trim(); }).filter(Boolean);
 
-  const otpMsg = `🔐 *GEO-FRS PORTAL — ADMIN LOGIN OTP*\n\n` +
-    `*Your 6-Digit OTP:* ```${_adminGeneratedOTP}```\n\n` +
-    `📱 *Admin Number:* +91 ${phone}\n` +
-    `⏰ *Valid for:* 5 minutes\n` +
-    `⚠️ *Do not share this OTP with anyone.*\n\n` +
-    `_YUG Shakti Vocational Education — Telangana_`;
+  const otpMsg = "🔐 *GEO-FRS PORTAL — ADMIN LOGIN OTP*\n\n" +
+    "*Your 6-Digit OTP:* " + _adminGeneratedOTP + "\n\n" +
+    "📱 *Admin Number:* +91 " + phone + "\n" +
+    "⏰ *Valid for:* 5 minutes\n" +
+    "⚠️ *Do not share this OTP with anyone.*\n\n" +
+    "_YUG Shakti Vocational Education — Telangana_";
 
-  let sentToAny = false;
   if (token && chatIds.length) {
-    for (const cid of chatIds) {
+    for (let i = 0; i < chatIds.length; i++) {
       try {
-        const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${cid}&text=${encodeURIComponent(otpMsg)}&parse_mode=Markdown`;
+        const url = "https://api.telegram.org/bot" + token + "/sendMessage?chat_id=" + chatIds[i] + "&text=" + encodeURIComponent(otpMsg) + "&parse_mode=Markdown";
         await fetch(url);
-        sentToAny = true;
       } catch (err) {
-        console.warn('Telegram OTP send failed to ' + cid, err);
+        console.warn("Telegram OTP error:", err);
       }
     }
   }
 
-  if (btnSend) { btnSend.disabled = false; btnSend.innerHTML = '📩 Send Login OTP'; }
+  if (btnSend) { btnSend.disabled = false; btnSend.innerHTML = "📩 Send Login OTP"; }
 
-  // Switch to Step 2
-  $('adminStep1').style.display = 'none';
-  $('adminStep2').style.display = 'block';
-  $('adminOtpSentNum').textContent = '+91 ' + phone;
-  $('aOtp').value = '';
-  $('aOtp').focus();
+  $("adminStep1").style.display = "none";
+  $("adminStep2").style.display = "block";
+  $("adminOtpSentNum").textContent = "+91 " + phone;
+  $("aOtp").value = "";
+  $("aOtp").focus();
 
-  sAlt('lgAlt', `✅ 6-digit OTP sent to Telegram Bot for +91 ${phone}! Enter the code below to login.`, 'success');
-
-  // Start Countdown Timer
+  sAlt("lgAlt", "✅ 6-digit OTP sent to Telegram Bot for +91 " + phone + "! Enter code below.", "success");
   startAdminOTPTimer();
 }
 
 function startAdminOTPTimer() {
   if (_adminOTPTimerInterval) clearInterval(_adminOTPTimerInterval);
-  const btnResend = $('btnAdminResendOtp');
+  const btnResend = $("btnAdminResendOtp");
   if (btnResend) btnResend.disabled = true;
 
-  let secondsLeft = 300; // 5 minutes
-  let resendCooldown = 60; // 60s resend cooldown
+  let secondsLeft = 300;
+  let resendCooldown = 60;
 
   function update() {
-    const min = String(Math.floor(secondsLeft / 60)).padStart(2, '0');
-    const sec = String(secondsLeft % 60).padStart(2, '0');
-    const timerEl = $('adminOtpTimer');
-    if (timerEl) timerEl.innerHTML = `Expires in: <strong>${min}:${sec}</strong>`;
+    const min = String(Math.floor(secondsLeft / 60)).padStart(2, "0");
+    const sec = String(secondsLeft % 60).padStart(2, "0");
+    const timerEl = $("adminOtpTimer");
+    if (timerEl) timerEl.innerHTML = "Expires in: <strong>" + min + ":" + sec + "</strong>";
 
     if (resendCooldown > 0) {
       resendCooldown--;
-      if (btnResend) btnResend.innerHTML = `🔄 Resend OTP (${resendCooldown}s)`;
+      if (btnResend) btnResend.innerHTML = "🔄 Resend OTP (" + resendCooldown + "s)";
     } else {
       if (btnResend) {
         btnResend.disabled = false;
-        btnResend.innerHTML = '🔄 Resend OTP';
+        btnResend.innerHTML = "🔄 Resend OTP";
       }
     }
 
     if (secondsLeft <= 0) {
       clearInterval(_adminOTPTimerInterval);
       _adminGeneratedOTP = null;
-      if (timerEl) timerEl.innerHTML = '<span style="color:#ef4444;font-weight:700">OTP Expired! Click Resend OTP.</span>';
+      if (timerEl) timerEl.innerHTML = "<span style=\"color:#ef4444;font-weight:700\">OTP Expired! Click Resend OTP.</span>";
     }
     secondsLeft--;
   }
@@ -2997,33 +2987,29 @@ function startAdminOTPTimer() {
 }
 
 async function verifyAdminOTPAndLogin() {
-  const entered = ($('aOtp').value || '').trim();
+  const entered = ($("aOtp").value || "").trim();
   if (!entered || entered.length !== 6) {
-    sAlt('lgAlt', '⚠️ Please enter the complete 6-digit OTP.', 'error');
+    sAlt("lgAlt", "⚠️ Please enter the complete 6-digit OTP.", "error");
     return;
   }
 
   if (!_adminGeneratedOTP || Date.now() > _adminOTPExpiry) {
-    sAlt('lgAlt', '❌ OTP has expired. Please click Resend OTP.', 'error');
+    sAlt("lgAlt", "❌ OTP has expired. Please click Resend OTP.", "error");
     return;
   }
 
   if (entered !== _adminGeneratedOTP) {
-    sAlt('lgAlt', '❌ Incorrect OTP code. Please check Telegram and re-enter.', 'error');
+    sAlt("lgAlt", "❌ Incorrect OTP code. Please check Telegram and re-enter.", "error");
     return;
   }
 
-  // Clear timer and OTP
   if (_adminOTPTimerInterval) clearInterval(_adminOTPTimerInterval);
   _adminGeneratedOTP = null;
 
   LOCKOUT.reset();
-  CU = { name: 'Administrator', role: 'admin', phone: _adminSelectedPhone };
+  CU = { name: "Administrator", role: "admin", phone: _adminSelectedPhone };
   SESSION.create(CU);
-
-  // Log successful admin 2FA login
-  logLoginAttempt(_adminSelectedPhone, 'Administrator', 'SUCCESS', 'Admin 2FA OTP Verified Successfully');
-
+  logLoginAttempt(_adminSelectedPhone, "Administrator", "SUCCESS", "Admin 2FA OTP Verified Successfully");
   boot();
 }
 
