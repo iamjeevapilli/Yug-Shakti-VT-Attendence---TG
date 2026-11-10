@@ -1318,7 +1318,7 @@ tbody td{padding:10px 12px;vertical-align:middle}
 
   <!-- VTS DATA SHEET (Full searchable grid from Claude) -->
   <div class="pg" id="pg-vtsdata" style="padding:0;">
-    <iframe src="vts.html" style="width:100%; height:calc(100vh - 60px); border:none; display:block;"></iframe>
+    <iframe id="vtsFrame" src="about:blank" style="width:100%; height:calc(100vh - 60px); border:none; display:block;"></iframe>
   </div>
 
   <!-- TRAINER PROFILE (subfolder) -->
@@ -1991,8 +1991,38 @@ const LOCKOUT={
 
 window.VTS_FULL = [];
 
+async function ensureAdminToken() {
+  let token = null;
+  try { token = sessionStorage.getItem('yug_admin_token') || localStorage.getItem('yug_admin_token'); } catch(e){}
+  if (token) return token;
+
+  if (CU && CU.role === 'admin') {
+    try {
+      const storedHash = DB.get('adminPassHash', null);
+      if (storedHash) {
+        const res = await fetch('/api/auth', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: 'admin', hash: storedHash })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.token) {
+            token = data.token;
+            try { sessionStorage.setItem('yug_admin_token', token); } catch(e){}
+            try { localStorage.setItem('yug_admin_token', token); } catch(e){}
+          }
+        }
+      }
+    } catch(err) {
+      console.warn('ensureAdminToken error:', err);
+    }
+  }
+  return token;
+}
+
 async function loadAdminVtsData() {
-  const token = sessionStorage.getItem('yug_admin_token');
+  const token = await ensureAdminToken();
   if (!token) return;
   try {
     const res = await fetch('/api/vts', {
@@ -2584,6 +2614,7 @@ async function doLogin(r){
           const authData = await authRes.json();
           if (authData.token) {
             sessionStorage.setItem('yug_admin_token', authData.token);
+            try { localStorage.setItem('yug_admin_token', authData.token); } catch(e){}
           }
         }
       } catch(authErr) {
@@ -2618,7 +2649,9 @@ async function forgotPass(role) {
     alert("👩‍🏫 TEACHER RECOVERY\n\nPlease contact your Administrator. The Admin can instantly reset your password from the 'Manage Trainers' tab inside their Dashboard.");
   }
 }
-function doLogout(){sessionStorage.removeItem('yug_admin_token');closeMobileDrawer();stopCam();stopTrainerGPSTracking();resetLoginCheckForm();SESSION.destroy();CU=null;PHOTO=null;LOC=null;$('app').style.display='none';$('loginPg').style.display='flex';window.scrollTo(0,0);}
+function doLogout(){try { sessionStorage.removeItem('yug_admin_token'); localStorage.removeItem('yug_admin_token'); } catch(e){}
+  const vFrame = document.getElementById('vtsFrame') || document.querySelector('#pg-vtsdata iframe');
+  if (vFrame) vFrame.setAttribute('src', 'about:blank');closeMobileDrawer();stopCam();stopTrainerGPSTracking();resetLoginCheckForm();SESSION.destroy();CU=null;PHOTO=null;LOC=null;$('app').style.display='none';$('loginPg').style.display='flex';window.scrollTo(0,0);}
 function resetAll(){
   if(confirm('Reset ALL teachers list to original 249 trainers?')){
     DB.set('teachers',SEED);alert('✅ All 249 trainers reloaded!');rTch();rDash();
@@ -3566,15 +3599,18 @@ function vtdExportCSV() {
   a.click();
 }
 
-function rVtsData() {
-  const iframe = document.querySelector('#pg-vtsdata iframe');
-  if (iframe && iframe.contentWindow) {
-    try {
-      if (typeof iframe.contentWindow.syncAndRender === 'function') {
-        iframe.contentWindow.syncAndRender();
+async function rVtsData() {
+  const token = await ensureAdminToken();
+  const iframe = document.getElementById("vtsFrame") || document.querySelector("#pg-vtsdata iframe");
+  if (iframe) {
+    const targetUrl = "vts.html" + (token ? ("?token=" + encodeURIComponent(token)) : "");
+    const currentSrc = iframe.getAttribute("src") || "";
+    if (!currentSrc || currentSrc === "about:blank" || !currentSrc.startsWith("vts.html")) {
+      iframe.setAttribute("src", targetUrl);
+    } else {
+      if (token && iframe.contentWindow && typeof iframe.contentWindow.loadProtectedVTData === "function") {
+        iframe.contentWindow.loadProtectedVTData(token);
       }
-    } catch(e) {
-      console.error("Failed to sync iframe data:", e);
     }
   }
 }

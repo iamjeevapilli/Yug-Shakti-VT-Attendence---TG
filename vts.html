@@ -2,17 +2,18 @@
 <html lang="en">
 <head>
 <script>
-// STRICT ACCESS CONTROL: Immediate redirect to login if not authenticated as Admin
+// Standalone access guard: only redirect if opened directly as top-level window without login
 (function() {
   try {
-    const token = sessionStorage.getItem('yug_admin_token');
-    const session = sessionStorage.getItem('yugg_session');
-    if (!token && !session) {
-      window.location.replace('/');
+    if (window.parent === window) {
+      const p = new URLSearchParams(window.location.search);
+      const token = p.get('token') || sessionStorage.getItem('yug_admin_token') || localStorage.getItem('yug_admin_token');
+      const sess = sessionStorage.getItem('yugg_sess_user') || localStorage.getItem('yugg_sess_user');
+      if (!token && !sess) {
+        window.location.replace('/');
+      }
     }
-  } catch(e) {
-    window.location.replace('/');
-  }
+  } catch(e) {}
 })();
 </script>
 <meta charset="UTF-8"/>
@@ -387,53 +388,99 @@ tbody td strong{color:var(--ink);font-weight:600}
 let VT = [];
 
 // SECURE DATA FETCH: Only authorized requests with valid Admin JWT receive VT data
-async function loadProtectedVTData() {
-  const token = sessionStorage.getItem('yug_admin_token');
+function getAdminToken(fallbackToken) {
+  if (fallbackToken && typeof fallbackToken === 'string') return fallbackToken;
+  let token = null;
+  try {
+    const p = new URLSearchParams(window.location.search);
+    token = p.get('token');
+    if (token) return token;
+  } catch(e){}
+  try {
+    token = localStorage.getItem('yug_admin_token');
+    if (token) return token;
+  } catch(e){}
+  try {
+    token = sessionStorage.getItem('yug_admin_token');
+    if (token) return token;
+  } catch(e){}
+  if (window.parent && window.parent !== window) {
+    try {
+      token = window.parent.sessionStorage.getItem('yug_admin_token') ||
+              window.parent.localStorage.getItem('yug_admin_token');
+      if (token) return token;
+    } catch(e){}
+  }
+  return null;
+}
+
+async function loadProtectedVTData(passedToken) {
+  const token = getAdminToken(passedToken);
+  const tbody = document.getElementById('tbody');
+
   if (!token) {
-    window.location.replace('/');
+    if (window.parent === window) {
+      window.location.replace('/');
+    } else {
+      console.warn('Waiting for parent admin session token...');
+      if (tbody && (!VT || VT.length === 0)) {
+        tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:40px;color:var(--ink3);font-size:1rem">⏳ Connecting to Admin session...</td></tr>';
+      }
+    }
     return;
   }
 
-  // Show secure loading indicator
-  const tbody = document.getElementById('tbody');
-  if (tbody) {
-    tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:40px;color:var(--ink3);font-size:1rem">⏳ Verifying credentials and securely loading VT records...</td></tr>';
+  try {
+    sessionStorage.setItem('yug_admin_token', token);
+    localStorage.setItem('yug_admin_token', token);
+  } catch(e){}
+
+  if (tbody && (!VT || VT.length === 0)) {
+    tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:40px;color:var(--ink3);font-size:1rem">⏳ Loading VT records securely...</td></tr>';
   }
 
   try {
     const res = await fetch('/api/vts', {
-      headers: {
-        'Authorization': 'Bearer ' + token
-      }
+      headers: { 'Authorization': 'Bearer ' + token }
     });
 
     if (res.status === 401 || res.status === 403) {
-      console.warn('Unauthorized access to VT register. Redirecting to login.');
-      sessionStorage.removeItem('yug_admin_token');
-      window.location.replace('/');
+      console.warn('Unauthorized access to VT register.');
+      if (window.parent === window) {
+        sessionStorage.removeItem('yug_admin_token');
+        localStorage.removeItem('yug_admin_token');
+        window.location.replace('/');
+      } else if (tbody) {
+        tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:40px;color:var(--rose);font-weight:700">🔒 Please log in as Administrator in the main portal to view VT details.</td></tr>';
+      }
       return;
     }
 
-    if (!res.ok) {
-      throw new Error('HTTP ' + res.status);
-    }
+    if (!res.ok) throw new Error('HTTP ' + res.status);
 
     VT = await res.json();
     console.log('Loaded ' + VT.length + ' protected VT records securely.');
 
-    // Initialize UI with loaded data
     syncVTWithDB();
     populateDistrictDropdown();
     buildTags();
     filterAll();
-  } catch (err) {
+  } catch(err) {
     console.error('Failed to load protected VT records:', err);
-    if (tbody) {
-      tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:40px;color:var(--rose);font-weight:700">❌ Access Denied: Could not load VT records. Please log in again as Administrator.</td></tr>';
+    if (tbody && (!VT || VT.length === 0)) {
+      tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:40px;color:var(--rose);font-weight:700">❌ Error loading VT records. Please refresh or re-login.</td></tr>';
     }
-    setTimeout(() => { window.location.replace('/'); }, 2000);
   }
 }
+
+window.addEventListener('message', function(ev) {
+  if (ev.data && (ev.data.type === 'SET_AUTH_TOKEN' || ev.data.token)) {
+    const tok = ev.data.token || ev.data;
+    if (typeof tok === 'string' && tok.length > 20) {
+      loadProtectedVTData(tok);
+    }
+  }
+});
 
 const SECTOR_COLORS = {
   'APPAREL': '#2563eb',
