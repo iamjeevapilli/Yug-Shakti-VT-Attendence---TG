@@ -1319,9 +1319,87 @@ tbody td{padding:10px 12px;vertical-align:middle}
     </div>
   </div>
 
-  <!-- VTS DATA SHEET (Full searchable grid from Claude) -->
-  <div class="pg" id="pg-vtsdata" style="padding:0;">
-    <iframe id="vtsFrame" src="about:blank" style="width:100%; height:calc(100vh - 60px); border:none; display:block;"></iframe>
+  <!-- VTS DATA SHEET (Native Full searchable grid) -->
+  <div class="pg" id="pg-vtsdata">
+    <div class="vtd-header" style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap">
+      <div class="vtd-header-inner">
+        <div class="vtd-header-badge">📋 GeoAttend — Yug Shakti</div>
+        <h2>VT's <span>Details</span></h2>
+        <p>Vocational Trainers Master Register — Telangana State | 2025–26</p>
+        <div class="vtd-header-stats">
+          <div class="vtd-hstat"><div class="v" id="vtd-hTotal">254</div><div class="l">Total VTs</div></div>
+          <div class="vtd-hstat"><div class="v" id="vtd-hSectors">6</div><div class="l">Sectors</div></div>
+          <div class="vtd-hstat"><div class="v" id="vtd-hDistricts">—</div><div class="l">Districts</div></div>
+          <div class="vtd-hstat"><div class="v" id="vtd-hShowing">254</div><div class="l">Showing</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="vtd-controls">
+      <div class="vtd-search-wrap">
+        <span class="si">🔍</span>
+        <input class="fc" id="vtd-srch" placeholder="Search by name, phone, school, district, qualification, UDISE, PAN..." oninput="vtdFilterAll()"/>
+      </div>
+      <select class="vtd-ctl-select" id="vtd-secF" onchange="vtdFilterAll()">
+        <option value="">All Sectors</option>
+        <option value="APPAREL">APPAREL</option>
+        <option value="BEAUTY AND WELLNESS">BEAUTY &amp; WELLNESS</option>
+        <option value="HEALTH CARE">HEALTH CARE</option>
+        <option value="AUTOMOTIVE">AUTOMOTIVE</option>
+        <option value="IT/ITES">IT/ITES</option>
+        <option value="ELECTRONICS AND HARDWARE">ELECTRONICS &amp; HW</option>
+      </select>
+      <select class="vtd-ctl-select" id="vtd-schemeF" onchange="vtdFilterAll()">
+        <option value="">All Schemes</option>
+        <option value="PMSHRI">PM SHRI</option>
+        <option value="SAMAGRA">SAMAGRA</option>
+      </select>
+      <select class="vtd-ctl-select" id="vtd-sortF" onchange="vtdFilterAll()">
+        <option value="sno">Sort: S.No</option>
+        <option value="name">Sort: Name A–Z</option>
+        <option value="sector">Sort: Sector</option>
+        <option value="district">Sort: District</option>
+        <option value="joining">Sort: Joining Date</option>
+      </select>
+      <button class="vtd-btn-export" onclick="vtdExportCSV()">📤 Export CSV</button>
+    </div>
+
+    <div class="vtd-summary" id="vtd-tagRow"></div>
+
+    <div class="vtd-table-wrap">
+      <div class="vtd-card">
+        <div class="vtd-card-head">
+          <span>Vocational Trainers Register</span>
+          <span class="vtd-count-badge" id="vtd-countBadge">254 records</span>
+        </div>
+        <div class="vtd-tw">
+          <table id="vtd-vtTable">
+            <thead>
+              <tr>
+                <th>S.No</th>
+                <th>Name &amp; Contact</th>
+                <th>Sector</th>
+                <th>YUG Contract ID</th>
+                <th>School</th>
+                <th>District</th>
+                <th>Mandal</th>
+                <th>Scheme</th>
+                <th>UDISE</th>
+                <th>Joining Date</th>
+                <th>DOB</th>
+                <th>Qualification</th>
+                <th>Exp (Current)</th>
+                <th>Exp (Total)</th>
+              </tr>
+            </thead>
+            <tbody id="vtd-vtBody">
+              <tr><td colspan="14" style="text-align:center;padding:40px;color:#64748b">⏳ Loading VT details...</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div id="vtd-pgr" class="vtd-pgr"></div>
+      </div>
+    </div>
   </div>
 
   <!-- TRAINER PROFILE (subfolder) -->
@@ -2175,7 +2253,7 @@ async function loadAdminVtsData() {
       console.log('Loaded ' + window.VTS_FULL.length + ' protected VT records into admin memory.');
       if (typeof vtdFiltered !== 'undefined') vtdFiltered = [...window.VTS_FULL];
       if (typeof vtdBuildTags === 'function') vtdBuildTags();
-      if (typeof vtdRenderTable === 'function') vtdRenderTable();
+      if (typeof vtdFilterAll === 'function') vtdFilterAll();
     }
   } catch(err) {
     console.warn('Could not load protected VT records:', err);
@@ -3742,19 +3820,63 @@ function vtdExportCSV() {
 }
 
 async function rVtsData() {
-  const token = await ensureAdminToken();
-  const iframe = document.getElementById("vtsFrame") || document.querySelector("#pg-vtsdata iframe");
-  if (iframe) {
-    const targetUrl = "vts.html" + (token ? ("?token=" + encodeURIComponent(token)) : "");
-    const currentSrc = iframe.getAttribute("src") || "";
-    if (!currentSrc || currentSrc === "about:blank" || !currentSrc.startsWith("vts.html")) {
-      iframe.setAttribute("src", targetUrl);
-    } else {
-      if (token && iframe.contentWindow && typeof iframe.contentWindow.loadProtectedVTData === "function") {
-        iframe.contentWindow.loadProtectedVTData(token);
-      }
+  // If VTS_FULL is empty or still loading, load from server or fallback
+  if (!window.VTS_FULL || window.VTS_FULL.length === 0) {
+    await loadAdminVtsData();
+  }
+  
+  if (!window.VTS_FULL || window.VTS_FULL.length === 0) {
+    const raw = DB.get('teachers', window.SEED || []);
+    if (raw && raw.length) {
+      window.VTS_FULL = raw.map((t, i) => ({
+        sno: t.sno || (i + 1),
+        name: t.name || '',
+        phone: t.phone || t.ph || '',
+        sector: t.sector || '',
+        yug: t.yug || '',
+        school: t.school || '',
+        district: t.district || '',
+        mandal: t.mandal || '',
+        scheme: t.scheme || '',
+        udise: t.udise || '',
+        joining: t.joining || '',
+        dob: t.dob || '',
+        qual: t.qual || '',
+        expCurr: t.expCurr || '',
+        expTotal: t.expTotal || '',
+        lat: t.lat || null,
+        lng: t.lng || null
+      }));
     }
   }
+
+  // Sync with live DB updates
+  try {
+    const teachers = DB.get('teachers', []);
+    if (teachers && teachers.length && window.VTS_FULL && window.VTS_FULL.length) {
+      window.VTS_FULL.forEach(v => {
+        const t = teachers.find(x => x.ph === v.phone || x.phone === v.phone);
+        if (t) {
+          if (t.name) v.name = t.name;
+          if (t.school) v.school = t.school;
+          if (t.sector) v.sector = t.sector;
+          if (t.udise !== undefined) v.udise = t.udise;
+          if (t.lat !== undefined) v.lat = parseFloat(t.lat) || v.lat;
+          if (t.lng !== undefined) v.lng = parseFloat(t.lng) || v.lng;
+        }
+      });
+    }
+  } catch(e) {}
+
+  // Update header stats
+  if ($('vtd-hTotal')) $('vtd-hTotal').textContent = window.VTS_FULL.length;
+  if ($('vtd-hSectors')) $('vtd-hSectors').textContent = new Set(window.VTS_FULL.map(v => v.sector).filter(Boolean)).size || 6;
+  if ($('vtd-hDistricts')) $('vtd-hDistricts').textContent = new Set(window.VTS_FULL.map(v => v.district).filter(Boolean)).size || '—';
+  if ($('vtd-hShowing')) $('vtd-hShowing').textContent = window.VTS_FULL.length;
+
+  vtdFiltered = [...window.VTS_FULL];
+  if (typeof vtdBuildTags === 'function') vtdBuildTags();
+  if (typeof vtdFilterAll === 'function') vtdFilterAll();
 }
 
 // ── School Visit Planner & Live Road Navigator ────────────────────────
