@@ -189,7 +189,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--t)
 .fc{width:100%;padding:10px 12px;border:1.5px solid var(--bd);border-radius:8px;font-size:.92rem;background:#fafafa;color:var(--t);transition:.2s}
 .fc:focus{outline:none;border-color:var(--p);box-shadow:0 0 0 3px rgba(26,115,232,.13);background:#fff}
 .r2{display:grid;grid-template-columns:1fr 1fr;gap:13px}
-.btn{padding:10px 17px;border:none;border-radius:8px;cursor:pointer;font-size:.88rem;font-weight:700;transition:.2s;display:inline-flex;align-items:center;justify-content:center;gap:7px;box-sizing:border-box;line-height:1.3;white-space:nowrap;max-height:54px;align-self:center}
+.btn{padding:10px 17px;border:none;border-radius:8px;cursor:pointer;font-size:.88rem;font-weight:700;transition:.2s;display:inline-flex;align-items:center;justify-content:center;gap:7px;box-sizing:border-box;line-height:1.3;white-space:nowrap;max-height:54px;align-self:center;position:relative;overflow:hidden}
 .bp{background:var(--p);color:#fff}.bp:hover{background:#1558b0;transform:translateY(-1px)}
 .bs{background:var(--s);color:#fff}.bs:hover{background:#0b8a4d;transform:translateY(-1px)}
 .bd2{background:var(--d);color:#fff}.bd2:hover{background:#b52820}
@@ -961,6 +961,9 @@ tbody td{padding:10px 12px;vertical-align:middle}
 
 
 
+
+.ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,.38);transform:scale(0);animation:rippleAnim .5s linear;pointer-events:none}
+@keyframes rippleAnim{to{transform:scale(3);opacity:0}}
 </style>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -1347,33 +1350,75 @@ tbody td{padding:10px 12px;vertical-align:middle}
   </div>
 
   <!-- SCHOOL VISITS & LIVE ROAD NAVIGATOR -->
-  <div class="pg" id="pg-visits">
-    <div class="card" style="margin-bottom:12px;padding:16px">
+  <div class="pg" id="pg-visits" style="max-width:1080px;margin:0 auto;box-sizing:border-box;overflow-x:hidden">
+    <div class="card" style="margin-bottom:12px;padding:16px;box-sizing:border-box;overflow-x:hidden">
       <!-- Title & Live GPS Actions -->
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px">
         <div>
           <h2 style="font-size:1.15rem;font-weight:900;color:var(--t1);margin:0;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
             <span>🏫 Live Road &amp; School Navigator</span>
             <span id="vis-live-pill" style="font-size:.68rem;background:#16a34a;color:#fff;padding:2px 8px;border-radius:12px;font-weight:800;letter-spacing:.5px;animation:pulse 2s infinite">● LIVE GPS</span>
             <span id="vis-compass-pill" style="font-size:.68rem;background:#2563eb;color:#fff;padding:2px 8px;border-radius:12px;font-weight:800;letter-spacing:.5px">🧭 COMPASS</span>
           </h2>
-          <div style="font-size:.78rem;color:var(--t2);margin-top:3px">Automatically locates all schools on the road and tracks the direction your phone is pointing in real-time.</div>
+          <div style="font-size:.78rem;color:var(--t2);margin-top:3px">Locates all 245 schools on the road and tracks the direction your phone is pointing in real-time.</div>
         </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button id="vis-compass-btn" class="btn bs" style="font-size:.78rem;padding:7px 12px;border-radius:8px" onclick="requestCompassPermission()">
-            🧭 Calibrate Compass
+        
+        <!-- Action Buttons (Responsive & Overflow-Safe) -->
+        <div style="display:flex;gap:6px;flex-wrap:wrap;width:100%;max-width:480px;box-sizing:border-box;margin-top:4px">
+          <button id="vis-recenter-btn" type="button" class="btn bp" style="font-size:.76rem;padding:7px 11px;border-radius:8px;flex:1 1 110px;min-width:105px;box-sizing:border-box;white-space:nowrap" onclick="recenterVisGps()">
+            📍 Refresh GPS
           </button>
-          <button class="btn bp" style="font-size:.78rem;padding:7px 12px;border-radius:8px" onclick="recenterVisMap()">
-            📍 Recenter on Me
+          <button id="vis-setarea-btn" type="button" class="btn bs" style="font-size:.76rem;padding:7px 11px;border-radius:8px;flex:1 1 110px;min-width:105px;box-sizing:border-box;white-space:nowrap" onclick="toggleAreaSelector()">
+            🎯 Set My Area
           </button>
-          <button class="btn bs" style="font-size:.78rem;padding:7px 12px;border-radius:8px" onclick="toggleVisMap()">
+          <button id="vis-compass-btn" type="button" class="btn" style="background:#475569;color:#fff;font-size:.76rem;padding:7px 11px;border-radius:8px;flex:1 1 100px;min-width:95px;box-sizing:border-box;white-space:nowrap" onclick="requestCompassPermission()">
+            🧭 Compass
+          </button>
+          <button type="button" class="btn bo" style="font-size:.76rem;padding:7px 11px;border-radius:8px;flex:1 1 85px;min-width:80px;box-sizing:border-box;white-space:nowrap" onclick="toggleVisMap()">
             🗺️ <span id="vis-map-btn-txt">Hide Map</span>
           </button>
         </div>
       </div>
 
+      <!-- Out-of-State / Incorrect GPS Warning Banner (Auto-detects Vijayawada or far away GPS) -->
+      <div id="vis-warning-banner" style="display:none;background:#fffbeb;border:1.5px solid #fde68a;color:#92400e;padding:9px 12px;border-radius:9px;margin-bottom:10px;font-size:.8rem;font-weight:700">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+          <span>⚠️ Detected location is outside Telangana (near <strong id="vis-warn-loc">Vijayawada</strong>).</span>
+          <div style="display:flex;gap:6px">
+            <button type="button" class="btn bp" style="font-size:.72rem;padding:4px 10px;border-radius:6px" onclick="setVisHub('miyapur')">🎯 Switch to Miyapur</button>
+            <button type="button" class="btn bs" style="font-size:.72rem;padding:4px 10px;border-radius:6px" onclick="setVisHub('hyderabad')">🎯 Hyderabad</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Area Hubs Selector (Collapsible) -->
+      <div id="vis-area-panel" style="display:none;background:#f1f5f9;border:1.5px solid #cbd5e1;padding:12px;border-radius:10px;margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <span style="font-size:.75rem;font-weight:800;color:#334155;text-transform:uppercase;letter-spacing:.5px">🎯 Choose Your Starting Area or Hub:</span>
+          <button type="button" style="border:none;background:transparent;color:#64748b;font-weight:800;cursor:pointer;font-size:.8rem" onclick="toggleAreaSelector()">✕ Close</button>
+        </div>
+        <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;scrollbar-width:thin" id="vis-hub-chips">
+          <button type="button" class="btn bp" style="font-size:.74rem;padding:5px 11px;border-radius:16px" onclick="recenterVisGps()">📍 My Live GPS</button>
+          <button type="button" class="btn bs" style="font-size:.74rem;padding:5px 11px;border-radius:16px" onclick="setVisHub('miyapur')">🎯 Miyapur</button>
+          <button type="button" class="btn bs" style="font-size:.74rem;padding:5px 11px;border-radius:16px" onclick="setVisHub('kukatpally')">🎯 Kukatpally</button>
+          <button type="button" class="btn bs" style="font-size:.74rem;padding:5px 11px;border-radius:16px" onclick="setVisHub('hyderabad')">🎯 Hyderabad Central</button>
+          <button type="button" class="btn bs" style="font-size:.74rem;padding:5px 11px;border-radius:16px" onclick="setVisHub('secunderabad')">🎯 Secunderabad</button>
+          <button type="button" class="btn bs" style="font-size:.74rem;padding:5px 11px;border-radius:16px" onclick="setVisHub('patancheru')">🎯 Patancheru / BHEL</button>
+          <button type="button" class="btn bs" style="font-size:.74rem;padding:5px 11px;border-radius:16px" onclick="setVisHub('gachibowli')">🎯 Gachibowli</button>
+          <button type="button" class="btn bs" style="font-size:.74rem;padding:5px 11px;border-radius:16px" onclick="setVisHub('medchal')">🎯 Medchal</button>
+          <button type="button" class="btn bs" style="font-size:.74rem;padding:5px 11px;border-radius:16px" onclick="setVisHub('warangal')">🎯 Warangal</button>
+          <button type="button" class="btn bs" style="font-size:.74rem;padding:5px 11px;border-radius:16px" onclick="setVisHub('siddipet')">🎯 Siddipet</button>
+          <button type="button" class="btn bs" style="font-size:.74rem;padding:5px 11px;border-radius:16px" onclick="setVisHub('nizamabad')">🎯 Nizamabad</button>
+          <button type="button" class="btn bs" style="font-size:.74rem;padding:5px 11px;border-radius:16px" onclick="setVisHub('nalgonda')">🎯 Nalgonda</button>
+          <button type="button" class="btn bs" style="font-size:.74rem;padding:5px 11px;border-radius:16px" onclick="setVisHub('suryapet')">🎯 Suryapet / Kodad</button>
+          <button type="button" class="btn bs" style="font-size:.74rem;padding:5px 11px;border-radius:16px" onclick="setVisHub('khammam')">🎯 Khammam</button>
+          <button type="button" class="btn bs" style="font-size:.74rem;padding:5px 11px;border-radius:16px" onclick="setVisHub('mahabubnagar')">🎯 Mahabubnagar</button>
+        </div>
+        <div style="font-size:.7rem;color:#64748b;margin-top:6px">💡 Tip: You can also tap anywhere directly on the map or drag your blue location pin!</div>
+      </div>
+
       <!-- Live Status / Compass & Movement HUD Banner -->
-      <div id="vis-status" style="font-size:.82rem;font-weight:700;padding:10px 14px;border-radius:10px;margin-bottom:12px;background:#f0fdf4;color:#166534;border:1.5px solid #bbf7d0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px">
+      <div id="vis-status" style="font-size:.82rem;font-weight:700;padding:10px 14px;border-radius:10px;margin-bottom:12px;background:#f0fdf4;color:#166534;border:1.5px solid #bbf7d0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;box-sizing:border-box">
         <div id="vis-status-main" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
           <span id="vis-status-txt">📍 Finding your location &amp; road position...</span>
         </div>
@@ -1384,13 +1429,18 @@ tbody td{padding:10px 12px;vertical-align:middle}
       </div>
 
       <!-- Interactive Embedded Leaflet Map -->
-      <div id="vis-map-wrap" style="position:relative;margin-bottom:12px;border-radius:12px;overflow:hidden;border:1.5px solid var(--bd);box-shadow:0 3px 12px rgba(0,0,0,.06)">
+      <div id="vis-map-wrap" style="position:relative;margin-bottom:12px;border-radius:12px;overflow:hidden;border:1.5px solid var(--bd);box-shadow:0 3px 12px rgba(0,0,0,.06);width:100%;box-sizing:border-box">
         <div id="vis-map" style="height:320px;width:100%;background:#e2e8f0"></div>
         
         <!-- On-map Floating Compass HUD -->
         <div id="vis-map-compass-hud" style="position:absolute;top:10px;right:10px;background:rgba(15,23,42,.85);backdrop-filter:blur(6px);color:#fff;padding:6px 12px;border-radius:20px;font-size:.72rem;font-weight:800;display:flex;align-items:center;gap:6px;box-shadow:0 3px 8px rgba(0,0,0,.25);z-index:999;pointer-events:none">
           <span id="vis-hud-needle" style="display:inline-block;transition:transform .15s ease-out;font-size:.9rem">🧭</span>
           <span id="vis-hud-dir">CALCULATING HEADING...</span>
+        </div>
+
+        <!-- On-map Drag/Tap Helper pill -->
+        <div style="position:absolute;top:10px;left:10px;background:rgba(255,255,255,.94);backdrop-filter:blur(4px);padding:4px 9px;border-radius:14px;font-size:.68rem;font-weight:800;color:#1e40af;box-shadow:0 2px 6px rgba(0,0,0,.15);z-index:999;pointer-events:none">
+          👆 Tap map or drag blue pin to set location
         </div>
 
         <!-- On-map Legend -->
@@ -1404,12 +1454,12 @@ tbody td{padding:10px 12px;vertical-align:middle}
       </div>
 
       <!-- Filters: Direction Mode, Radius, District, Sector, Search -->
-      <div style="background:#f8fafc;padding:12px;border-radius:10px;border:1px solid #e2e8f0;margin-bottom:12px">
-        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(160px, 1fr));gap:8px;margin-bottom:8px">
+      <div style="background:#f8fafc;padding:12px;border-radius:10px;border:1px solid #e2e8f0;margin-bottom:12px;box-sizing:border-box">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(150px, 1fr));gap:8px;margin-bottom:8px">
           <!-- Direction Mode Filter -->
           <div>
             <label style="display:block;font-size:.7rem;font-weight:800;color:#475569;margin-bottom:3px">🧭 PHONE DIRECTION &amp; HEADING</label>
-            <select id="vis-dir" onchange="filterVisits()" style="width:100%;padding:8px 10px;border:1.5px solid #94a3b8;border-radius:8px;font-size:.82rem;font-weight:700;background:#fff;color:#0f172a">
+            <select id="vis-dir" onchange="filterVisits()" style="width:100%;padding:8px 10px;border:1.5px solid #94a3b8;border-radius:8px;font-size:.82rem;font-weight:700;background:#fff;color:#0f172a;box-sizing:border-box">
               <option value="ALL" selected>🌐 All Directions (Show All Schools)</option>
               <option value="PHONE">🎯 In Phone Direction (Ahead ±45°)</option>
               <option value="E">➡️ East (E · 45°–135°)</option>
@@ -1426,7 +1476,7 @@ tbody td{padding:10px 12px;vertical-align:middle}
           <!-- Radius Filter (Default ALL so all schools show) -->
           <div>
             <label style="display:block;font-size:.7rem;font-weight:800;color:#475569;margin-bottom:3px">📏 DISTANCE RADIUS</label>
-            <select id="vis-radius" onchange="filterVisits()" style="width:100%;padding:8px 10px;border:1.5px solid #94a3b8;border-radius:8px;font-size:.82rem;font-weight:700;background:#fff;color:#0f172a">
+            <select id="vis-radius" onchange="filterVisits()" style="width:100%;padding:8px 10px;border:1.5px solid #94a3b8;border-radius:8px;font-size:.82rem;font-weight:700;background:#fff;color:#0f172a;box-sizing:border-box">
               <option value="ALL" selected>⚪ All Schools (Statewide)</option>
               <option value="15">🟢 Nearby (&lt; 15 km)</option>
               <option value="5">🔵 Walking / Very Close (&lt; 5 km)</option>
@@ -1438,7 +1488,7 @@ tbody td{padding:10px 12px;vertical-align:middle}
           <!-- District -->
           <div>
             <label style="display:block;font-size:.7rem;font-weight:800;color:#475569;margin-bottom:3px">🏛️ DISTRICT</label>
-            <select id="vis-dist" onchange="filterVisits()" style="width:100%;padding:8px 10px;border:1.5px solid #cbd5e1;border-radius:8px;font-size:.82rem;background:#fff">
+            <select id="vis-dist" onchange="filterVisits()" style="width:100%;padding:8px 10px;border:1.5px solid #cbd5e1;border-radius:8px;font-size:.82rem;background:#fff;box-sizing:border-box">
               <option value="">All Districts</option>
             </select>
           </div>
@@ -1446,7 +1496,7 @@ tbody td{padding:10px 12px;vertical-align:middle}
           <!-- Sector / Trade -->
           <div>
             <label style="display:block;font-size:.7rem;font-weight:800;color:#475569;margin-bottom:3px">💼 TRADE / SECTOR</label>
-            <select id="vis-sec" onchange="filterVisits()" style="width:100%;padding:8px 10px;border:1.5px solid #cbd5e1;border-radius:8px;font-size:.82rem;background:#fff">
+            <select id="vis-sec" onchange="filterVisits()" style="width:100%;padding:8px 10px;border:1.5px solid #cbd5e1;border-radius:8px;font-size:.82rem;background:#fff;box-sizing:border-box">
               <option value="">All Trades/Sectors</option>
               <option value="APPAREL">Apparel</option>
               <option value="AUTOMOTIVE">Automotive</option>
@@ -3709,7 +3759,9 @@ async function rVtsData() {
 
 // ── School Visit Planner & Live Road Navigator ────────────────────────
 let _visSchools = [];
-let _visMyLat = 17.3850, _visMyLng = 78.4867; // Defaults to Hyderabad central until GPS arrives
+let _visMyLat = 17.4968, _visMyLng = 78.3614; // Default reference: Miyapur / Hyderabad NW corridor
+let _visLocName = 'Miyapur';
+let _visIsManualLoc = false;
 let _visGpsAcquired = false;
 let _visPhoneHeading = 0;   // Live device compass heading in degrees (0-360)
 let _visGpsHeading = null;  // Movement heading from GPS course
@@ -3721,6 +3773,24 @@ let _visMap = null;
 let _visUserMarker = null;
 let _visSchoolLayer = null;
 let _visCompassBound = false;
+
+// Pre-defined Area Hubs across Telangana
+const VIS_HUBS = {
+  'miyapur':      { name: 'Miyapur',             lat: 17.4968, lng: 78.3614 },
+  'kukatpally':   { name: 'Kukatpally',          lat: 17.4843, lng: 78.4134 },
+  'patancheru':   { name: 'Patancheru / BHEL',   lat: 17.5287, lng: 78.2647 },
+  'hyderabad':    { name: 'Hyderabad Central',   lat: 17.3850, lng: 78.4867 },
+  'secunderabad': { name: 'Secunderabad',        lat: 17.4399, lng: 78.4983 },
+  'gachibowli':   { name: 'Gachibowli',          lat: 17.4401, lng: 78.3489 },
+  'medchal':      { name: 'Medchal',             lat: 17.6297, lng: 78.4814 },
+  'warangal':     { name: 'Warangal',            lat: 17.9689, lng: 79.5941 },
+  'siddipet':     { name: 'Siddipet',            lat: 18.1018, lng: 78.8520 },
+  'nizamabad':    { name: 'Nizamabad',           lat: 18.6725, lng: 78.0941 },
+  'nalgonda':     { name: 'Nalgonda',            lat: 17.0575, lng: 79.2684 },
+  'suryapet':     { name: 'Suryapet / Kodad',    lat: 17.1439, lng: 79.6239 },
+  'khammam':      { name: 'Khammam',             lat: 17.2473, lng: 80.1514 },
+  'mahabubnagar': { name: 'Mahabubnagar',        lat: 16.7488, lng: 78.0035 }
+};
 
 // Great-circle distance (meters)
 function visDist(lat1, lng1, lat2, lng2) {
@@ -3823,14 +3893,11 @@ function initDeviceCompass() {
 
   function onOrientationEvent(e) {
     let compass = null;
-    // iOS Safari provides webkitCompassHeading directly (0-360)
     if (typeof e.webkitCompassHeading !== 'undefined' && e.webkitCompassHeading !== null) {
       compass = e.webkitCompassHeading;
     } else if (e.absolute && e.alpha !== null) {
-      // Android absolute orientation
       compass = (360 - e.alpha) % 360;
     } else if (e.alpha !== null) {
-      // Standard alpha
       compass = (360 - e.alpha) % 360;
     }
 
@@ -3855,7 +3922,7 @@ async function requestCompassPermission() {
         initDeviceCompass();
         alert('Compass successfully calibrated!');
       } else {
-        alert('Compass permission was not granted. Using GPS course heading when moving.');
+        alert('Compass permission not granted. GPS course heading will be used when moving.');
       }
     } catch (err) {
       console.warn('Compass permission error:', err);
@@ -3866,18 +3933,117 @@ async function requestCompassPermission() {
   }
 }
 
-// Continuous Live GPS Road Tracking
-function startAutoRoadTracking() {
+// Toggle Area Selector Panel
+function toggleAreaSelector() {
+  const p = $('vis-area-panel');
+  if (!p) return;
+  p.style.display = p.style.display === 'none' ? 'block' : 'none';
+}
+
+// Set manual location (from hub or map click/drag)
+function setManualLocation(lat, lng, name) {
+  _visMyLat = lat;
+  _visMyLng = lng;
+  _visLocName = name || 'Custom Location';
+  _visIsManualLoc = true;
+  _visGpsAcquired = true;
+
+  // Hide warning if in Telangana
+  checkLocationWarning();
+
+  updateSchoolCalculations();
+  updateCompassUI();
+  updateVisMap();
+  filterVisits(false);
+
+  // Recenter map
+  if (_visMap) {
+    _visMap.setView([_visMyLat, _visMyLng], 13);
+  }
+
+  // Update status banner
+  const statusTxt = $('vis-status-txt');
+  if (statusTxt) {
+    statusTxt.textContent = '📍 Centered at ' + _visLocName + ' (' + lat.toFixed(4) + ', ' + lng.toFixed(4) + ')';
+  }
+}
+
+// Set a predefined hub (Miyapur, etc.)
+function setVisHub(hubKey) {
+  const hub = VIS_HUBS[hubKey];
+  if (!hub) return;
+  setManualLocation(hub.lat, hub.lng, hub.name);
+  const p = $('vis-area-panel');
+  if (p) p.style.display = 'none';
+}
+
+// Check if location is far outside Telangana (like Vijayawada)
+function checkLocationWarning() {
+  const warnBanner = $('vis-warning-banner');
+  if (!warnBanner) return;
+
+  // Find distance to closest Telangana school
+  let minD = Infinity;
+  _visSchools.forEach(s => {
+    if (s.lat && s.lng) {
+      const d = visDist(_visMyLat, _visMyLng, s.lat, s.lng);
+      if (d !== null && d < minD) minD = d;
+    }
+  });
+
+  // If closest school is > 60km away, detected location is outside Telangana!
+  if (minD > 60000 && !_visIsManualLoc) {
+    warnBanner.style.display = 'block';
+    const warnLoc = $('vis-warn-loc');
+    if (warnLoc) {
+      warnLoc.textContent = (_visMyLng > 80.2) ? 'Vijayawada / AP' : 'Outside Telangana';
+    }
+  } else {
+    warnBanner.style.display = 'none';
+  }
+}
+
+// Refresh / Acquire High-Accuracy GPS (forcing maximumAge: 0 to bypass stale WiFi/ISP cached location)
+function recenterVisGps() {
   if (!navigator.geolocation) {
-    console.warn('Geolocation not supported');
+    alert('Geolocation is not supported by your browser.');
     return;
   }
+
+  _visIsManualLoc = false;
+  const statusTxt = $('vis-status-txt');
+  if (statusTxt) statusTxt.textContent = '📍 Acquiring fresh satellite GPS fix (bypassing cached network location)...';
+
+  const btn = $('vis-recenter-btn');
+  if (btn) btn.textContent = '⏳ Querying GPS...';
+
+  navigator.geolocation.getCurrentPosition(pos => {
+    if (btn) btn.textContent = '📍 Refresh GPS';
+    onRoadGpsPosition(pos);
+    if (_visMap) _visMap.setView([pos.coords.latitude, pos.coords.longitude], 14);
+  }, err => {
+    if (btn) btn.textContent = '📍 Refresh GPS';
+    console.warn('GPS query failed/timed out:', err);
+    if (statusTxt) {
+      statusTxt.textContent = '⚠️ Fresh GPS unavailable — using Miyapur reference. Tap "Set My Area" to choose location.';
+    }
+    checkLocationWarning();
+  }, {
+    enableHighAccuracy: true,
+    maximumAge: 0, // Force fresh satellite reading!
+    timeout: 10000
+  });
+}
+
+// Continuous Live GPS Road Tracking
+function startAutoRoadTracking() {
+  if (!navigator.geolocation) return;
 
   initDeviceCompass();
 
   const options = {
     enableHighAccuracy: true,
-    maximumAge: 1000,
+    maximumAge: 2000,
     timeout: 12000
   };
 
@@ -3889,11 +4055,15 @@ function startAutoRoadTracking() {
 }
 
 function onRoadGpsPosition(pos) {
+  // If user explicitly chose a manual location or hub, don't overwrite with inaccurate GPS unless they clicked Refresh GPS
+  if (_visIsManualLoc) return;
+
   const c = pos.coords;
   const now = Date.now();
 
   _visMyLat = c.latitude;
   _visMyLng = c.longitude;
+  _visLocName = 'My Live GPS';
   _visGpsAcquired = true;
   _visAccuracy = c.accuracy;
 
@@ -3919,24 +4089,20 @@ function onRoadGpsPosition(pos) {
   _visSpeedKmH = speedKmH;
   if (movementHeading != null && !isNaN(movementHeading)) {
     _visGpsHeading = Math.round(movementHeading);
-    // If driving at speed (> 15 km/h), vehicle heading can also reinforce phone heading
     if (speedKmH && speedKmH > 15) {
       _visPhoneHeading = _visGpsHeading;
     }
   }
 
   updateSchoolCalculations();
+  checkLocationWarning();
   updateCompassUI();
   updateVisMap();
-  filterVisits(false); // don't redraw map unnecessarily
+  filterVisits(false);
 }
 
 function onRoadGpsError(err) {
   console.warn('Road GPS update warning:', err);
-  const statusTxt = $('vis-status-txt');
-  if (statusTxt && !_visGpsAcquired) {
-    statusTxt.textContent = '📍 Acquiring high-accuracy road GPS... (All 245 schools located on map)';
-  }
 }
 
 // Update all 245 schools with distances, bearings, and relative phone angles
@@ -3976,41 +4142,35 @@ function updateCompassUI() {
   // Status banner
   const statusTxt = $('vis-status-txt');
   if (statusTxt) {
-    const accText = _visAccuracy ? (`±` + Math.round(_visAccuracy) + 'm') : 'Road GPS';
-    const speedText = _visSpeedKmH ? (`🚗 ${_visSpeedKmH} km/h · `) : '';
-    statusTxt.textContent = `📍 Auto-Locating: ${speedText}${card.icon} Facing ${card.name} (${activeHeading}°) · ${accText}`;
+    const accText = _visAccuracy ? ('±' + Math.round(_visAccuracy) + 'm') : (_visIsManualLoc ? 'Custom Location' : 'Road GPS');
+    const speedText = _visSpeedKmH ? ('🚗 ' + _visSpeedKmH + ' km/h · ') : '';
+    const locPrefix = _visIsManualLoc ? ('🎯 ' + _visLocName + ' · ') : '📍 ';
+    statusTxt.textContent = locPrefix + speedText + card.icon + ' Facing ' + card.name + ' (' + activeHeading + '°) · ' + accText;
   }
 
   // Ahead count
   const aheadCount = _visSchools.filter(s => s._relOrientation && s._relOrientation.isAhead).length;
   const aheadTxtEl = $('vis-ahead-count-txt');
   if (aheadTxtEl) {
-    aheadTxtEl.textContent = `🎯 ${aheadCount} school${aheadCount!==1?'s':''} directly ahead`;
+    aheadTxtEl.textContent = '🎯 ' + aheadCount + ' school' + (aheadCount!==1?'s':'') + ' directly ahead';
   }
 
   const phoneDirTxt = $('vis-phone-dir-txt');
   if (phoneDirTxt) {
-    phoneDirTxt.textContent = `🧭 Phone: ${card.icon} ${card.code} (${activeHeading}°)`;
+    phoneDirTxt.textContent = '🧭 Phone: ' + card.icon + ' ' + card.code + ' (' + activeHeading + '°)';
   }
 
   // Floating map HUD
   const hudNeedle = $('vis-hud-needle');
-  if (hudNeedle) hudNeedle.style.transform = `rotate(${activeHeading}deg)`;
+  if (hudNeedle) hudNeedle.style.transform = 'rotate(' + activeHeading + 'deg)';
 
   const hudDir = $('vis-hud-dir');
-  if (hudDir) hudDir.textContent = `${card.icon} ${card.name.toUpperCase()} (${activeHeading}°)`;
+  if (hudDir) hudDir.textContent = card.icon + ' ' + card.name.toUpperCase() + ' (' + activeHeading + '°)';
 
   // Rotate map radar beam smoothly
   const beamEl = document.getElementById('vis-user-beam');
   if (beamEl) {
-    beamEl.style.transform = `rotate(${activeHeading}deg)`;
-  }
-}
-
-// Recenter map on user location
-function recenterVisMap() {
-  if (_visMap) {
-    _visMap.setView([_visMyLat, _visMyLng], 13);
+    beamEl.style.transform = 'rotate(' + activeHeading + 'deg)';
   }
 }
 
@@ -4031,7 +4191,7 @@ function toggleVisMap() {
   }
 }
 
-// Initialize Leaflet Map
+// Initialize Leaflet Map with drag & tap-to-set support
 function initVisMap() {
   const mapEl = $('vis-map');
   if (!mapEl || typeof L === 'undefined') return;
@@ -4046,17 +4206,22 @@ function initVisMap() {
     maxZoom: 19
   }).addTo(_visMap);
 
+  // Allow clicking ANYWHERE on the map to place location pin!
+  _visMap.on('click', function(e) {
+    setManualLocation(e.latlng.lat, e.latlng.lng, 'Pinned Location');
+  });
+
   _visSchoolLayer = L.layerGroup().addTo(_visMap);
 }
 
-// Update Map markers: All 245 schools plotted with direction highlights
+// Update Map markers: All 245 schools plotted with direction highlights & draggable user pin
 function updateVisMap() {
   if (!_visMap) initVisMap();
   if (!_visMap) return;
 
   const activeHeading = (_visGpsHeading != null && _visSpeedKmH && _visSpeedKmH > 12) ? _visGpsHeading : _visPhoneHeading;
 
-  // 1. User Position marker with rotating radar / direction beam
+  // 1. User Position marker with rotating radar / direction beam and draggable: true
   if (_visUserMarker) {
     _visMap.removeLayer(_visUserMarker);
   }
@@ -4083,9 +4248,18 @@ function updateVisMap() {
     iconAnchor: [40, 40]
   });
 
-  _visUserMarker = L.marker([_visMyLat, _visMyLng], { icon: userIcon, zIndexOffset: 1000 })
-    .bindPopup(`<strong>📍 You Are Here</strong><br><span style="font-size:.75rem">${_visMyLat.toFixed(5)}, ${_visMyLng.toFixed(5)}</span>`)
+  _visUserMarker = L.marker([_visMyLat, _visMyLng], {
+    icon: userIcon,
+    zIndexOffset: 1000,
+    draggable: true
+  }).bindPopup('<strong>📍 ' + _visLocName + '</strong><br><span style="font-size:.72rem">Drag pin or tap map to adjust location</span>')
     .addTo(_visMap);
+
+  // When user drags their location pin on map
+  _visUserMarker.on('dragend', function(e) {
+    const latlng = e.target.getLatLng();
+    setManualLocation(latlng.lat, latlng.lng, 'Dragged Location');
+  });
 
   // 2. Plot ALL schools on the map
   if (_visSchoolLayer) _visSchoolLayer.clearLayers();
@@ -4096,36 +4270,35 @@ function updateVisMap() {
     const card = s._cardinal || { icon: '📍', name: '', code: '' };
     const rel = s._relOrientation || { isAhead: false, label: '' };
 
-    // Highlight schools in the phone's direction
     let pinColor = '#64748b';
     let pinRadius = 6;
     let pinWeight = 1.5;
 
     if (rel.isAhead) {
-      pinColor = '#2563eb'; // Bright glowing blue for schools in front of phone
+      pinColor = '#2563eb';
       pinRadius = 8.5;
       pinWeight = 3;
     } else if (s._dist != null && s._dist < 10000) {
-      pinColor = '#16a34a'; // Green for very near
+      pinColor = '#16a34a';
       pinRadius = 7;
     } else if (s._dist != null && s._dist < 30000) {
-      pinColor = '#d97706'; // Amber for route corridor
+      pinColor = '#d97706';
       pinRadius = 6.5;
     }
 
     const pinMarker = L.circleMarker([s.lat, s.lng], {
       radius: pinRadius,
       fillColor: pinColor,
-      color: rel.isAhead ? '#fbbf24' : '#fff', // golden ring if in phone's line of sight
+      color: rel.isAhead ? '#fbbf24' : '#fff',
       weight: pinWeight,
       opacity: 1,
       fillOpacity: 0.92
     });
 
-    const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${s.lat},${s.lng}`;
+    const mapsUrl = 'https://www.google.com/maps/dir/?api=1&destination=' + s.lat + ',' + s.lng;
     const popupContent = `
       <div style="font-family:sans-serif;min-width:190px">
-        ${rel.isAhead ? `<div style="background:#eff6ff;color:#1d4ed8;font-weight:900;font-size:.7rem;padding:2px 8px;border-radius:6px;display:inline-block;margin-bottom:4px">🎯 IN PHONE'S DIRECTION</div>` : ''}
+        ${rel.isAhead ? '<div style="background:#eff6ff;color:#1d4ed8;font-weight:900;font-size:.7rem;padding:2px 8px;border-radius:6px;display:inline-block;margin-bottom:4px">🎯 IN PHONE\'S DIRECTION</div>' : ''}
         <div style="font-weight:800;font-size:.86rem;color:#0f172a;line-height:1.3">${s.school}</div>
         <div style="font-size:.72rem;color:#64748b;margin:2px 0 6px">📍 ${[s.mandal, s.district].filter(Boolean).join(', ')}</div>
         <div style="display:flex;gap:6px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
@@ -4182,7 +4355,7 @@ async function rVisits() {
   const dists = [...new Set(_visSchools.map(s => s.district).filter(Boolean))].sort();
   const sel = $('vis-dist');
   if (sel) {
-    sel.innerHTML = '<option value="">All Districts</option>' + dists.map(d => `<option value="${d}">${d}</option>`).join('');
+    sel.innerHTML = '<option value="">All Districts</option>' + dists.map(d => '<option value="' + d + '">' + d + '</option>').join('');
   }
 
   // Initialize Map
@@ -4193,6 +4366,7 @@ async function rVisits() {
 
   // Initial calculations & render
   updateSchoolCalculations();
+  checkLocationWarning();
   setTimeout(() => {
     updateVisMap();
     filterVisits();
@@ -4222,33 +4396,22 @@ function filterVisits(shouldUpdateMap = true) {
   const tokens = q ? q.split(/\s+/).filter(Boolean) : [];
 
   const filtered = _visSchools.filter(s => {
-    // 1. Distance Radius filter (Optional - defaults to ALL so no schools hidden)
     if (radiusMeters !== Infinity) {
       if (s._dist == null || s._dist > radiusMeters) return false;
     }
-
-    // 2. Direction filter (Optional - defaults to ALL)
     if (dirF !== 'ALL') {
       if (!isBearingInFilter(s._bearing, dirF, activeHeading)) return false;
     }
-
-    // 3. District filter
     if (distF && (s.district || '').toUpperCase() !== distF) return false;
-
-    // 4. Sector filter
     if (secF && !s.vts.some(v => (v.sector || '').toUpperCase() === secF)) return false;
-
-    // 5. Search text filter
     if (tokens.length) {
       const vtHay = s.vts.map(v => [v.name, v.sector, v.phone, v.sno, v.yug].filter(Boolean).join(' ')).join(' ');
       const hay = [s.school, s.district, s.mandal, s.udise, s.hm, s.hmPhone, s.scheme, vtHay].filter(Boolean).join(' ').toLowerCase();
       if (!tokens.every(t => hay.includes(t))) return false;
     }
-
     return true;
   });
 
-  // Update Map
   if (shouldUpdateMap) {
     updateVisMap();
   }
@@ -4257,11 +4420,10 @@ function filterVisits(shouldUpdateMap = true) {
   const countEl = $('vis-count');
   if (countEl) {
     const card = getCardinalDirection(activeHeading);
-    const dirTxt = dirF === 'PHONE' ? 'in Phone Direction' : dirF !== 'ALL' ? `heading ${dirF}` : 'all directions';
-    const radTxt = radiusF === 'ALL' ? 'Statewide (All Schools)' : `within ${radiusF} km`;
-    countEl.innerHTML = `
-      <span>Showing <strong>${filtered.length}</strong> of <strong>${_visSchools.length}</strong> schools (${dirTxt} · ${radTxt})</span>
-      <span style="font-size:.72rem;color:#64748b;font-weight:700">Phone Facing: ${card.icon} ${card.name} (${activeHeading}°)</span>`;
+    const dirTxt = dirF === 'PHONE' ? 'in Phone Direction' : dirF !== 'ALL' ? ('heading ' + dirF) : 'all directions';
+    const radTxt = radiusF === 'ALL' ? 'Statewide (All Schools)' : ('within ' + radiusF + ' km');
+    countEl.innerHTML = '<span>Showing <strong>' + filtered.length + '</strong> of <strong>' + _visSchools.length + '</strong> schools from <strong>' + _visLocName + '</strong> (' + dirTxt + ' · ' + radTxt + ')</span>' +
+      '<span style="font-size:.72rem;color:#64748b;font-weight:700">Phone Facing: ' + card.icon + ' ' + card.name + ' (' + activeHeading + '°)</span>';
   }
 
   // Render List
@@ -4274,7 +4436,7 @@ function filterVisits(shouldUpdateMap = true) {
         <div style="font-size:2.6rem;margin-bottom:10px">🧭</div>
         <div style="font-size:1rem;font-weight:800;color:#334155">No schools matched current search/filter</div>
         <div style="font-size:.82rem;color:#64748b;margin:6px auto 14px;max-width:400px;line-height:1.4">
-          Try switching to <strong>All Directions</strong> and <strong>All Schools (Statewide)</strong>.
+          Try switching to <strong>All Directions</strong> and <strong>All Schools (Statewide)</strong> or tap Set My Area.
         </div>
         <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
           <button class="btn bp" style="font-size:.78rem;padding:7px 14px" onclick="$('vis-radius').value='ALL';filterVisits()">⚪ Show All Statewide Schools</button>
@@ -4290,18 +4452,16 @@ function filterVisits(shouldUpdateMap = true) {
     const bearingDeg = s._bearing != null ? Math.round(s._bearing) + '°' : '';
     const rel = s._relOrientation || { isAhead: false, label: '', icon: '📍' };
 
-    // Badge styling for direction relative to phone
     const relBadge = rel.isAhead
-      ? `<span style="background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;padding:2px 8px;border-radius:8px;font-size:.7rem;font-weight:900;letter-spacing:.3px;box-shadow:0 1px 3px rgba(29,78,216,.15)">🎯 DIRECTLY AHEAD (IN PHONE DIR)</span>`
-      : `<span style="background:#f8fafc;color:#475569;border:1px solid #e2e8f0;padding:2px 8px;border-radius:8px;font-size:.7rem;font-weight:700">${rel.icon} ${rel.label}</span>`;
+      ? '<span style="background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;padding:2px 8px;border-radius:8px;font-size:.7rem;font-weight:900;letter-spacing:.3px;box-shadow:0 1px 3px rgba(29,78,216,.15)">🎯 DIRECTLY AHEAD (IN PHONE DIR)</span>'
+      : ('<span style="background:#f8fafc;color:#475569;border:1px solid #e2e8f0;padding:2px 8px;border-radius:8px;font-size:.7rem;font-weight:700">' + rel.icon + ' ' + rel.label + '</span>');
 
-    // Color code badge based on distance
     const distColor = s._dist == null ? '#64748b' : s._dist < 10000 ? '#15803d' : s._dist < 30000 ? '#1d4ed8' : s._dist < 60000 ? '#b45309' : '#475569';
     const distBg    = s._dist == null ? '#f1f5f9' : s._dist < 10000 ? '#f0fdf4' : s._dist < 30000 ? '#eff6ff' : s._dist < 60000 ? '#fffbeb' : '#f8fafc';
 
     const mapsUrl = (s.lat && s.lng)
-      ? `https://www.google.com/maps/dir/?api=1&destination=${s.lat},${s.lng}`
-      : `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(s.school + ', ' + s.district + ', Telangana')}`;
+      ? ('https://www.google.com/maps/dir/?api=1&destination=' + s.lat + ',' + s.lng)
+      : ('https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(s.school + ', ' + s.district + ', Telangana'));
 
     const vtRows = s.vts.map(v => {
       const sc = sectorColors[v.sector] || '#64748b';
@@ -4312,7 +4472,7 @@ function filterVisits(shouldUpdateMap = true) {
             <div style="display:flex;align-items:center;gap:6px;margin-top:3px;flex-wrap:wrap">
               <span style="background:${sc}18;color:${sc};padding:2px 9px;border-radius:12px;font-size:.69rem;font-weight:800">${v.sector}</span>
               <span style="font-size:.72rem;color:#94a3b8;font-weight:600">VT-${v.sno||'—'}</span>
-              ${v.yug ? `<span style="font-size:.67rem;color:#64748b;font-style:italic">${v.yug}</span>` : ''}
+              ${v.yug ? '<span style="font-size:.67rem;color:#64748b;font-style:italic">' + v.yug + '</span>' : ''}
             </div>
           </div>
           <a href="tel:${v.phone}" style="display:inline-flex;align-items:center;gap:5px;background:#16a34a;color:#fff;padding:7px 13px;border-radius:9px;font-size:.79rem;font-weight:800;text-decoration:none;white-space:nowrap;box-shadow:0 2px 6px rgba(22,163,74,.25)">📞 Call</a>
@@ -4322,7 +4482,7 @@ function filterVisits(shouldUpdateMap = true) {
     const hmRow = s.hm ? `
       <div style="font-size:.76rem;color:#475569;margin:6px 0 0;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
         <span>👤 HM: <strong>${s.hm}</strong></span>
-        ${s.hmPhone ? `<a href="tel:${s.hmPhone}" style="color:#2563eb;font-weight:700;text-decoration:none">📞 ${s.hmPhone}</a>` : ''}
+        ${s.hmPhone ? '<a href="tel:' + s.hmPhone + '" style="color:#2563eb;font-weight:700;text-decoration:none">📞 ' + s.hmPhone + '</a>' : ''}
       </div>` : '';
 
     return `
@@ -4331,12 +4491,12 @@ function filterVisits(shouldUpdateMap = true) {
           <div style="flex:1;min-width:0">
             <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:6px">
               <span style="font-size:.68rem;font-weight:800;letter-spacing:.5px;color:#94a3b8;text-transform:uppercase">#${i+1} · ${s.vts.length} VT${s.vts.length>1?'s':''}</span>
-              ${s._bearing != null ? `<span style="background:#f1f5f9;color:#334155;padding:2px 7px;border-radius:8px;font-size:.72rem;font-weight:800">${card.icon} ${card.code} (${bearingDeg})</span>` : ''}
+              ${s._bearing != null ? ('<span style="background:#f1f5f9;color:#334155;padding:2px 7px;border-radius:8px;font-size:.72rem;font-weight:800">' + card.icon + ' ' + card.code + ' (' + bearingDeg + ')</span>') : ''}
               ${relBadge}
             </div>
             <div style="font-weight:900;font-size:.96rem;color:#0f172a;line-height:1.35">${s.school}</div>
             <div style="font-size:.78rem;color:#64748b;margin-top:3px">📍 ${[s.mandal, s.district].filter(Boolean).join(', ')}</div>
-            ${s.udise ? `<div style="font-size:.7rem;color:#94a3b8;margin-top:2px;font-family:monospace">UDISE: ${s.udise}</div>` : ''}
+            ${s.udise ? '<div style="font-size:.7rem;color:#94a3b8;margin-top:2px;font-family:monospace">UDISE: ' + s.udise + '</div>' : ''}
             ${hmRow}
           </div>
           <div style="display:flex;flex-direction:column;align-items:flex-end;gap:7px;flex-shrink:0">
