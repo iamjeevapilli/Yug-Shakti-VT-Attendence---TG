@@ -24,6 +24,7 @@
 
 <link rel="icon" type="image/jpeg" href="favicon.jpg"/>
 <link rel="manifest" href="manifest.json" />
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <meta name="theme-color" content="#1a73e8" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -977,6 +978,292 @@ tbody td{padding:10px 12px;vertical-align:middle}
   });
   setInterval(function(){(function(){return false;}['constructor']('debugger')());},1000);
 </script>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     GLISSE LIQUID GLASS SYSTEM (Inspired by 0kzh/glisse)
+     Faithful Apple Liquid Glass with Specular Rims, Optical Depth & Interactive Sheen
+══════════════════════════════════════════════════════════════════ -->
+<style id="glisse-liquid-glass">
+  :root {
+    --glass-bg: rgba(255, 255, 255, 0.75);
+    --glass-bg-hover: rgba(255, 255, 255, 0.88);
+    --glass-border: rgba(255, 255, 255, 0.7);
+    --glass-specular: inset 0 1.5px 0.5px rgba(255, 255, 255, 0.9);
+    --glass-shadow: 0 12px 32px -4px rgba(15, 23, 42, 0.07), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
+    --glass-shadow-hover: 0 20px 42px -6px rgba(15, 23, 42, 0.12), 0 4px 12px -2px rgba(15, 23, 42, 0.06);
+    --glass-blur: blur(24px) saturate(190%);
+  }
+
+  /* ── Ambient Fluid Refraction Backdrop ── */
+  body {
+    background-color: #f1f5f9 !important;
+    background-image: 
+      radial-gradient(at 12% 15%, rgba(59, 130, 246, 0.13) 0px, transparent 45%),
+      radial-gradient(at 88% 12%, rgba(20, 184, 166, 0.12) 0px, transparent 45%),
+      radial-gradient(at 50% 85%, rgba(139, 92, 246, 0.08) 0px, transparent 55%),
+      radial-gradient(at 80% 80%, rgba(244, 63, 94, 0.06) 0px, transparent 40%) !important;
+    background-attachment: fixed !important;
+  }
+
+  /* ── Glisse Liquid Glass Cards ── */
+  .card, .sc, .tpcard, .vtd-card {
+    position: relative;
+    overflow: hidden;
+    background: var(--glass-bg) !important;
+    backdrop-filter: var(--glass-blur) !important;
+    -webkit-backdrop-filter: var(--glass-blur) !important;
+    border-radius: 20px !important;
+    border: 1px solid var(--glass-border) !important;
+    box-shadow: var(--glass-specular), var(--glass-shadow) !important;
+    transition: transform 0.28s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.28s ease, background 0.28s ease !important;
+  }
+
+  .card:hover, .sc:hover, .tpcard:hover {
+    transform: translateY(-2.5px) !important;
+    background: var(--glass-bg-hover) !important;
+    box-shadow: inset 0 1.5px 0.5px #ffffff, var(--glass-shadow-hover) !important;
+  }
+
+  /* Interactive Liquid Sheen on Glass Surfaces */
+  .card::before, .sc::before, .tpcard::before, .lbox::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      550px circle at var(--glass-x, 50%) var(--glass-y, 50%),
+      rgba(255, 255, 255, 0.45) 0%,
+      rgba(255, 255, 255, 0.08) 35%,
+      transparent 65%
+    );
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    z-index: 0;
+  }
+
+  .card:hover::before, .sc:hover::before, .tpcard:hover::before, .lbox:hover::before {
+    opacity: 1;
+  }
+
+  .card > *, .sc > *, .tpcard > *, .lbox > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── Glisse Liquid Glass Sidebar & Floating Capsule ── */
+  .sidebar {
+    background: rgba(255, 255, 255, 0.75) !important;
+    backdrop-filter: blur(28px) saturate(200%) !important;
+    -webkit-backdrop-filter: blur(28px) saturate(200%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.75) !important;
+    box-shadow: 
+      inset 0 1.5px 0.5px rgba(255, 255, 255, 0.95),
+      0 24px 48px -12px rgba(15, 23, 42, 0.09),
+      0 2px 8px rgba(0, 0, 0, 0.03) !important;
+    border-radius: 28px !important;
+  }
+
+  .sidebar .collapse-btn {
+    background: rgba(255, 255, 255, 0.6) !important;
+    backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.8) !important;
+    box-shadow: inset 0 1px 0 #fff !important;
+  }
+
+  /* Glisse Floating Tab Capsule */
+  .indicator {
+    background: linear-gradient(135deg, rgba(239, 246, 255, 0.95), rgba(219, 234, 254, 0.8)) !important;
+    backdrop-filter: blur(16px) !important;
+    border: 1px solid rgba(191, 219, 254, 0.85) !important;
+    box-shadow: 
+      inset 0 1.2px 0 rgba(255, 255, 255, 0.95),
+      0 4px 16px rgba(37, 99, 235, 0.12) !important;
+    border-radius: 16px !important;
+  }
+
+  .sb-nav-list button.active {
+    color: #1d4ed8 !important;
+    font-weight: 700;
+  }
+
+  /* ── Mobile Glisse Liquid TabBar ── */
+  .tbar {
+    background: rgba(255, 255, 255, 0.82) !important;
+    backdrop-filter: blur(28px) saturate(190%) !important;
+    -webkit-backdrop-filter: blur(28px) saturate(190%) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.6) !important;
+    box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05) !important;
+  }
+
+  .tbtn {
+    border-radius: 12px 12px 0 0 !important;
+    transition: all 0.22s cubic-bezier(0.25, 1, 0.5, 1) !important;
+  }
+
+  .tbtn.on {
+    background: rgba(37, 99, 235, 0.09) !important;
+    color: #1d4ed8 !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+  }
+
+  /* ── Glisse Liquid Glass Buttons ── */
+  .btn {
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(14px) !important;
+    -webkit-backdrop-filter: blur(14px) !important;
+    border-radius: 12px !important;
+    box-shadow: 
+      inset 0 1.2px 0 rgba(255, 255, 255, 0.4),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.1),
+      0 4px 12px rgba(15, 23, 42, 0.08) !important;
+    transition: all 0.22s cubic-bezier(0.25, 1, 0.5, 1) !important;
+  }
+
+  .btn:hover {
+    transform: translateY(-1.5px) scale(1.01) !important;
+    box-shadow: 
+      inset 0 1.5px 0 rgba(255, 255, 255, 0.55),
+      0 8px 20px rgba(15, 23, 42, 0.14) !important;
+  }
+
+  .btn:active {
+    transform: scale(0.97) !important;
+  }
+
+  .btn.bp {
+    background: linear-gradient(135deg, #1a73e8 0%, #1557b0 100%) !important;
+    box-shadow: 
+      inset 0 1.5px 0.5px rgba(255, 255, 255, 0.45),
+      0 6px 18px rgba(26, 115, 232, 0.35) !important;
+  }
+
+  .btn.bp:hover {
+    background: linear-gradient(135deg, #2581f5 0%, #1760c4 100%) !important;
+    box-shadow: 
+      inset 0 1.5px 0.5px rgba(255, 255, 255, 0.6),
+      0 10px 25px rgba(26, 115, 232, 0.45) !important;
+  }
+
+  .btn.bs {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+    box-shadow: 
+      inset 0 1.5px 0.5px rgba(255, 255, 255, 0.45),
+      0 6px 18px rgba(5, 150, 105, 0.35) !important;
+  }
+
+  /* ── Glisse Segmented Control / Role Selector ── */
+  .rtabs {
+    background: rgba(15, 23, 42, 0.06) !important;
+    backdrop-filter: blur(14px) !important;
+    -webkit-backdrop-filter: blur(14px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.65) !important;
+    padding: 4px !important;
+    border-radius: 14px !important;
+    gap: 4px;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.06) !important;
+  }
+
+  .rtab {
+    border-radius: 10px !important;
+    background: transparent !important;
+    border: none !important;
+    transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1) !important;
+  }
+
+  .rtab.on {
+    background: rgba(255, 255, 255, 0.95) !important;
+    color: #0f172a !important;
+    box-shadow: 
+      inset 0 1.2px 0 rgba(255, 255, 255, 0.95),
+      0 3px 10px rgba(15, 23, 42, 0.12) !important;
+    font-weight: 800 !important;
+  }
+
+  /* ── Glisse Form Controls ── */
+  .fc {
+    background: rgba(255, 255, 255, 0.7) !important;
+    backdrop-filter: blur(10px) !important;
+    border: 1.5px solid rgba(226, 232, 240, 0.8) !important;
+    border-radius: 12px !important;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+    transition: all 0.22s ease !important;
+  }
+
+  .fc:focus {
+    background: #ffffff !important;
+    border-color: #2563eb !important;
+    box-shadow: 
+      0 0 0 3.5px rgba(37, 99, 235, 0.15),
+      inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+  }
+
+  /* ── Glisse Login Liquid Glass ── */
+  .lwrap {
+    background: #0f172a !important;
+    background-image: 
+      radial-gradient(at 15% 20%, rgba(59, 130, 246, 0.32) 0px, transparent 50%),
+      radial-gradient(at 85% 15%, rgba(13, 148, 136, 0.3) 0px, transparent 48%),
+      radial-gradient(at 50% 85%, rgba(124, 58, 237, 0.28) 0px, transparent 55%) !important;
+    background-attachment: fixed !important;
+  }
+
+  .lbox {
+    background: rgba(255, 255, 255, 0.84) !important;
+    backdrop-filter: blur(36px) saturate(200%) !important;
+    -webkit-backdrop-filter: blur(36px) saturate(200%) !important;
+    border-radius: 28px !important;
+    border: 1px solid rgba(255, 255, 255, 0.75) !important;
+    box-shadow: 
+      inset 0 1.5px 0.5px rgba(255, 255, 255, 0.95),
+      0 32px 70px -15px rgba(0, 0, 0, 0.42),
+      0 4px 16px rgba(0, 0, 0, 0.06) !important;
+  }
+
+  /* ── Glisse Modals ── */
+  .mbox {
+    background: rgba(255, 255, 255, 0.92) !important;
+    backdrop-filter: blur(32px) saturate(190%) !important;
+    -webkit-backdrop-filter: blur(32px) saturate(190%) !important;
+    border-radius: 24px !important;
+    border: 1px solid rgba(255, 255, 255, 0.7) !important;
+    box-shadow: 
+      inset 0 1.5px 0.5px #fff,
+      0 28px 64px -12px rgba(15, 23, 42, 0.3) !important;
+  }
+</style>
+<script id="glisse-interaction-script">
+(function initGlisseLiquidGlassTracker() {
+  if (window._glisseTrackerAttached) return;
+  window._glisseTrackerAttached = true;
+  
+  function updateSheen(e) {
+    const selector = '.card, .sc, .lbox, .tpcard, .vtd-card, .btn';
+    const elements = document.querySelectorAll(selector);
+    for (let i = 0; i < elements.length; i++) {
+      const el = elements[i];
+      const r = el.getBoundingClientRect();
+      if (e.clientX >= r.left - 40 && e.clientX <= r.right + 40 &&
+          e.clientY >= r.top - 40 && e.clientY <= r.bottom + 40) {
+        const x = Math.round(((e.clientX - r.left) / r.width) * 100);
+        const y = Math.round(((e.clientY - r.top) / r.height) * 100);
+        el.style.setProperty('--glass-x', x + '%');
+        el.style.setProperty('--glass-y', y + '%');
+      }
+    }
+  }
+
+  let rafId = null;
+  window.addEventListener('pointermove', function(e) {
+    if (rafId) return;
+    rafId = requestAnimationFrame(function() {
+      updateSheen(e);
+      rafId = null;
+    });
+  }, { passive: true });
+})();
+</script>
+
 </head>
 <body>
 <div id="loader">
@@ -1074,8 +1361,11 @@ tbody td{padding:10px 12px;vertical-align:middle}
           📊 Dashboard
         </div>
       </div>
-      <div style="display:flex;align-items:center;gap:16px">
+      <div style="display:flex;align-items:center;gap:10px">
         <span id="clk" style="font-size:.82rem;font-weight:700;color:var(--muted)"></span>
+        <button type="button" onclick="swPg('settings')" title="System Settings" style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.85);border:1px solid #e2e8f0;padding:6px 13px;border-radius:12px;font-size:0.84rem;font-weight:700;color:var(--text);cursor:pointer;backdrop-filter:blur(10px);box-shadow:0 2px 8px rgba(0,0,0,0.04);transition:all .2s;" onmouseover="this.style.background='#eff6ff';this.style.borderColor='#3b82f6'" onmouseout="this.style.background='rgba(255,255,255,0.85)';this.style.borderColor='#e2e8f0'">
+          <span>⚙️</span> <span>Settings</span>
+        </button>
         <span class="nu" id="nUser" style="font-size:.88rem;font-weight:800;color:var(--text);background:var(--surface);padding:6px 14px;border-radius:12px;border:1px solid #e2e8f0"></span>
       </div>
     </div>
@@ -1319,87 +1609,9 @@ tbody td{padding:10px 12px;vertical-align:middle}
     </div>
   </div>
 
-  <!-- VTS DATA SHEET (Native Full searchable grid) -->
-  <div class="pg" id="pg-vtsdata">
-    <div class="vtd-header" style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap">
-      <div class="vtd-header-inner">
-        <div class="vtd-header-badge">📋 GeoAttend — Yug Shakti</div>
-        <h2>VT's <span>Details</span></h2>
-        <p>Vocational Trainers Master Register — Telangana State | 2025–26</p>
-        <div class="vtd-header-stats">
-          <div class="vtd-hstat"><div class="v" id="vtd-hTotal">254</div><div class="l">Total VTs</div></div>
-          <div class="vtd-hstat"><div class="v" id="vtd-hSectors">6</div><div class="l">Sectors</div></div>
-          <div class="vtd-hstat"><div class="v" id="vtd-hDistricts">—</div><div class="l">Districts</div></div>
-          <div class="vtd-hstat"><div class="v" id="vtd-hShowing">254</div><div class="l">Showing</div></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="vtd-controls">
-      <div class="vtd-search-wrap">
-        <span class="si">🔍</span>
-        <input class="fc" id="vtd-srch" placeholder="Search by name, phone, school, district, qualification, UDISE, PAN..." oninput="vtdFilterAll()"/>
-      </div>
-      <select class="vtd-ctl-select" id="vtd-secF" onchange="vtdFilterAll()">
-        <option value="">All Sectors</option>
-        <option value="APPAREL">APPAREL</option>
-        <option value="BEAUTY AND WELLNESS">BEAUTY &amp; WELLNESS</option>
-        <option value="HEALTH CARE">HEALTH CARE</option>
-        <option value="AUTOMOTIVE">AUTOMOTIVE</option>
-        <option value="IT/ITES">IT/ITES</option>
-        <option value="ELECTRONICS AND HARDWARE">ELECTRONICS &amp; HW</option>
-      </select>
-      <select class="vtd-ctl-select" id="vtd-schemeF" onchange="vtdFilterAll()">
-        <option value="">All Schemes</option>
-        <option value="PMSHRI">PM SHRI</option>
-        <option value="SAMAGRA">SAMAGRA</option>
-      </select>
-      <select class="vtd-ctl-select" id="vtd-sortF" onchange="vtdFilterAll()">
-        <option value="sno">Sort: S.No</option>
-        <option value="name">Sort: Name A–Z</option>
-        <option value="sector">Sort: Sector</option>
-        <option value="district">Sort: District</option>
-        <option value="joining">Sort: Joining Date</option>
-      </select>
-      <button class="vtd-btn-export" onclick="vtdExportCSV()">📤 Export CSV</button>
-    </div>
-
-    <div class="vtd-summary" id="vtd-tagRow"></div>
-
-    <div class="vtd-table-wrap">
-      <div class="vtd-card">
-        <div class="vtd-card-head">
-          <span>Vocational Trainers Register</span>
-          <span class="vtd-count-badge" id="vtd-countBadge">254 records</span>
-        </div>
-        <div class="vtd-tw">
-          <table id="vtd-vtTable">
-            <thead>
-              <tr>
-                <th>S.No</th>
-                <th>Name &amp; Contact</th>
-                <th>Sector</th>
-                <th>YUG Contract ID</th>
-                <th>School</th>
-                <th>District</th>
-                <th>Mandal</th>
-                <th>Scheme</th>
-                <th>UDISE</th>
-                <th>Joining Date</th>
-                <th>DOB</th>
-                <th>Qualification</th>
-                <th>Exp (Current)</th>
-                <th>Exp (Total)</th>
-              </tr>
-            </thead>
-            <tbody id="vtd-vtBody">
-              <tr><td colspan="14" style="text-align:center;padding:40px;color:#64748b">⏳ Loading VT details...</td></tr>
-            </tbody>
-          </table>
-        </div>
-        <div id="vtd-pgr" class="vtd-pgr"></div>
-      </div>
-    </div>
+  <!-- VTS DATA SHEET (Full searchable grid with HS & HSS Tabs and School Directory) -->
+  <div class="pg" id="pg-vtsdata" style="padding:0;">
+    <iframe id="vtsFrame" src="about:blank" style="width:100%; height:calc(100vh - 60px); border:none; display:block;"></iframe>
   </div>
 
   <!-- TRAINER PROFILE (subfolder) -->
@@ -3819,64 +4031,29 @@ function vtdExportCSV() {
   a.click();
 }
 
+async function openVtsInNewTab() {
+  const token = await ensureAdminToken();
+  const url = 'vts.html' + (token ? ('?token=' + encodeURIComponent(token)) : '');
+  window.open(url, '_blank');
+}
+
 async function rVtsData() {
-  // If VTS_FULL is empty or still loading, load from server or fallback
+  const token = await ensureAdminToken();
   if (!window.VTS_FULL || window.VTS_FULL.length === 0) {
-    await loadAdminVtsData();
+    loadAdminVtsData().catch(e => console.warn(e));
   }
-  
-  if (!window.VTS_FULL || window.VTS_FULL.length === 0) {
-    const raw = DB.get('teachers', window.SEED || []);
-    if (raw && raw.length) {
-      window.VTS_FULL = raw.map((t, i) => ({
-        sno: t.sno || (i + 1),
-        name: t.name || '',
-        phone: t.phone || t.ph || '',
-        sector: t.sector || '',
-        yug: t.yug || '',
-        school: t.school || '',
-        district: t.district || '',
-        mandal: t.mandal || '',
-        scheme: t.scheme || '',
-        udise: t.udise || '',
-        joining: t.joining || '',
-        dob: t.dob || '',
-        qual: t.qual || '',
-        expCurr: t.expCurr || '',
-        expTotal: t.expTotal || '',
-        lat: t.lat || null,
-        lng: t.lng || null
-      }));
+  const iframe = document.getElementById("vtsFrame") || document.querySelector("#pg-vtsdata iframe");
+  if (iframe) {
+    const targetUrl = "vts.html" + (token ? ("?token=" + encodeURIComponent(token)) : "");
+    const currentSrc = iframe.getAttribute("src") || "";
+    if (!currentSrc || currentSrc === "about:blank" || !currentSrc.startsWith("vts.html")) {
+      iframe.setAttribute("src", targetUrl);
+    } else {
+      if (token && iframe.contentWindow && typeof iframe.contentWindow.loadProtectedVTData === "function") {
+        iframe.contentWindow.loadProtectedVTData(token);
+      }
     }
   }
-
-  // Sync with live DB updates
-  try {
-    const teachers = DB.get('teachers', []);
-    if (teachers && teachers.length && window.VTS_FULL && window.VTS_FULL.length) {
-      window.VTS_FULL.forEach(v => {
-        const t = teachers.find(x => x.ph === v.phone || x.phone === v.phone);
-        if (t) {
-          if (t.name) v.name = t.name;
-          if (t.school) v.school = t.school;
-          if (t.sector) v.sector = t.sector;
-          if (t.udise !== undefined) v.udise = t.udise;
-          if (t.lat !== undefined) v.lat = parseFloat(t.lat) || v.lat;
-          if (t.lng !== undefined) v.lng = parseFloat(t.lng) || v.lng;
-        }
-      });
-    }
-  } catch(e) {}
-
-  // Update header stats
-  if ($('vtd-hTotal')) $('vtd-hTotal').textContent = window.VTS_FULL.length;
-  if ($('vtd-hSectors')) $('vtd-hSectors').textContent = new Set(window.VTS_FULL.map(v => v.sector).filter(Boolean)).size || 6;
-  if ($('vtd-hDistricts')) $('vtd-hDistricts').textContent = new Set(window.VTS_FULL.map(v => v.district).filter(Boolean)).size || '—';
-  if ($('vtd-hShowing')) $('vtd-hShowing').textContent = window.VTS_FULL.length;
-
-  vtdFiltered = [...window.VTS_FULL];
-  if (typeof vtdBuildTags === 'function') vtdBuildTags();
-  if (typeof vtdFilterAll === 'function') vtdFilterAll();
 }
 
 // ── School Visit Planner & Live Road Navigator ────────────────────────

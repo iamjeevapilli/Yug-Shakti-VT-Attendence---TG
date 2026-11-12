@@ -209,6 +209,67 @@ tbody td strong{color:var(--ink);font-weight:600}
   .modal-actions a, .modal-actions button{justify-content:center!important;font-size:.8rem!important;padding:10px 8px!important;display:inline-flex;align-items:center}
 }
 </style>
+
+<!-- GLISSE LIQUID GLASS STYLES FOR VTS -->
+<style id="glisse-liquid-glass-vts">
+  body {
+    background-color: #f8fafc !important;
+    background-image: 
+      radial-gradient(at 10% 10%, rgba(13, 148, 136, 0.12) 0px, transparent 40%),
+      radial-gradient(at 90% 15%, rgba(59, 130, 246, 0.12) 0px, transparent 40%),
+      radial-gradient(at 50% 90%, rgba(139, 92, 246, 0.08) 0px, transparent 50%) !important;
+    background-attachment: fixed !important;
+  }
+  .tabs {
+    padding: 16px 16px 4px !important;
+  }
+  .tab {
+    background: rgba(255, 255, 255, 0.75) !important;
+    backdrop-filter: blur(16px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.8) !important;
+    box-shadow: inset 0 1.2px 0 rgba(255, 255, 255, 0.95), 0 4px 14px rgba(15, 23, 42, 0.05) !important;
+    border-radius: 14px !important;
+    transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1) !important;
+  }
+  .tab:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: inset 0 1.5px 0.5px #fff, 0 8px 20px rgba(13, 148, 136, 0.18) !important;
+    color: #0d9488 !important;
+  }
+  .tab.active {
+    background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%) !important;
+    border-color: #0d9488 !important;
+    color: #ffffff !important;
+    box-shadow: inset 0 1.5px 0.5px rgba(255, 255, 255, 0.45), 0 8px 24px rgba(13, 148, 136, 0.35) !important;
+  }
+  .card {
+    background: rgba(255, 255, 255, 0.8) !important;
+    backdrop-filter: blur(24px) saturate(190%) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(190%) !important;
+    border-radius: 20px !important;
+    border: 1px solid rgba(255, 255, 255, 0.75) !important;
+    box-shadow: inset 0 1.5px 0.5px #fff, 0 12px 36px -4px rgba(15, 23, 42, 0.07) !important;
+  }
+  .search-wrap input, .ctl-select {
+    background: rgba(255, 255, 255, 0.75) !important;
+    backdrop-filter: blur(12px) !important;
+    border: 1.5px solid rgba(226, 232, 240, 0.85) !important;
+    border-radius: 12px !important;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03) !important;
+  }
+  .btn-export {
+    backdrop-filter: blur(14px) !important;
+    border-radius: 12px !important;
+    box-shadow: inset 0 1.2px 0 rgba(255, 255, 255, 0.45), 0 4px 14px rgba(13, 148, 136, 0.3) !important;
+    transition: all 0.22s ease !important;
+  }
+  .btn-export:hover {
+    transform: translateY(-1.5px) !important;
+    box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, 0.6), 0 8px 22px rgba(13, 148, 136, 0.45) !important;
+  }
+</style>
+
 </head>
 <body>
 
