@@ -2473,6 +2473,209 @@ tbody td{padding:10px 12px;vertical-align:middle}
     color: #334155;
   }
 
+
+  /* ═══════════════════════════════════════════════════════
+     MOBILE-OPTIMIZED AI ASSISTANT INTERFACE
+     Full-screen on phones, smooth UX, large touch targets
+  ═══════════════════════════════════════════════════════ */
+  @media (max-width: 640px) {
+    /* AI Floating Pill — bigger touch target on mobile */
+    .ai-copilot-pill {
+      bottom: 16px !important;
+      right: 12px !important;
+      padding: 12px 18px !important;
+      font-size: 0.92rem !important;
+      border-radius: 28px !important;
+      box-shadow: 0 8px 24px rgba(15,23,42,0.45) !important;
+      z-index: 10000 !important;
+    }
+
+    /* Drawer overlay — full screen on mobile */
+    .ai-drawer-overlay {
+      padding: 0 !important;
+      align-items: stretch !important;
+      justify-content: stretch !important;
+    }
+
+    /* AI Card — full screen sheet */
+    .ai-drawer-card {
+      max-width: 100% !important;
+      width: 100% !important;
+      height: 100vh !important;
+      height: 100dvh !important;
+      border-radius: 0 !important;
+      border: none !important;
+      animation: aiSlideUpMobile 0.25s ease-out !important;
+    }
+    @keyframes aiSlideUpMobile {
+      from { transform: translateY(100%); opacity: 0.5; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* Header — compact */
+    .ai-drawer-head {
+      padding: 12px 14px !important;
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      background: rgba(255,255,255,0.95) !important;
+      backdrop-filter: blur(20px) !important;
+      -webkit-backdrop-filter: blur(20px) !important;
+    }
+
+    .ai-avatar-badge {
+      width: 32px !important;
+      height: 32px !important;
+      font-size: 1rem !important;
+      border-radius: 10px !important;
+    }
+
+    /* Monitor bar — horizontal scroll */
+    .ai-monitor-bar {
+      padding: 8px 12px !important;
+      gap: 6px !important;
+      flex-wrap: nowrap !important;
+      overflow-x: auto !important;
+    }
+    .ai-monitor-badge {
+      font-size: 0.68rem !important;
+      padding: 3px 8px !important;
+      white-space: nowrap !important;
+    }
+
+    /* Quick chips — larger touch targets */
+    .ai-chips-scroll {
+      padding: 8px 12px !important;
+      gap: 6px !important;
+    }
+    .ai-chip {
+      padding: 8px 14px !important;
+      font-size: 0.78rem !important;
+      border-radius: 18px !important;
+      min-height: 36px !important;
+      display: flex !important;
+      align-items: center !important;
+    }
+
+    /* Chat body — fill remaining space */
+    .ai-chat-body {
+      padding: 12px !important;
+      gap: 10px !important;
+      flex: 1 !important;
+      overflow-y: auto !important;
+      -webkit-overflow-scrolling: touch !important;
+    }
+
+    /* Messages — wider on mobile */
+    .ai-msg {
+      max-width: 92% !important;
+      padding: 10px 14px !important;
+      border-radius: 16px !important;
+      font-size: 0.84rem !important;
+      line-height: 1.5 !important;
+    }
+    .ai-msg.user {
+      border-bottom-right-radius: 4px !important;
+    }
+    .ai-msg.bot {
+      border-bottom-left-radius: 4px !important;
+    }
+
+    /* Detail cards inside chat — full width */
+    .ai-detail-card {
+      padding: 12px !important;
+      border-radius: 14px !important;
+      font-size: 0.8rem !important;
+    }
+    .ai-detail-card .dc-name {
+      font-size: 0.88rem !important;
+      flex-wrap: wrap !important;
+    }
+    .ai-detail-card .dc-row {
+      flex-direction: column !important;
+      gap: 1px !important;
+      margin-bottom: 5px !important;
+    }
+    .ai-detail-card .dc-label {
+      min-width: unset !important;
+      font-size: 0.72rem !important;
+    }
+    .ai-detail-card .dc-val {
+      font-size: 0.8rem !important;
+    }
+
+    /* Speak button on messages */
+    .ai-speak-btn {
+      font-size: 0.73rem !important;
+      padding: 5px 12px !important;
+      margin-top: 6px !important;
+      border-radius: 14px !important;
+      min-height: 32px !important;
+    }
+
+    /* Input footer — safe area + bigger targets */
+    .ai-chat-foot {
+      padding: 10px 10px calc(10px + env(safe-area-inset-bottom, 0px)) !important;
+      gap: 6px !important;
+      position: sticky !important;
+      bottom: 0 !important;
+      background: rgba(255,255,255,0.96) !important;
+      backdrop-filter: blur(16px) !important;
+      -webkit-backdrop-filter: blur(16px) !important;
+      border-top: 1px solid rgba(226,232,240,0.8) !important;
+    }
+
+    .ai-input-box {
+      font-size: 0.9rem !important;
+      padding: 11px 16px !important;
+      border-radius: 20px !important;
+      min-height: 44px !important;
+    }
+
+    /* Mic button — bigger for thumb */
+    .ai-mic-btn {
+      width: 44px !important;
+      height: 44px !important;
+      font-size: 1.15rem !important;
+      border-radius: 50% !important;
+    }
+    .ai-mic-btn.listening {
+      width: auto !important;
+      min-width: 44px !important;
+      padding: 0 12px !important;
+      border-radius: 22px !important;
+      font-size: 0.78rem !important;
+    }
+
+    /* Send button — bigger for thumb */
+    .ai-send-btn {
+      width: 44px !important;
+      height: 44px !important;
+      border-radius: 50% !important;
+    }
+
+    /* School card */
+    .ai-school-card {
+      padding: 12px !important;
+      border-radius: 14px !important;
+    }
+  }
+
+  /* Extra small phones (≤ 380px) */
+  @media (max-width: 380px) {
+    .ai-chip {
+      padding: 6px 10px !important;
+      font-size: 0.72rem !important;
+    }
+    .ai-msg {
+      max-width: 95% !important;
+      font-size: 0.8rem !important;
+    }
+    .ai-detail-card .dc-name {
+      font-size: 0.82rem !important;
+    }
+  }
+
   /* ── VT / School Detail Card inside chat ── */
   .ai-detail-card {
     background: linear-gradient(135deg, #f8faff 0%, #f0f9ff 100%);
@@ -7968,7 +8171,7 @@ function renderThemeGrid() {
         • <em>"Absent in Medchal district"</em><br>
         • <em>"School details of ZPHS Jeedimetla"</em><br>
         • <em>"All VTs in IT sector"</em><br><br>
-        Tap 🎤 to speak your question!
+        Tap 🎤 to speak — English or Telugu!
       </div>
     </div>
 
@@ -8330,6 +8533,75 @@ async function yugAILoadFullData() {
   return yugAIFullData;
 }
 
+
+// ── Telugu → English Transliteration Map ────────────────────────
+const TELUGU_NAME_MAP = {
+  // VT Names
+  'రాజేశ్వరి':'rajeshwari','రాజెశ్వరి':'rajeshwari','జ్యోతి':'jyothi','జ్యోతీ':'jyothi',
+  'ఆనంద్':'anand','ఉడుగు':'udugu','కళ్యాణి':'kalyani','కల్యాణి':'kalyani',
+  'సురేష్':'suresh','ప్రియాంక':'priyanka','మౌనిక':'mounika','మౌనికా':'mounika',
+  'భార్గవి':'bhargavi','దివ్య':'divya','సంతోష్':'santhosh','వీరేష్':'veeresh',
+  'అఖిలజ':'akhilaja','భాస్కర్':'bhaskar','నీరజ':'neeraja','జగదాంబ':'jagadamba',
+  'శ్రీలేఖ':'srilekha','జాన్సీరాణి':'jhansirani','వినోద':'vinoda','కమల':'kamala',
+  'వనమాల':'vanamala','అనిత':'anitha','శేఖర్':'shekar','ప్రత్యూష':'prathyusha',
+  'ఈశ్వర్':'eshwar','దీక్షిత':'deekshitha','శ్రీలత':'sreelatha','వరలక్ష్మి':'varalaxmi',
+  'వరలక్ష్మీ':'varalaxmi','కవేరి':'kaveri','మాలి':'maali',
+  // Schools
+  'రాగన్నగూడ':'ragannaguda','రాగనగూడ':'raganaguda','జీడిమెట్ల':'jeedimetla',
+  'ఉప్పునుతల':'uppunutala','వనపర్తి':'wanaparthy','బొమ్మలరామరం':'bomalaramaram',
+  'శివంపేట్':'shivampet','షాబాద్':'shabad','కొత్తూరు':'kothur',
+  'సిరికొండ':'sirikonda','మద్దిరాల':'maddirala','కరీమాబాద్':'kareemabad',
+  'అంబాట్‌పల్లి':'ambatpally','రుద్రారం':'rudraram','కోలనుపాక':'kolanupaka',
+  'బురగుల':'burgula','సింగానగుడ':'singanaguda','గుమ్మడిధల':'gumadidhala',
+  'నల్లబెల్లి':'nallabelly','శంకర్‌పల్లి':'shankarpally',
+  // Districts
+  'మేడ్చల్':'medchal','సంగారెడ్డి':'sangareddy','వరంగల్':'warangal',
+  'సిద్దిపేట':'siddipet','కరీంనగర్':'karimnagar','నిజామాబాద్':'nizamabad',
+  'నాగర్కర్నూల్':'nagarkurnool','వికారాబాద్':'vikarabad','ఖమ్మం':'khammam',
+  'నల్గొండ':'nalgonda','మహబూబ్‌నగర్':'mahabubnagar','సూర్యాపేట':'suryapet',
+  'హైదరాబాద్':'hyderabad','రంగారెడ్డి':'ranga reddy','మేడక్':'medak',
+  'ఆదిలాబాద్':'adilabad','జగిత్యాల':'jagitial','పెద్దపల్లి':'peddapalli',
+  'కామారెడ్డి':'kamareddy','ములుగు':'mulugu','నారాయణపేట':'narayanpet',
+  'మహబూబాబాద్':'mahabubabad','హనుమకొండ':'hanamkonda',
+  // Mandals
+  'అబ్దుల్లాపూర్మెట్':'abdullapurmet','అబ్దుల్లాపూర్మెట':'abdullapurmet',
+  'కుత్బుల్లాపూర్':'quthbullapur','రామన్నపేట':'ramannapeta','ఫారూఖ్‌నగర్':'farooq nagar',
+  'కొడంగల్':'kodangal','ధర్మారం':'dharmaram','బీబీనగర్':'bibinagar',
+  'లింగాల్':'lingal','శ్రీరంగాపూర్':'srirangapur',
+};
+
+// Telugu filler/command words to strip
+const TELUGU_FILLER_RE = /వివరాలు|వివరం|చెప్పు|చూపించు|ఎవరు|ఎవరి|గురించి|ఇవ్వండి|తెలుపు|తెలియజేయి|స్కూల్|పాఠశాల|ప్రిన్సిపాల్|హెచ్ఎం|టీచర్|ట్రైనర్|యొక్క|అన్ని|మొత్తం|ఎంతమంది|ఉన్నారు|లేరు|ఉన్నారా|హాజరు|గైరు|హాజరైన|గైర్హాజరు|జిల్లా|మండలం|గ్రామం|ఊరు|దయచేసి|నాకు|చెప్పండి|ఏమిటి|ఎలా|ఎక్కడ|ప్రస్తుతం/gi;
+
+// Telugu intent keywords for context detection
+const TELUGU_INTENT_MAP = {
+  principal: /ప్రిన్సిపాల్|హెచ్ఎం|ప్రధానోపాధ్యాయ|హెడ్‌మాస్టర్/i,
+  school: /స్కూల్|పాఠశాల|బడి|విద్యాలయం/i,
+  village: /గ్రామం|ఊరు|మండలం|ప్రాంతం/i,
+  absent: /గైర్హాజరు|గైరు|రాలేదు|లేరు/i,
+  present: /హాజరు|వచ్చారు|ఉన్నారు/i,
+  trainer: /టీచర్|ట్రైనర్|ఉపాధ్యాయ/i,
+  summary: /మొత్తం|సారాంశం|ఎంతమంది/i,
+};
+
+function yugAITransliterate(text) {
+  let res = text;
+  for (const [te, en] of Object.entries(TELUGU_NAME_MAP)) {
+    res = res.replace(new RegExp(te, 'gi'), en);
+  }
+  // Strip remaining Telugu filler words
+  res = res.replace(TELUGU_FILLER_RE, ' ');
+  return res.replace(/\s+/g, ' ').trim();
+}
+
+function detectTeluguIntent(rawQuery) {
+  const intents = {};
+  for (const [key, re] of Object.entries(TELUGU_INTENT_MAP)) {
+    intents[key] = re.test(rawQuery);
+  }
+  return intents;
+}
+
 // ── Fuzzy Search Engine — covers all 254 VTs across all fields ──
 function yugAISearchVTS(rawQuery, vts) {
   const qLower = rawQuery.toLowerCase();
@@ -8454,21 +8726,36 @@ function toggleAIVoice() {
   if (!yugAIVoiceEnabled && window.speechSynthesis) window.speechSynthesis.cancel();
 }
 
-// ── TTS Speak ───────────────────────────────────────────────────
+// ── TTS Speak — Female voice with Indian English ────────────────
 function yugAISpeak(text) {
   if (!window.speechSynthesis) return;
   window.speechSynthesis.cancel();
-  // Strip HTML tags for speech
-  const plain = text.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().substring(0, 500);
+  const plain = text.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().substring(0, 600);
   const utt = new SpeechSynthesisUtterance(plain);
   utt.lang = 'en-IN';
-  utt.rate = 0.95;
-  utt.pitch = 1.05;
-  // Prefer Indian English voice
+  utt.rate = 0.92;
+  utt.pitch = 1.15;
+  utt.volume = 1.0;
+
+  // Pick the best FEMALE voice available
   const voices = window.speechSynthesis.getVoices();
-  const indian = voices.find(v => v.lang === 'en-IN') || voices.find(v => v.lang.startsWith('en'));
-  if (indian) utt.voice = indian;
+  const femaleKeywords = ['female','woman','zira','heera','priya','aditi','raveena','neerja','swara','veena','ananya','lakshmi','kavya','sunita'];
+  const isFemale = (v) => femaleKeywords.some(k => v.name.toLowerCase().includes(k));
+
+  // Priority: Female en-IN > Female en > any en-IN female-sounding > any en-IN > any en
+  let pick = voices.find(v => v.lang === 'en-IN' && isFemale(v))
+          || voices.find(v => v.lang.startsWith('en') && isFemale(v))
+          || voices.find(v => v.lang === 'en-IN')
+          || voices.find(v => v.lang.startsWith('en') && isFemale(v))
+          || voices.find(v => v.lang.startsWith('en'));
+  if (pick) utt.voice = pick;
   window.speechSynthesis.speak(utt);
+}
+
+// Preload voices (Chrome loads them async)
+if (window.speechSynthesis) {
+  window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+  window.speechSynthesis.getVoices();
 }
 
 // ── Mic (Speech-to-Text) ────────────────────────────────────────
@@ -8484,7 +8771,9 @@ function toggleAIMic() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   yugAIMicRecognition = new SR();
   // Support Telugu-accented English — try en-IN first, fall back to en-US
-  yugAIMicRecognition.lang = 'en-IN';
+  // Support Telugu + English — Chrome picks best match
+  yugAIMicRecognition.lang = 'te-IN'; // Telugu primary for local names
+  // Fallback: also understand English transcriptions
   yugAIMicRecognition.interimResults = true;   // show live transcript while speaking
   yugAIMicRecognition.maxAlternatives = 3;      // pick best of 3 guesses
   yugAIMicRecognition.continuous = false;
@@ -8564,7 +8853,7 @@ function stopAIMicClean() {
   const btn = document.getElementById('aiMicBtn');
   if (btn) { btn.classList.remove('listening'); btn.textContent = '🎤'; btn.style.minWidth = ''; }
   const inp = document.getElementById('aiChatInput');
-  if (inp) inp.placeholder = "Ask: 'Details of Rajeshwari' or 'ZPHS Jeedimetla'...";
+  if (inp) inp.placeholder = "Ask in English or Telugu — 'రాజేశ్వరి వివరాలు' or 'Details of Rajeshwari'";
 }
 
 function stopAIMic() { stopAIMicClean(); }
@@ -8625,6 +8914,20 @@ function submitAIChat() {
 // ── Main Query Processor ────────────────────────────────────────
 async function processAIQuery(query) {
   const body = document.getElementById('aiChatBody');
+
+  // ── Telugu → English transliteration ──
+  const hasTeluguChars = /[ఀ-౿]/.test(query);
+  if (hasTeluguChars) {
+    const teIntent = detectTeluguIntent(query);
+    query = yugAITransliterate(query);
+    // Map Telugu intents to English keywords so the search engine picks them up
+    if (teIntent.principal && !query.toLowerCase().includes('principal')) query = 'principal ' + query;
+    if (teIntent.school && !query.toLowerCase().includes('school')) query = 'school ' + query;
+    if (teIntent.village && !query.toLowerCase().includes('village')) query = 'village ' + query;
+    if (teIntent.absent && !query.toLowerCase().includes('absent')) query = 'absent ' + query;
+    if (teIntent.present && !query.toLowerCase().includes('present')) query = 'present ' + query;
+    if (teIntent.summary && !query.toLowerCase().includes('summary')) query = 'summary ' + query;
+  }
 
   // User bubble
   const userEl = document.createElement('div');
