@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
 <title>Geo-FRS Portal - Yug Shakti Vocational Education | Jeeva Pilli</title>
 <meta name="description" content="Official Geo-FRS Attendance Portal for Yug Shakti Vocational Education Trainers in Telangana. Developed and managed by Jeeva Pilli." />
 <meta name="keywords" content="Yug Shakti, Jeeva Pilli, TSVC, Geo-FRS Portal, Vocational Education, Telangana, Attendance System, Yug Shakti Shaikshanik Evam Samajik Vikas Sanstha, VT Attendance, Face Recognition Attendance, Geo Attendance" />
@@ -31,7 +31,7 @@
 <meta name="apple-mobile-web-app-title" content="YS Geo-FRS" />
 <link rel="apple-touch-icon" href="/logo.png" />
 <script src="https://unpkg.com/lucide@latest"></script>
-<script src="vts_data.js?v=20261114_5"></script>
+<script src="vts_data.js?v=20261115_1"></script>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
 <meta http-equiv="Expires" content="0" />
@@ -611,18 +611,82 @@ tbody td{padding:10px 12px;vertical-align:middle}
   }
   .app-main-content {
     margin-left: 0 !important;
-    padding: 12px 12px 30px !important;
+    padding: max(16px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(100px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)) !important;
     width: 100% !important;
+    overflow-x: hidden !important;
   }
   .top-header {
     padding: 10px 14px !important;
     margin-bottom: 14px !important;
+    position: sticky !important;
+    top: max(8px, env(safe-area-inset-top)) !important;
+    z-index: 100 !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
   }
   #sbPageTitle {
     font-size: 0.96rem !important;
   }
   #clk {
     display: none !important;
+  }
+  /* Mobile 3D Command Floor optimizations */
+  .room-3d-card {
+    height: clamp(300px, 46vh, 360px) !important;
+    border-radius: 20px !important;
+  }
+  .room-3d-overlay-head {
+    top: 10px !important;
+    left: 10px !important;
+    right: 10px !important;
+    gap: 6px !important;
+  }
+  .room-3d-badge {
+    font-size: 0.68rem !important;
+    padding: 4px 10px !important;
+  }
+  .room-3d-controls {
+    gap: 5px !important;
+  }
+  .room-ctrl-btn {
+    padding: 4px 8px !important;
+    font-size: 0.72rem !important;
+    border-radius: 8px !important;
+  }
+  .room-3d-hint {
+    bottom: 8px !important;
+    left: 10px !important;
+    font-size: 0.68rem !important;
+    padding: 3px 8px !important;
+  }
+  /* Dashboard toggle bar on mobile */
+  .dash-view-toggle-bar {
+    gap: 8px !important;
+    margin-bottom: 12px !important;
+  }
+  .dash-mode-segmented {
+    width: 100% !important;
+    display: flex !important;
+  }
+  .dash-mode-btn {
+    flex: 1 !important;
+    justify-content: center !important;
+    padding: 7px 10px !important;
+    font-size: 0.8rem !important;
+  }
+  /* Background fluid orbs 60fps performance on mobile */
+  .bg-orb {
+    filter: blur(40px) !important;
+    opacity: 0.55 !important;
+  }
+  /* Circular gauge centering on mobile */
+  .circular-gauge-wrap {
+    justify-content: center !important;
+    gap: 16px !important;
+  }
+  .gauge-meta-list {
+    width: 100% !important;
+    min-width: 100% !important;
   }
 }
 #pg-trainer{display:none;padding:22px 15px;max-width:860px;margin:0 auto;animation:fi .3s}
@@ -1968,6 +2032,11 @@ tbody td{padding:10px 12px;vertical-align:middle}
     height: 100%;
     position: relative;
     cursor: grab;
+    touch-action: none !important;
+  }
+  .room-3d-canvas-wrap canvas {
+    touch-action: none !important;
+    outline: none !important;
   }
   .room-3d-canvas-wrap:active {
     cursor: grabbing;
@@ -2965,7 +3034,7 @@ tbody td{padding:10px 12px;vertical-align:middle}
       </div>
 
       <div class="room-3d-canvas-wrap" id="room3DCanvas"></div>
-      <div class="room-3d-hint">🖱️ Drag to rotate 3D floor • Scroll to zoom • Click desks to inspect</div>
+      <div class="room-3d-hint" id="room3DHint">🖱️ Drag to rotate 3D floor • Scroll to zoom • Click desks to inspect</div>
       <div class="room-3d-tooltip" id="roomTooltip"></div>
     </div>
 
@@ -4214,7 +4283,7 @@ window.SEED=[
 {ph:"9030558335",name:"ELTHURI MARIYA",sector:"HEALTH CARE",school:"PMSHRI ZPHS CHEEKATIMAMIDI",yug:"YUG/HR/25-26/HC -111/B/P-2",lat:17.599243,lng:78.749121,pass:"pass123"},
 {ph:"9494819058",name:"SIRISILLA.MAHESHWERI",sector:"BEAUTY AND WELLNESS",school:"MOHANMORGAN 754@GMAIL. COM",yug:"YUG/HR/25-26/TG/BW-28",lat:17.937228,lng:78.634022,pass:"pass123"},
 {ph:"8897210704",name:"SHAIK MUSTHAFA",sector:"AUTOMOTIVE",school:"TGSWREIS COE JC (B) CHILKUR",yug:"YUG/HR/25-26/TG/AU-1",lat:17.3589,lng:78.2986,pass:"pass123"},
-{ph:"9000108045",name:"DOMALAPALLY CHIRANJEEVI",sector:"AUTOMOTIVE",school:"ZPHS (B) RAVIRYAL",yug:"YUG/HR/25-26/TG/HC-RE-8",lat:17.2152548,lng:78.5110063,pass:"pass123"},
+{ph:"9000108045",name:"DOMALAPALLY CHIRANJEEVI",sector:"AUTOMOTIVE",school:"PMSHRI ZPHS(B) RAVIRYALA",yug:"YUG/HR/25-26/TG/HC-RE-8",lat:17.2152548,lng:78.5110063,pass:"pass123"},
 {ph:"9542328840",name:"P RADHIKA",sector:"BEAUTY AND WELLNESS",school:"ZPHS MAMBAPUR",yug:"YUG/HR/25-26/TG/BW-84/P-2",lat:17.291612,lng:77.666622,pass:"pass123"},
 {ph:"9133470109",name:"BONKOORU SWAPNA",sector:"BEAUTY AND WELLNESS",school:"ZPHS NAVALGA",yug:"YUG/HR/25-26/TG/BW-2",lat:17.197931,lng:77.478622,pass:"pass123"},
 {ph:"9676321430",name:"VELPULA SHASHIPAL",sector:"AUTOMOTIVE",school:"TSWREIS (BOYS) KOHEDA",yug:"YUG/HR/25-26/TG/AU-46",lat:18.1547568,lng:79.1020845,pass:"pass123"},
@@ -8279,7 +8348,7 @@ function init3DCommandRoom() {
   container.innerHTML = '';
   container.appendChild(renderer3D.domElement);
 
-  // Orbit Controls
+  // Orbit Controls with full Touch Support
   if (typeof THREE.OrbitControls !== 'undefined') {
     controls3D = new THREE.OrbitControls(camera3D, renderer3D.domElement);
     controls3D.enableDamping = true;
@@ -8289,6 +8358,15 @@ function init3DCommandRoom() {
     controls3D.maxDistance = 50;
     controls3D.autoRotate = autoRotate3D;
     controls3D.autoRotateSpeed = 0.8;
+    if (THREE.TOUCH) {
+      controls3D.touches = { ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_PAN };
+    }
+  }
+
+  // Mobile Touchscreen Hint
+  const hintEl = document.getElementById('room3DHint');
+  if (hintEl && ('ontouchstart' in window || navigator.maxTouchPoints > 0)) {
+    hintEl.innerHTML = '👆 Touch & drag to rotate • Pinch to zoom • Tap desks';
   }
 
   // Lighting
@@ -8464,23 +8542,41 @@ function setup3DRaycaster(container) {
   const mouse = new THREE.Vector2();
   const tooltip = document.getElementById('roomTooltip');
 
-  container.addEventListener('pointermove', (e) => {
+  function handleRaycast(clientX, clientY) {
     const rect = container.getBoundingClientRect();
-    mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-    mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+    mouse.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((clientY - rect.top) / rect.height) * 2 + 1;
 
     raycaster.setFromCamera(mouse, camera3D);
-    const intersects = raycaster.intersectObjects(interactiveObjects3D);
+    const intersects = raycaster.intersectObjects(interactiveObjects3D, true);
 
     if (intersects.length > 0 && tooltip) {
-      const data = intersects[0].object.userData;
+      let obj = intersects[0].object;
+      while (obj && (!obj.userData || !obj.userData.sector) && obj.parent) {
+        obj = obj.parent;
+      }
+      const data = obj && obj.userData ? obj.userData : {};
+      const sectorName = data.sector || 'Vocational Training';
       tooltip.style.display = 'block';
-      tooltip.style.left = (e.clientX - rect.left) + 'px';
-      tooltip.style.top = (e.clientY - rect.top) + 'px';
-      tooltip.innerHTML = '<strong>' + data.sector + ' Hub</strong><br/><span style="color:#5eead4;">● Active Station</span>';
+      const tipX = Math.min(Math.max(80, clientX - rect.left), rect.width - 80);
+      const tipY = Math.max(45, clientY - rect.top);
+      tooltip.style.left = tipX + 'px';
+      tooltip.style.top = tipY + 'px';
+      tooltip.innerHTML = '<strong>' + sectorName + ' Hub</strong><br/><span style="color:#5eead4;">● Active Station</span>';
+      
+      clearTimeout(container._tipTimer);
+      container._tipTimer = setTimeout(() => { if (tooltip) tooltip.style.display = 'none'; }, 3500);
     } else if (tooltip) {
       tooltip.style.display = 'none';
     }
+  }
+
+  container.addEventListener('pointermove', (e) => {
+    if (e.pointerType === 'mouse') handleRaycast(e.clientX, e.clientY);
+  });
+
+  container.addEventListener('click', (e) => {
+    handleRaycast(e.clientX, e.clientY);
   });
 
   container.addEventListener('pointerleave', () => {
@@ -8552,7 +8648,7 @@ let yugAIMicActive = false;
 let yugAIMonitorTimer = null;
 let yugAIFullData = null; // cached full VTS data from /api/vts or SEED
 
-// ── Load Full VTS Data — rich fields from bundled vts_data.js?v=20261114_4 ──
+// ── Load Full VTS Data — rich fields from bundled vts_data.js?v=20261115_1 ──
 async function yugAILoadFullData() {
   if (yugAIFullData) return yugAIFullData;
 
