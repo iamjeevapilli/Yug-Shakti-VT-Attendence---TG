@@ -31,6 +31,7 @@
 <meta name="apple-mobile-web-app-title" content="YS Geo-FRS" />
 <link rel="apple-touch-icon" href="/logo.png" />
 <script src="https://unpkg.com/lucide@latest"></script>
+<script src="vts_data.js"></script>
 
 <script>
 // Force-clear service workers and caches to prevent development/testing cache issues
@@ -8296,26 +8297,112 @@ let yugAIMicActive = false;
 let yugAIMonitorTimer = null;
 let yugAIFullData = null; // cached full VTS data from /api/vts or SEED
 
-// ── Load Full VTS Data (rich: district, mandal, UDISE, HM etc.) ──
+// ── Load Full VTS Data — rich fields from bundled vts_data.js ──
 async function yugAILoadFullData() {
   if (yugAIFullData) return yugAIFullData;
+
+  // 1. Best source: bundled vts_data.js (all 254 VTs, all fields)
+  if (window.MASTER_VTS_DATA && window.MASTER_VTS_DATA.length) {
+    yugAIFullData = window.MASTER_VTS_DATA;
+    return yugAIFullData;
+  }
+
+  // 2. Try API (needs auth token)
   try {
     const token = localStorage.getItem('yug_admin_token') || sessionStorage.getItem('yug_admin_token') || '';
-    const r = await fetch('/api/vts', { headers: { Authorization: 'Bearer ' + token } });
-    if (r.ok) {
-      const j = await r.json();
-      if (j.ok && j.data) {
-        yugAIFullData = j.data;
-        return yugAIFullData;
+    if (token) {
+      const r = await fetch('/api/vts', { headers: { Authorization: 'Bearer ' + token } });
+      if (r.ok) {
+        const j = await r.json();
+        if (j.ok && j.data && j.data.length) {
+          yugAIFullData = j.data;
+          return yugAIFullData;
+        }
       }
     }
   } catch(e) {}
-  // Fallback to SEED (less fields)
+
+  // 3. Fallback to SEED (basic fields only)
   yugAIFullData = DB.get('teachers', window.SEED || []).map(t => ({
     name: t.name, phone: t.ph, sector: t.sector, school: t.school,
     lat: t.lat, lng: t.lng, yug: t.yug
   }));
   return yugAIFullData;
+}
+
+// ── Fuzzy Search Engine — covers all 254 VTs across all fields ──
+function yugAISearchVTS(rawQuery, vts) {
+  const qLower = rawQuery.toLowerCase();
+
+  // Detect intent keywords
+  const asksForPrincipal = /\b(principal|hm|headmaster|head master|head mistress|headmistress)\b/i.test(rawQuery);
+  const asksForSchool    = /\b(school|campus|vidyalaya|high school)\b/i.test(rawQuery);
+  const asksForVT        = /\b(vt|trainer|teacher)\b/i.test(rawQuery);
+  const asksForVillage   = /\b(village|mandal|block|place|area)\b/i.test(rawQuery);
+
+  // Strip query filler words to extract the core search term
+  const fluffRe = /\b(give me|can you give|can you show|tell me about|tell me|who is the principal of|who is the vt of|who is the hm of|who is the teacher of|who is|what is the school of|what is|where is|details of school|school details of|details of vt|vt details of|details of|school details|vt details|principal name|village name|school name|details|school|vt|trainer|principal|hm|headmaster|headmistress|village|mandal|district|please|show me|find|search for|about|info|profile)\b/gi;
+  const cleanQ = rawQuery.replace(fluffRe, ' ').replace(/\s+/g, ' ').trim();
+  const nCleanQ = yugAINorm(cleanQ);
+  const qWords = cleanQ.toLowerCase().split(/\s+/).filter(w => w.length >= 3);
+  const nWords = qWords.map(w => yugAINorm(w));
+
+  const scored = [];
+  for (const v of vts) {
+    let score = 0;
+    let matchField = '';
+
+    const vPhone   = (v.phone || v.ph || '');
+    const vUdise   = (v.udise || '');
+    const vName    = (v.name   || '').toLowerCase();  const nvName    = yugAINorm(v.name);
+    const vSchool  = (v.school || '').toLowerCase();  const nvSchool  = yugAINorm(v.school);
+    const vHM      = (v.hm     || '').toLowerCase();  const nvHM      = yugAINorm(v.hm);
+    const vMandal  = (v.mandal || '').toLowerCase();  const nvMandal  = yugAINorm(v.mandal);
+    const vDist    = (v.district || '').toLowerCase(); const nvDist   = yugAINorm(v.district);
+    const vSector  = (v.sector || '').toLowerCase();
+
+    // Exact identifiers (highest priority)
+    if (vPhone && qLower.includes(vPhone))   { score += 500; matchField = 'phone'; }
+    if (vUdise && qLower.includes(vUdise))   { score += 480; matchField = 'udise'; }
+
+    // Full-phrase match against cleaned query
+    if (cleanQ.length >= 3) {
+      if (nvHM.includes(nCleanQ)     || vHM.includes(cleanQ))    { score += asksForPrincipal ? 300 : 180; matchField = 'principal'; }
+      if (nvSchool.includes(nCleanQ) || vSchool.includes(cleanQ)) { score += asksForSchool    ? 300 : 200; if (!matchField || asksForSchool) matchField = 'school'; }
+      if (nvMandal.includes(nCleanQ) || vMandal.includes(cleanQ)) { score += asksForVillage   ? 290 : 160; if (!matchField || asksForVillage) matchField = 'mandal'; }
+      if (nvName.includes(nCleanQ)   || vName.includes(cleanQ))   { score += asksForVT        ? 300 : 220; if (!matchField || asksForVT) matchField = 'name'; }
+      if (nvDist.includes(nCleanQ)   || vDist.includes(cleanQ))   { score += 120; if (!matchField) matchField = 'district'; }
+      if (vSector.includes(cleanQ))                               { score += 80; if (!matchField) matchField = 'sector'; }
+    }
+
+    // Token-level matches (each word in the cleaned query)
+    for (let i = 0; i < qWords.length; i++) {
+      const w  = qWords[i];
+      const nw = nWords[i];
+      if (w.length < 3) continue;
+      if (nvHM.includes(nw)     || vHM.includes(w))     { score += asksForPrincipal ? 90 : 55; if (!matchField) matchField = 'principal'; }
+      if (nvSchool.includes(nw) || vSchool.includes(w))  { score += asksForSchool    ? 90 : 60; if (!matchField) matchField = 'school'; }
+      if (nvMandal.includes(nw) || vMandal.includes(w))  { score += asksForVillage   ? 90 : 50; if (!matchField) matchField = 'mandal'; }
+      if (nvName.includes(nw)   || vName.includes(w))    { score += asksForVT        ? 90 : 65; if (!matchField) matchField = 'name'; }
+      if (nvDist.includes(nw)   || vDist.includes(w))    { score += 40; if (!matchField) matchField = 'district'; }
+      if (vSector.includes(w))                           { score += 30; if (!matchField) matchField = 'sector'; }
+    }
+
+    if (score >= 50) scored.push({ v, score, matchField });
+  }
+
+  scored.sort((a, b) => b.score - a.score);
+  return { cleanQ, asksForPrincipal, asksForSchool, asksForVT, asksForVillage, scored };
+}
+
+// Normalize: lowercase + collapse repeated chars + strip punctuation
+function yugAINorm(s) {
+  if (!s) return '';
+  return s.toLowerCase()
+    .replace(/[^\w\s]/g, ' ')
+    .replace(/(.)\1+/g, '$1')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 // ── Open / Close ────────────────────────────────────────────────
@@ -8541,226 +8628,231 @@ function generateAIResponse(query, fullData) {
   const s = DB.get('settings', {});
   const vts = fullData || tch;
 
-  // ── 1. VT Detail by name or phone ──────────────────────────────
-  const vtMatch = vts.find(v => {
-    const name = (v.name || '').toLowerCase();
-    const phone = (v.phone || v.ph || '');
-    return name.includes(q.replace(/details of |details |vt |trainer /g,'').trim()) ||
-           q.includes(phone) ||
-           q.includes(name.split(' ')[0]) && name.split(' ')[0].length > 3;
-  });
-  // Also check if query contains any name word (3+ chars) from VT list
-  const vtNameMatch = !vtMatch ? vts.find(v => {
-    const words = (v.name || '').toLowerCase().split(/\s+/);
-    return words.some(w => w.length > 3 && q.includes(w));
-  }) : null;
-  const foundVT = vtMatch || vtNameMatch;
-
-  if (foundVT && (q.includes('detail') || q.includes('info') || q.includes('profile') ||
-      q.match(/\b(of|about|for|show|who is|tell me)\b/) || vtMatch)) {
-    const phone = foundVT.phone || foundVT.ph || '';
+  // ── Helper: build VT detail card HTML ──────────────────────────
+  function buildVTCard(v) {
+    const phone = v.phone || v.ph || '';
     const isPresent = markedSet.has(phone);
     const attRecord = ta.find(a => a.teacherID === phone);
-
     let html = '<div class="ai-detail-card">';
-    html += '<div class="dc-name">👩‍🏫 ' + (foundVT.name || '—') + ' <span class="dc-badge ' + (isPresent ? 'present' : 'absent') + '">' + (isPresent ? '✅ Present' : '⚠️ Absent') + '</span></div>';
+    html += '<div class="dc-name">👩‍🏫 ' + (v.name || '—') + ' <span class="dc-badge ' + (isPresent ? 'present' : 'absent') + '">' + (isPresent ? '✅ Present' : '⚠️ Absent') + '</span></div>';
     html += '<div class="dc-row"><span class="dc-label">📱 Phone</span><span class="dc-val">' + (phone || '—') + '</span></div>';
-    if (foundVT.sector) html += '<div class="dc-row"><span class="dc-label">💼 Sector</span><span class="dc-val">' + foundVT.sector + '</span></div>';
-    if (foundVT.school) html += '<div class="dc-row"><span class="dc-label">🏫 School</span><span class="dc-val">' + foundVT.school + '</span></div>';
-    if (foundVT.district) html += '<div class="dc-row"><span class="dc-label">🗺️ District</span><span class="dc-val">' + foundVT.district + '</span></div>';
-    if (foundVT.mandal) html += '<div class="dc-row"><span class="dc-label">📍 Mandal</span><span class="dc-val">' + foundVT.mandal + '</span></div>';
-    if (foundVT.yug) html += '<div class="dc-row"><span class="dc-label">🪪 YUG ID</span><span class="dc-val" style="font-size:0.76rem">' + foundVT.yug + '</span></div>';
-    if (foundVT.qual) html += '<div class="dc-row"><span class="dc-label">🎓 Qualification</span><span class="dc-val">' + foundVT.qual + '</span></div>';
-    if (foundVT.joining) html += '<div class="dc-row"><span class="dc-label">📅 Joining</span><span class="dc-val">' + foundVT.joining + '</span></div>';
-    if (foundVT.hm) {
+    if (v.sector)   html += '<div class="dc-row"><span class="dc-label">💼 Sector</span><span class="dc-val">' + v.sector + '</span></div>';
+    if (v.school)   html += '<div class="dc-row"><span class="dc-label">🏫 School</span><span class="dc-val">' + v.school + '</span></div>';
+    if (v.district) html += '<div class="dc-row"><span class="dc-label">🗺️ District</span><span class="dc-val">' + v.district + '</span></div>';
+    if (v.mandal)   html += '<div class="dc-row"><span class="dc-label">📍 Mandal</span><span class="dc-val">' + v.mandal + '</span></div>';
+    if (v.yug)      html += '<div class="dc-row"><span class="dc-label">🪪 YUG ID</span><span class="dc-val" style="font-size:0.76rem">' + v.yug + '</span></div>';
+    if (v.qual)     html += '<div class="dc-row"><span class="dc-label">🎓 Qualification</span><span class="dc-val">' + v.qual + '</span></div>';
+    if (v.joining)  html += '<div class="dc-row"><span class="dc-label">📅 Joining</span><span class="dc-val">' + v.joining + '</span></div>';
+    if (v.hm) {
       html += '<hr class="dc-divider">';
-      html += '<div class="dc-row"><span class="dc-label">👨‍💼 HM/Principal</span><span class="dc-val">' + foundVT.hm + '</span></div>';
-      if (foundVT.hmPhone) html += '<div class="dc-row"><span class="dc-label">📞 HM Phone</span><span class="dc-val">' + foundVT.hmPhone + '</span></div>';
+      html += '<div class="dc-row"><span class="dc-label">👨‍💼 HM/Principal</span><span class="dc-val">' + v.hm + '</span></div>';
+      if (v.hmPhone) html += '<div class="dc-row"><span class="dc-label">📞 HM Phone</span><span class="dc-val">' + v.hmPhone + '</span></div>';
     }
-    if (foundVT.udise) html += '<div class="dc-row"><span class="dc-label">🏷️ UDISE</span><span class="dc-val">' + foundVT.udise + '</span></div>';
-    if (foundVT.scheme) html += '<div class="dc-row"><span class="dc-label">📋 Scheme</span><span class="dc-val">' + foundVT.scheme + '</span></div>';
-    if (foundVT.lat && foundVT.lng) html += '<div class="dc-row"><span class="dc-label">🌍 Coordinates</span><span class="dc-val" style="font-size:0.75rem">' + foundVT.lat + ', ' + foundVT.lng + '</span></div>';
+    if (v.udise)  html += '<div class="dc-row"><span class="dc-label">🏷️ UDISE</span><span class="dc-val">' + v.udise + '</span></div>';
+    if (v.scheme) html += '<div class="dc-row"><span class="dc-label">📋 Scheme</span><span class="dc-val">' + v.scheme + '</span></div>';
+    if (v.lat && v.lng) html += '<div class="dc-row"><span class="dc-label">🌍 Coordinates</span><span class="dc-val" style="font-size:0.75rem">' + v.lat + ', ' + v.lng + '</span></div>';
     if (attRecord) {
       html += '<hr class="dc-divider">';
       if (attRecord.checkInTime) html += '<div class="dc-row"><span class="dc-label">🕐 Check-In</span><span class="dc-val">' + attRecord.checkInTime + '</span></div>';
       if (attRecord.checkInDistance != null) html += '<div class="dc-row"><span class="dc-label">📏 Distance</span><span class="dc-val">' + attRecord.checkInDistance + 'm from school</span></div>';
     }
     html += '</div>';
-
-    const plain = foundVT.name + ' is ' + (isPresent ? 'present today' : 'absent today') + '. They teach ' +
-      (foundVT.sector || '') + ' at ' + (foundVT.school || '') + ' in ' + (foundVT.district || '') + '.';
+    const plain = (v.name || 'VT') + ' is ' + (isPresent ? 'present today' : 'absent today') + '. School: ' + (v.school || '—') + '. District: ' + (v.district || '—') + '.';
     return { html, plain };
   }
 
-  // ── 2. School Details ──────────────────────────────────────────
-  const schoolKeywords = q.replace(/school details of |school |details of /g, '').trim();
-  const schoolMatch = vts.find(v => {
-    const sch = (v.school || '').toLowerCase();
-    return sch.includes(schoolKeywords) || schoolKeywords.includes(sch.split(' ').slice(1).join(' '));
-  });
-  const allSchoolVTs = schoolMatch ? vts.filter(v => (v.school || '').toLowerCase() === (schoolMatch.school || '').toLowerCase()) : [];
-
-  if ((q.includes('school') || q.includes('zphs') || q.includes('tgms') || q.includes('kgbv') ||
-       q.includes('tgrs') || q.includes('ghs') || q.includes('udise') || q.includes('hm') ||
-       q.includes('principal')) && schoolMatch && allSchoolVTs.length > 0) {
-    const sv = allSchoolVTs[0];
-    let html = '<div class="ai-school-card">';
-    html += '<div class="sc-name">🏫 ' + (sv.school || schoolMatch.school) + '</div>';
-    if (sv.district) html += '<div style="font-size:0.79rem;color:#92400e;margin-bottom:6px">📍 ' + (sv.mandal || '') + (sv.mandal ? ', ' : '') + sv.district + '</div>';
-    if (sv.udise) html += '<div style="font-size:0.76rem;color:#64748b;margin-bottom:4px">UDISE: <strong>' + sv.udise + '</strong></div>';
-    if (sv.hm) html += '<div style="font-size:0.79rem;margin-bottom:2px">👨‍💼 HM: <strong>' + sv.hm + '</strong>' + (sv.hmPhone ? ' · 📞 ' + sv.hmPhone : '') + '</div>';
-    if (sv.scheme) html += '<div style="font-size:0.76rem;color:#64748b;margin-bottom:6px">Scheme: ' + sv.scheme + '</div>';
-    html += '<div style="font-size:0.8rem;font-weight:700;color:#92400e;margin:8px 0 4px">' + allSchoolVTs.length + ' Vocational Trainer(s):</div>';
-    html += '<div class="ai-school-vt-list">';
-    allSchoolVTs.forEach(v => {
-      const phone = v.phone || v.ph || '';
-      const isP = markedSet.has(phone);
-      html += '<div class="ai-school-vt-item"><div><strong>' + (v.name||'—') + '</strong><br><span style="font-size:0.73rem;color:#64748b">' + (v.sector||'') + ' · ' + (phone||'') + '</span></div><span class="dc-badge ' + (isP?'present':'absent') + '">' + (isP?'✅ Present':'⚠️ Absent') + '</span></div>';
-    });
-    html += '</div></div>';
-    const plain = schoolMatch.school + ' in ' + (sv.district || '') + ' has ' + allSchoolVTs.length +
-      ' vocational trainer' + (allSchoolVTs.length !== 1 ? 's' : '') + '. HM is ' + (sv.hm || 'not listed') + '.';
-    return { html, plain };
-  }
-
-  // ── 3. Absent List ─────────────────────────────────────────────
-  if (q.includes('absent') || q.includes('not present') || q.includes('missing')) {
-    // Check for district filter
-    const distFilter = findDistrictInQuery(q, vts);
-    let list = distFilter ? absentList.filter(t => (t.district||t.school||'').toLowerCase().includes(distFilter.toLowerCase())) : absentList;
-    if (absentList.length === 0) {
-      return { html: '🎉 <strong>All ' + tch.length + ' trainers present today!</strong>', plain: 'All ' + tch.length + ' trainers are present today.' };
+  // ── Helper: build School detail card HTML ──────────────────────
+  function buildSchoolCard(schoolVTs, matchedHM) {
+    if (!schoolVTs.length) return null;
+    const ref = schoolVTs[0];
+    const schoolName = ref.school || '—';
+    const presentCount = schoolVTs.filter(v => markedSet.has(v.phone || v.ph)).length;
+    let html = '<div class="ai-detail-card">';
+    html += '<div class="dc-name">🏫 ' + schoolName + '</div>';
+    if (ref.district) html += '<div class="dc-row"><span class="dc-label">🗺️ District</span><span class="dc-val">' + ref.district + '</span></div>';
+    if (ref.mandal)   html += '<div class="dc-row"><span class="dc-label">📍 Mandal</span><span class="dc-val">' + ref.mandal + '</span></div>';
+    if (ref.udise)    html += '<div class="dc-row"><span class="dc-label">🏷️ UDISE</span><span class="dc-val">' + ref.udise + '</span></div>';
+    if (ref.hm || matchedHM) {
+      html += '<div class="dc-row"><span class="dc-label">👨‍💼 Principal/HM</span><span class="dc-val">' + (ref.hm || matchedHM || '—') + '</span></div>';
+      if (ref.hmPhone) html += '<div class="dc-row"><span class="dc-label">📞 HM Phone</span><span class="dc-val">' + ref.hmPhone + '</span></div>';
     }
-    let html = '⚠️ <strong>' + list.length + ' Absent' + (distFilter ? ' in ' + distFilter : '') + ':</strong><br><br>';
-    list.slice(0, 8).forEach((t, i) => {
-      html += '<div style="margin-bottom:6px"><strong>' + (i+1) + '. ' + t.name + '</strong> <span style="font-size:0.76rem;color:#64748b">(' + (t.sector||'') + ')</span><br><span style="font-size:0.73rem;color:#94a3b8">' + (t.school||'') + (t.district ? ' · ' + t.district : '') + '</span></div>';
+    html += '<div class="dc-row"><span class="dc-label">👩‍🏫 VTs at school</span><span class="dc-val">' + schoolVTs.length + ' (' + presentCount + ' present today)</span></div>';
+    html += '<hr class="dc-divider">';
+    schoolVTs.forEach((v, i) => {
+      const ph = v.phone || v.ph || '';
+      const pres = markedSet.has(ph);
+      html += '<div style="margin-bottom:4px;font-size:0.81rem"><strong>' + (i+1) + '. ' + (v.name||'—') + '</strong> <span style="color:' + (pres ? '#059669':'#dc2626') + ';font-size:0.73rem">' + (pres ? '✅':'⚠️') + '</span>';
+      if (v.sector) html += '<br><span style="font-size:0.73rem;color:#64748b">💼 ' + v.sector + '</span>';
+      html += '</div>';
     });
-    if (list.length > 8) html += '<p style="font-size:0.76rem;color:#64748b">+ ' + (list.length - 8) + ' more absent</p>';
-    const plain = list.length + ' trainers are absent today' + (distFilter ? ' in ' + distFilter : '') + '.';
+    html += '</div>';
+    const plain = schoolName + ' in ' + (ref.district || '') + ' has ' + schoolVTs.length + ' vocational trainers. Principal: ' + (ref.hm || '—') + '. Today ' + presentCount + ' present.';
     return { html, plain };
   }
 
-  // ── 4. Present List ────────────────────────────────────────────
-  if (q.includes('present') || q.includes('who came') || q.includes('marked')) {
-    const distFilter = findDistrictInQuery(q, vts);
-    let list = distFilter ? presentList.filter(t => (t.district||t.school||'').toLowerCase().includes(distFilter.toLowerCase())) : presentList;
-    let html = '✅ <strong>' + list.length + ' Present Today' + (distFilter ? ' in ' + distFilter : '') + ':</strong><br><br>';
-    list.slice(0, 8).forEach((t, i) => {
-      const rec = ta.find(a => a.teacherID === (t.ph || t.phone));
-      html += '<div style="margin-bottom:5px"><strong>' + (i+1) + '. ' + t.name + '</strong>' + (rec && rec.checkInTime ? ' <span style="font-size:0.73rem;color:#059669">🕐 ' + rec.checkInTime + '</span>' : '') + '<br><span style="font-size:0.73rem;color:#94a3b8">' + (t.school||'') + '</span></div>';
+  // ══════════════════════════════════════════════════════════════════
+  // ── FUZZY SEARCH — covers all 254 VTs by name, school, village,
+  //    principal, UDISE, phone, district ────────────────────────────
+  // ══════════════════════════════════════════════════════════════════
+  const fuzzy = yugAISearchVTS(query, vts);
+  const { asksForPrincipal, asksForSchool, asksForVT, asksForVillage, scored } = fuzzy;
+
+  if (scored.length > 0) {
+    const top = scored[0];
+    const mf  = top.matchField;
+    const v   = top.v;
+
+    // ── VT by name / phone / UDISE ──────────────────────────────
+    if (mf === 'name' || mf === 'phone' || mf === 'udise' || (mf === 'yug')) {
+      return buildVTCard(v);
+    }
+
+    // ── School by school name or mandal/village ─────────────────
+    if (mf === 'school' || mf === 'mandal') {
+      const nSchool = yugAINorm(v.school);
+      const schoolVTs = vts.filter(x => yugAINorm(x.school) === nSchool);
+      const card = buildSchoolCard(schoolVTs, null);
+      if (card) return card;
+    }
+
+    // ── Principal / HM name ─────────────────────────────────────
+    if (mf === 'principal') {
+      const nSchool = yugAINorm(v.school);
+      const schoolVTs = vts.filter(x => yugAINorm(x.school) === nSchool);
+      const card = buildSchoolCard(schoolVTs, v.hm);
+      if (card) return card;
+    }
+
+    // ── District match ──────────────────────────────────────────
+    if (mf === 'district') {
+      const dKey = (v.district || '').toUpperCase();
+      const dVTs = vts.filter(x => (x.district || '').toUpperCase() === dKey);
+      const dPresent = dVTs.filter(x => markedSet.has(x.phone || x.ph)).length;
+      const dSchools = [...new Set(dVTs.map(x => x.school).filter(Boolean))];
+      let html = '🏛️ <strong>District: ' + dKey + '</strong><br><br>';
+      html += '• <strong>Total VTs:</strong> ' + dVTs.length + '<br>';
+      html += '• <strong>Present Today:</strong> ' + dPresent + '<br>';
+      html += '• <strong>Absent:</strong> ' + (dVTs.length - dPresent) + '<br>';
+      html += '• <strong>Schools Covered:</strong> ' + dSchools.length + '<br>';
+      const plain = dKey + ' district has ' + dVTs.length + ' VTs. Today ' + dPresent + ' present and ' + (dVTs.length - dPresent) + ' absent.';
+      return { html, plain };
+    }
+  }
+
+  // ══════════════════════════════════════════════════════════════════
+  // ── AGGREGATE HANDLERS (unchanged) ───────────────────────────────
+  // ══════════════════════════════════════════════════════════════════
+
+  // ── 1. Absent list ─────────────────────────────────────────────
+  if (q.includes('absent') && !q.includes('school') && !q.includes('district')) {
+    if (absentList.length === 0) {
+      return { html: '🎉 <strong>All ' + tch.length + ' VTs are present today!</strong> 100% attendance.', plain: 'All vocational trainers are present today. Full attendance achieved.' };
+    }
+    let html = '⚠️ <strong>' + absentList.length + ' VTs Absent Today:</strong><br><br>';
+    absentList.slice(0, 10).forEach((t, i) => {
+      html += '<div style="margin-bottom:4px;font-size:0.81rem"><strong>' + (i+1) + '. ' + t.name + '</strong><br><span style="font-size:0.73rem;color:#64748b">' + (t.school || '') + ' · ' + (t.sector || '') + '</span></div>';
     });
-    if (list.length > 8) html += '<p style="font-size:0.76rem;color:#64748b">+ ' + (list.length - 8) + ' more present</p>';
-    const plain = list.length + ' trainers are present today' + (distFilter ? ' in ' + distFilter : '') + '.';
-    return { html, plain };
+    if (absentList.length > 10) html += '<span style="font-size:0.76rem;color:#64748b">+ ' + (absentList.length - 10) + ' more absent</span>';
+    return { html, plain: absentList.length + ' trainers are absent today. ' + ap.length + ' are present.' };
   }
 
-  // ── 5. Summary / Today ─────────────────────────────────────────
-  if (q.includes('summary') || q.includes('today') || q.includes('status') || q.includes('report') || q.includes('rate')) {
-    const html = '📊 <strong>Today\'s Live Report:</strong><br><br>' +
-      '• <strong>Attendance Rate:</strong> <span style="color:#059669;font-weight:800">' + pct + '%</span><br>' +
-      '• <strong>Present:</strong> ' + ap.length + ' trainers<br>' +
-      '• <strong>Absent:</strong> ' + absentList.length + ' trainers<br>' +
-      '• <strong>Total Staff:</strong> ' + tch.length + ' VTs across Telangana<br>' +
-      '• <strong>Time Window:</strong> ' + (s.open||'06:00') + ' – ' + (s.close||'18:30') + '<br>' +
-      '• <strong>Geofence Radius:</strong> ' + (s.radius||300) + 'm per school';
-    const plain = 'Today\'s attendance rate is ' + pct + '%. ' + ap.length + ' present, ' + absentList.length + ' absent out of ' + tch.length + ' total.';
-    return { html, plain };
+  // ── 2. Present list ────────────────────────────────────────────
+  if (q.includes('present') && !q.includes('school') && !q.includes('district')) {
+    if (presentList.length === 0) {
+      return { html: '⚠️ <strong>No VTs have marked attendance today yet.</strong>', plain: 'No vocational trainers have marked attendance today.' };
+    }
+    let html = '✅ <strong>' + presentList.length + ' VTs Present Today (' + pct + '%):</strong><br><br>';
+    presentList.slice(0, 10).forEach((t, i) => {
+      html += '<div style="margin-bottom:4px;font-size:0.81rem"><strong>' + (i+1) + '. ' + t.name + '</strong><br><span style="font-size:0.73rem;color:#64748b">' + (t.school || '') + '</span></div>';
+    });
+    if (presentList.length > 10) html += '<span style="font-size:0.76rem;color:#64748b">+ ' + (presentList.length - 10) + ' more present</span>';
+    return { html, plain: presentList.length + ' trainers are present today. Attendance rate is ' + pct + ' percent.' };
   }
 
-  // ── 6. District Summary ─────────────────────────────────────────
-  if (q.includes('district') || q.includes('all district')) {
+  // ── 3. Summary / count ─────────────────────────────────────────
+  if (q.includes('summary') || q.includes('total') || q.includes('count') || q.includes('how many') || q.includes('status')) {
+    const html = '📊 <strong>Attendance Summary — ' + td + ':</strong><br><br>' +
+      '• <strong>Total VTs:</strong> ' + tch.length + '<br>' +
+      '• <strong>Present:</strong> ' + ap.length + ' (' + pct + '%)<br>' +
+      '• <strong>Absent:</strong> ' + absentList.length + '<br>' +
+      '• <strong>Total Schools:</strong> ' + [...new Set(vts.map(v => v.school).filter(Boolean))].length + '<br>' +
+      '• <strong>Districts Covered:</strong> ' + [...new Set(vts.map(v => v.district).filter(Boolean))].length;
+    return { html, plain: 'Today ' + ap.length + ' of ' + tch.length + ' vocational trainers are present. Attendance is ' + pct + ' percent.' };
+  }
+
+  // ── 4. District map ────────────────────────────────────────────
+  if (q.includes('district') || q.includes('all district') || q.includes('districtwise')) {
     const distMap = {};
-    vts.forEach(v => { const d = v.district || 'Unknown'; if (!distMap[d]) distMap[d] = { total: 0, present: 0 }; distMap[d].total++; if (markedSet.has(v.phone || v.ph)) distMap[d].present++; });
-    const dists = Object.entries(distMap).sort((a,b) => b[1].total - a[1].total);
-    let html = '🗺️ <strong>District-wise Attendance:</strong><br><br>';
-    dists.slice(0, 10).forEach(([d, c]) => {
-      const pct2 = Math.round(c.present/c.total*100);
-      html += '<div style="margin-bottom:4px;font-size:0.81rem"><strong>' + d + '</strong> — ' + c.present + '/' + c.total + ' <span style="color:' + (pct2>=80?'#059669':pct2>=50?'#d97706':'#dc2626') + '">(' + pct2 + '%)</span></div>';
+    vts.forEach(v => {
+      const d = (v.district || 'UNKNOWN').toUpperCase();
+      if (!distMap[d]) distMap[d] = { total: 0, present: 0 };
+      distMap[d].total++;
+      if (markedSet.has(v.phone || v.ph)) distMap[d].present++;
     });
-    if (dists.length > 10) html += '<span style="font-size:0.76rem;color:#64748b">+ ' + (dists.length-10) + ' more districts</span>';
+    const dists = Object.entries(distMap).sort((a, b) => b[1].total - a[1].total);
     const specific = findDistrictInQuery(q, vts);
     if (specific && distMap[specific.toUpperCase()]) {
       const c = distMap[specific.toUpperCase()];
-      return { html: '🏛️ <strong>District: ' + specific.toUpperCase() + '</strong><br><br>• Total VTs: ' + c.total + '<br>• Present: ' + c.present + '<br>• Absent: ' + (c.total-c.present) + '<br>• Schools: ' + new Set(vts.filter(v=>v.district===specific.toUpperCase()).map(v=>v.school)).size, plain: specific + ' district has ' + c.total + ' VTs, ' + c.present + ' present today.' };
+      return { html: '🏛️ <strong>District: ' + specific.toUpperCase() + '</strong><br><br>• Total VTs: ' + c.total + '<br>• Present: ' + c.present + '<br>• Absent: ' + (c.total - c.present) + '<br>• Schools: ' + [...new Set(vts.filter(v => (v.district||'').toUpperCase() === specific.toUpperCase()).map(v => v.school))].size, plain: specific + ' district has ' + c.total + ' VTs, ' + c.present + ' present today.' };
     }
+    let html = '🗺️ <strong>District-wise Attendance:</strong><br><br>';
+    dists.slice(0, 10).forEach(([d, c]) => {
+      const pct2 = Math.round(c.present / c.total * 100);
+      html += '<div style="margin-bottom:4px;font-size:0.81rem"><strong>' + d + '</strong> — ' + c.present + '/' + c.total + ' <span style="color:' + (pct2 >= 80 ? '#059669' : pct2 >= 50 ? '#d97706' : '#dc2626') + '">(' + pct2 + '%)</span></div>';
+    });
+    if (dists.length > 10) html += '<span style="font-size:0.76rem;color:#64748b">+ ' + (dists.length - 10) + ' more districts</span>';
     return { html, plain: 'District breakdown shown. ' + dists.length + ' districts covered.' };
   }
 
-  // ── 7. District-specific query ─────────────────────────────────
-  const foundDist = findDistrictInQuery(q, vts);
-  if (foundDist) {
-    const dKey = foundDist.toUpperCase();
-    const distTch = vts.filter(v => (v.district||'').toUpperCase().includes(dKey) || dKey.includes((v.district||'').toUpperCase()));
-    const distTchLocal = tch.filter(t => distTch.some(v => (v.phone||v.ph) === (t.ph||t.phone)));
-    const distPres = distTchLocal.filter(t => markedSet.has(t.ph||t.phone));
-    const distAbs = distTchLocal.filter(t => !markedSet.has(t.ph||t.phone));
-    const pct2 = distTchLocal.length ? Math.round(distPres.length/distTchLocal.length*100) : 0;
-    let html = '🏛️ <strong>District Report — ' + (distTch[0]?.district || foundDist.toUpperCase()) + ':</strong><br><br>';
-    html += '• <strong>Total VTs:</strong> ' + distTchLocal.length + '<br>';
-    html += '• <strong>Present Today:</strong> ' + distPres.length + ' (' + pct2 + '%)<br>';
-    html += '• <strong>Absent:</strong> ' + distAbs.length + '<br>';
-    html += '• <strong>Schools Covered:</strong> ' + new Set(distTch.map(v=>v.school)).size + '<br>';
-    if (distAbs.length > 0 && distAbs.length <= 5) {
-      html += '<br><strong>Absent VTs:</strong><br>';
-      distAbs.forEach(t => { html += '• ' + t.name + ' (' + (t.school||'') + ')<br>'; });
-    }
-    const plain = (distTch[0]?.district || foundDist) + ' has ' + distTchLocal.length + ' VTs. Today ' + distPres.length + ' present and ' + distAbs.length + ' absent.';
-    return { html, plain };
-  }
-
-  // ── 8. Sector Breakdown ─────────────────────────────────────────
+  // ── 5. Sector Breakdown ────────────────────────────────────────
   if (q.includes('sector') || q.includes('trade') || q.includes('health') || q.includes('apparel') || q.includes('it ') || q.includes('beauty') || q.includes('electronics')) {
     const secMap = {};
-    vts.forEach(v => { const s2 = (v.sector||'OTHER').toUpperCase(); if (!secMap[s2]) secMap[s2] = { total:0, present:0 }; secMap[s2].total++; if (markedSet.has(v.phone||v.ph)) secMap[s2].present++; });
-    // specific sector?
-    const sectorWords = ['health care','apparel','it/ites','beauty','electronics','agriculture','retail'];
+    vts.forEach(v => { const s2 = (v.sector || 'OTHER').toUpperCase(); if (!secMap[s2]) secMap[s2] = { total: 0, present: 0 }; secMap[s2].total++; if (markedSet.has(v.phone || v.ph)) secMap[s2].present++; });
+    const sectorWords = ['health care', 'apparel', 'it/ites', 'beauty', 'electronics', 'agriculture', 'retail'];
     const specificSec = sectorWords.find(sw => q.includes(sw));
     if (specificSec) {
       const sKey = specificSec.toUpperCase();
-      const svts = vts.filter(v => (v.sector||'').toUpperCase().includes(sKey.split('/')[0]));
+      const svts = vts.filter(v => (v.sector || '').toUpperCase().includes(sKey.split('/')[0]));
       let html = '💼 <strong>' + specificSec.toUpperCase() + ' Trainers (' + svts.length + '):</strong><br><br>';
-      svts.slice(0,8).forEach((v,i) => { html += '<div style="margin-bottom:4px;font-size:0.81rem"><strong>' + (i+1) + '. ' + v.name + '</strong><br><span style="font-size:0.73rem;color:#64748b">' + (v.school||'') + ' · ' + (v.district||'') + '</span></div>'; });
-      if (svts.length > 8) html += '<span style="font-size:0.76rem;color:#64748b">+ ' + (svts.length-8) + ' more</span>';
+      svts.slice(0, 8).forEach((v, i) => { html += '<div style="margin-bottom:4px;font-size:0.81rem"><strong>' + (i+1) + '. ' + v.name + '</strong><br><span style="font-size:0.73rem;color:#64748b">' + (v.school || '') + ' · ' + (v.district || '') + '</span></div>'; });
+      if (svts.length > 8) html += '<span style="font-size:0.76rem;color:#64748b">+ ' + (svts.length - 8) + ' more</span>';
       return { html, plain: specificSec.toUpperCase() + ' sector has ' + svts.length + ' vocational trainers.' };
     }
     let html = '💼 <strong>Trainers by Vocational Sector:</strong><br><br>';
-    Object.entries(secMap).sort((a,b)=>b[1].total-a[1].total).forEach(([k,v]) => {
+    Object.entries(secMap).sort((a, b) => b[1].total - a[1].total).forEach(([k, v]) => {
       html += '• <strong>' + k + ':</strong> ' + v.total + ' VTs (' + v.present + ' present)<br>';
     });
     return { html, plain: 'Sector breakdown shown. ' + Object.keys(secMap).length + ' sectors in Yug Shakti.' };
   }
 
-  // ── 9. GPS / Geofence ──────────────────────────────────────────
+  // ── 6. GPS / Geofence ─────────────────────────────────────────
   if (q.includes('gps') || q.includes('geofence') || q.includes('location') || q.includes('radius') || q.includes('map')) {
     const html = '📍 <strong>GPS Geofence Status:</strong><br><br>' +
-      '• <strong>Allowed Radius:</strong> ' + (s.radius||300) + 'm per school<br>' +
+      '• <strong>Allowed Radius:</strong> ' + (s.radius || 300) + 'm per school<br>' +
       '• <strong>GPS Mode:</strong> High-precision satellite (MaximumAge: 0)<br>' +
-      '• <strong>Total VTs Geotagged:</strong> ' + vts.filter(v=>v.lat&&v.lng).length + '/' + vts.length + '<br>' +
+      '• <strong>Total VTs Geotagged:</strong> ' + vts.filter(v => v.lat && v.lng).length + '/' + vts.length + '<br>' +
       '• <strong>School Visits:</strong> Live draggable pin + road navigator<br>' +
-      '• <strong>Attendance Window:</strong> ' + (s.open||'06:00') + ' – ' + (s.close||'18:30');
-    return { html, plain: 'GPS geofence is active with ' + (s.radius||300) + ' metre radius. ' + vts.filter(v=>v.lat&&v.lng).length + ' VTs are geotagged.' };
+      '• <strong>Attendance Window:</strong> ' + (s.open || '06:00') + ' – ' + (s.close || '18:30');
+    return { html, plain: 'GPS geofence is active with ' + (s.radius || 300) + ' metre radius. ' + vts.filter(v => v.lat && v.lng).length + ' VTs are geotagged.' };
   }
 
-  // ── 10. Late Mark ──────────────────────────────────────────────
-  if (q.includes('late') || q.includes('after') || q.includes('delay')) {
+  // ── 7. Late Mark ───────────────────────────────────────────────
+  if (q.includes('late') || q.includes('delay')) {
     const lateThreshold = s.open || '08:30';
-    const lateRecords = ta.filter(a => {
-      const t2 = a.checkInTime || a.time || '';
-      return t2 && t2 > lateThreshold;
-    });
+    const lateRecords = ta.filter(a => { const t2 = a.checkInTime || a.time || ''; return t2 && t2 > lateThreshold; });
     if (lateRecords.length === 0) {
       return { html: '✅ <strong>No late arrivals today!</strong> All trainers marked within the attendance window.', plain: 'No late arrivals today.' };
     }
     let html = '🕐 <strong>' + lateRecords.length + ' Late Arrivals Today:</strong><br><br>';
-    lateRecords.slice(0,6).forEach((a,i) => {
-      html += '<div style="margin-bottom:4px;font-size:0.81rem"><strong>' + (i+1) + '. ' + (a.teacherName||a.teacherID) + '</strong> — <span style="color:#d97706">' + (a.checkInTime||a.time) + '</span></div>';
+    lateRecords.slice(0, 6).forEach((a, i) => {
+      html += '<div style="margin-bottom:4px;font-size:0.81rem"><strong>' + (i+1) + '. ' + (a.teacherName || a.teacherID) + '</strong> — <span style="color:#d97706">' + (a.checkInTime || a.time) + '</span></div>';
     });
     return { html, plain: lateRecords.length + ' trainers marked attendance late today.' };
   }
 
-  // ── 11. Schools overview ───────────────────────────────────────
+  // ── 8. Schools overview ────────────────────────────────────────
   if (q.includes('school') || q.includes('coverage')) {
-    const schools = [...new Set(vts.map(v=>v.school).filter(Boolean))];
+    const schools = [...new Set(vts.map(v => v.school).filter(Boolean))];
     const html = '🏫 <strong>School Coverage:</strong><br><br>' +
       '• <strong>Total Schools:</strong> ' + schools.length + '<br>' +
       '• <strong>HS (L1&L2 · 9th&10th):</strong> ~134 schools<br>' +
@@ -8774,7 +8866,7 @@ function generateAIResponse(query, fullData) {
   const html = '🤖 I analyzed <strong>' + tch.length + ' VTs</strong> across Telangana.<br><br>' +
     '• <strong>' + ap.length + '</strong> present (' + pct + '%)<br>' +
     '• <strong>' + absentList.length + '</strong> absent<br><br>' +
-    'Try:<br>• "Details of [VT Name]"<br>• "School details of [School Name]"<br>• "Absent in [District]"<br>• "All IT sector trainers"';
+    'Try:<br>• "Details of [VT Name]"<br>• "School details of [School Name]"<br>• "Principal of [School]"<br>• "Absent in [District]"<br>• "All IT sector trainers"';
   return { html, plain: 'Currently ' + ap.length + ' of ' + tch.length + ' trainers are present. Attendance rate is ' + pct + ' percent.' };
 }
 
