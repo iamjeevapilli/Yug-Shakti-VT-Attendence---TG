@@ -8472,51 +8472,102 @@ function yugAISpeak(text) {
 }
 
 // ── Mic (Speech-to-Text) ────────────────────────────────────────
+let _micGotResult = false;
+
 function toggleAIMic() {
   if (yugAIMicActive) { stopAIMic(); return; }
   if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
-    appendAIMessage('bot', '🎤 Voice input is not supported in this browser. Please use Chrome on Android or Desktop.');
+    appendAIMessage('bot', '🎤 Voice input not supported. Please use Chrome browser.');
     return;
   }
+  _micGotResult = false;
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   yugAIMicRecognition = new SR();
+  // Support Telugu-accented English — try en-IN first, fall back to en-US
   yugAIMicRecognition.lang = 'en-IN';
-  yugAIMicRecognition.interimResults = false;
-  yugAIMicRecognition.maxAlternatives = 1;
+  yugAIMicRecognition.interimResults = true;   // show live transcript while speaking
+  yugAIMicRecognition.maxAlternatives = 3;      // pick best of 3 guesses
+  yugAIMicRecognition.continuous = false;
 
   yugAIMicRecognition.onstart = () => {
     yugAIMicActive = true;
     const btn = document.getElementById('aiMicBtn');
-    if (btn) { btn.classList.add('listening'); btn.textContent = '🔴'; }
+    if (btn) { btn.classList.add('listening'); btn.textContent = '🔴 Listening...'; btn.style.minWidth = '120px'; }
     const inp = document.getElementById('aiChatInput');
-    if (inp) inp.placeholder = 'Listening...';
+    if (inp) { inp.placeholder = '🎙️ Speak now — say VT name, school or village...'; inp.value = ''; }
   };
 
   yugAIMicRecognition.onresult = (e) => {
-    const transcript = e.results[0][0].transcript;
+    let interim = '';
+    let final = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const t = e.results[i][0].transcript;
+      if (e.results[i].isFinal) { final += t; }
+      else { interim += t; }
+    }
     const inp = document.getElementById('aiChatInput');
-    if (inp) inp.value = transcript;
-    stopAIMic();
-    processAIQuery(transcript);
+    // Show live interim text in the input box so user sees what's heard
+    if (inp) inp.value = final || interim;
+    if (final) {
+      _micGotResult = true;
+      const transcript = final.trim();
+      stopAIMicClean();
+      if (transcript) processAIQuery(transcript);
+    }
   };
 
   yugAIMicRecognition.onerror = (e) => {
-    stopAIMic();
-    if (e.error !== 'aborted') appendAIMessage('bot', '🎤 Could not hear you. Try again or type your question.');
+    stopAIMicClean();
+    const msgs = {
+      'not-allowed':  '🎤 Microphone permission denied. Please allow mic access in browser settings and try again.',
+      'no-speech':    '🎤 No speech detected. Tap 🎤 and speak clearly — say something like "details of Rajeshwari".',
+      'network':      '🎤 Network error during voice recognition. Check your connection and retry.',
+      'audio-capture':'🎤 No microphone found. Please connect a mic and try again.',
+      'aborted':      null
+    };
+    const msg = msgs[e.error];
+    if (msg) appendAIMessage('bot', msg);
   };
 
-  yugAIMicRecognition.onend = () => { stopAIMic(); };
-  yugAIMicRecognition.start();
+  yugAIMicRecognition.onend = () => {
+    // If recognition ended without a result (e.g. user said nothing, or network cut)
+    if (!_micGotResult) {
+      const inp = document.getElementById('aiChatInput');
+      const typed = inp ? inp.value.trim() : '';
+      if (typed) {
+        // There's something in the box from interim — submit it
+        _micGotResult = true;
+        stopAIMicClean();
+        processAIQuery(typed);
+      } else {
+        stopAIMicClean();
+      }
+    } else {
+      stopAIMicClean();
+    }
+  };
+
+  try {
+    yugAIMicRecognition.start();
+  } catch(err) {
+    appendAIMessage('bot', '🎤 Could not start microphone: ' + err.message);
+    stopAIMicClean();
+  }
 }
 
-function stopAIMic() {
+function stopAIMicClean() {
   yugAIMicActive = false;
-  if (yugAIMicRecognition) { try { yugAIMicRecognition.abort(); } catch(e){} yugAIMicRecognition = null; }
+  if (yugAIMicRecognition) {
+    try { yugAIMicRecognition.stop(); } catch(e){}
+    yugAIMicRecognition = null;
+  }
   const btn = document.getElementById('aiMicBtn');
-  if (btn) { btn.classList.remove('listening'); btn.textContent = '🎤'; }
+  if (btn) { btn.classList.remove('listening'); btn.textContent = '🎤'; btn.style.minWidth = ''; }
   const inp = document.getElementById('aiChatInput');
   if (inp) inp.placeholder = "Ask: 'Details of Rajeshwari' or 'ZPHS Jeedimetla'...";
 }
+
+function stopAIMic() { stopAIMicClean(); }
 
 // ── Append Message ───────────────────────────────────────────────
 function appendAIMessage(sender, htmlContent, speakText) {
