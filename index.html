@@ -31,7 +31,10 @@
 <meta name="apple-mobile-web-app-title" content="YS Geo-FRS" />
 <link rel="apple-touch-icon" href="/logo.png" />
 <script src="https://unpkg.com/lucide@latest"></script>
-<script src="vts_data.js"></script>
+<script src="vts_data.js?v=20261114_3"></script>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
 
 <script>
 // Force-clear service workers and caches to prevent development/testing cache issues
@@ -2674,6 +2677,55 @@ tbody td{padding:10px 12px;vertical-align:middle}
     .ai-detail-card .dc-name {
       font-size: 0.82rem !important;
     }
+  }
+
+
+  /* ── Pinpoint Question-Answer Banner & Maps Buttons ── */
+  .ai-pinpoint-ans {
+    background: linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%);
+    border: 1.5px solid #3b82f6;
+    border-radius: 14px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    font-size: 0.88rem;
+    color: #0f172a;
+    line-height: 1.55;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.1);
+  }
+  .ai-maps-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: #ffffff !important;
+    padding: 8px 14px;
+    border-radius: 12px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-decoration: none !important;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+    transition: all 0.2s ease;
+    margin-top: 4px;
+  }
+  .ai-maps-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+    background: #1d4ed8;
+  }
+  .ai-maps-btn.dir {
+    background: rgba(37, 99, 235, 0.1);
+    color: #1d4ed8 !important;
+    border: 1.5px solid rgba(37, 99, 235, 0.3);
+    box-shadow: none;
+  }
+  body[data-theme="dark"] .ai-pinpoint-ans,
+  body[data-theme="midnight"] .ai-pinpoint-ans,
+  body[data-theme="cyber"] .ai-pinpoint-ans,
+  body[data-theme="cosmic"] .ai-pinpoint-ans,
+  body[data-theme="aurora"] .ai-pinpoint-ans {
+    background: rgba(15, 23, 42, 0.85) !important;
+    border-color: rgba(59, 130, 246, 0.5) !important;
+    color: #f1f5f9 !important;
   }
 
   /* ── VT / School Detail Card inside chat ── */
@@ -8613,7 +8665,7 @@ function yugAISearchVTS(rawQuery, vts) {
   const asksForVillage   = /\b(village|mandal|block|place|area)\b/i.test(rawQuery);
 
   // Strip query filler words to extract the core search term
-  const fluffRe = /\b(give me|can you give|can you show|tell me about|tell me|who is the principal of|who is the vt of|who is the hm of|who is the teacher of|who is|what is the school of|what is|where is|details of school|school details of|details of vt|vt details of|details of|school details|vt details|principal name|village name|school name|details|school|vt|trainer|principal|hm|headmaster|headmistress|village|mandal|district|please|show me|find|search for|about|info|profile)\b/gi;
+  const fluffRe = /\b(give me|can you give|can you show|tell me about|tell me|who is the principal of|who is the vt of|who is the hm of|who is the teacher of|who is|what is the school of|what is|where is|details of school|school details of|details of vt|vt details of|details of|school details|vt details|principal name|village name|school name|details|school|vt|trainer|principal|hm|headmaster|headmistress|village|mandal|district|please|show me|find|search for|about|info|profile|phone number|phone no|mobile number|mobile no|contact number|contact no|phone|mobile|number|call|location link|location|maps link|maps url|map link|map url|maps|map|gps|coordinates|coordinate|direction link|directions|direction|navigate|address|udise code|udise)\b/gi;
   const cleanQ = rawQuery.replace(fluffRe, ' ').replace(/\s+/g, ' ').trim();
   const nCleanQ = yugAINorm(cleanQ);
   const qWords = cleanQ.toLowerCase().split(/\s+/).filter(w => w.length >= 3);
@@ -8982,14 +9034,104 @@ function generateAIResponse(query, fullData) {
   const s = DB.get('settings', {});
   const vts = fullData || tch;
 
+  // ── Helper: detect pinpoint question ───────────────────────────
+  function getPinpointAnswer(v) {
+    const phone = v.phone || v.ph || '';
+    const lat = v.lat || 0;
+    const lng = v.lng || 0;
+    const mapsUrl = 'https://www.google.com/maps?q=' + lat + ',' + lng;
+    const dirUrl  = 'https://www.google.com/maps/dir/?api=1&destination=' + lat + ',' + lng;
+    const isPresent = markedSet.has(phone);
+
+    // 1. Phone / Call Question
+    if (/\b(phone|mobile|call|contact|number|ph|నంబర్|ఫోన్)\b/i.test(q)) {
+      return {
+        banner: '<div class="ai-pinpoint-ans">' +
+          '<div style="font-size:0.75rem;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">⚡ Pin-to-Pin Direct Answer</div>' +
+          '<div style="margin-top:4px;">📱 <strong>Phone Number of ' + (v.name || 'VT') + ':</strong></div>' +
+          '<div style="margin-top:6px;"><a href="tel:' + phone + '" style="font-size:1.25rem;font-weight:900;color:#2563eb;text-decoration:underline;">📞 ' + phone + '</a> <span style="font-size:0.76rem;color:#059669;font-weight:700;margin-left:6px;">(Tap to call)</span></div>' +
+          '</div>',
+        speech: 'Phone number of ' + (v.name || 'trainer') + ' is ' + phone + '.'
+      };
+    }
+
+    // 2. Location / Maps Link Question
+    if (/\b(location|map|maps|gps|coordinates|coordinate|where|navigate|direction|link|లొకేషన్|మ్యాప్|ఎక్కడ)\b/i.test(q)) {
+      return {
+        banner: '<div class="ai-pinpoint-ans">' +
+          '<div style="font-size:0.75rem;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">⚡ Pin-to-Pin Direct Answer</div>' +
+          '<div style="margin-top:4px;">📍 <strong>Google Maps Location for ' + (v.name || v.school) + ':</strong></div>' +
+          '<div style="margin-top:4px;font-size:0.83rem;">🏫 <strong>School:</strong> ' + (v.school || '—') + '</div>' +
+          '<div style="font-size:0.83rem;">🌍 <strong>GPS Coordinates:</strong> <code>' + lat + ', ' + lng + '</code></div>' +
+          '<div style="font-size:0.83rem;">🗺️ <strong>District:</strong> ' + (v.district || '—') + ' · <strong>Mandal:</strong> ' + (v.mandal || '—') + '</div>' +
+          '<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">' +
+            '<a href="' + mapsUrl + '" target="_blank" rel="noopener" class="ai-maps-btn">📍 Open in Google Maps</a>' +
+            '<a href="' + dirUrl + '" target="_blank" rel="noopener" class="ai-maps-btn dir">🧭 Get Driving Directions</a>' +
+          '</div>' +
+          '</div>',
+        speech: 'Google Maps location link for ' + (v.name || v.school) + ' is ready at coordinates ' + lat + ', ' + lng + '.'
+      };
+    }
+
+    // 3. Principal / HM Question
+    if (/\b(principal|hm|headmaster|head master|head mistress|హెచ్ఎం|ప్రిన్సిపాల్)\b/i.test(q)) {
+      return {
+        banner: '<div class="ai-pinpoint-ans">' +
+          '<div style="font-size:0.75rem;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">⚡ Pin-to-Pin Direct Answer</div>' +
+          '<div style="margin-top:4px;">👨‍💼 <strong>Principal / HM of ' + (v.school || 'School') + ':</strong></div>' +
+          '<div style="margin-top:6px;font-size:1.1rem;font-weight:800;color:#1e40af;">' + (v.hm || 'Not listed') + '</div>' +
+          (v.hmPhone ? '<div style="margin-top:4px;"><a href="tel:' + v.hmPhone + '" style="color:#2563eb;font-weight:700;">📞 ' + v.hmPhone + '</a> (Tap to call)</div>' : '') +
+          '</div>',
+        speech: 'The principal of ' + (v.school || 'the school') + ' is ' + (v.hm || 'not listed') + '.'
+      };
+    }
+
+    // 4. UDISE Code Question
+    if (/\b(udise|code|యుడైస్)\b/i.test(q)) {
+      return {
+        banner: '<div class="ai-pinpoint-ans">' +
+          '<div style="font-size:0.75rem;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">⚡ Pin-to-Pin Direct Answer</div>' +
+          '<div style="margin-top:4px;">🏷️ <strong>UDISE Code of ' + (v.school || 'School') + ':</strong></div>' +
+          '<div style="margin-top:6px;"><code style="font-size:1.18rem;font-weight:900;color:#1e40af;letter-spacing:1px;">' + (v.udise || 'Not available') + '</code></div>' +
+          '</div>',
+        speech: 'The UDISE code for ' + (v.school || 'the school') + ' is ' + (v.udise || 'not available') + '.'
+      };
+    }
+
+    // 5. Present / Absent Question
+    if (/\b(present|absent|marked|status|హాజరు|రాలేదు|ఉన్నారా)\b/i.test(q)) {
+      return {
+        banner: '<div class="ai-pinpoint-ans">' +
+          '<div style="font-size:0.75rem;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">⚡ Pin-to-Pin Direct Answer</div>' +
+          '<div style="margin-top:4px;font-size:1.05rem;font-weight:800;">' +
+            (isPresent ? '✅ ' + v.name + ' is <span style="color:#059669;">PRESENT</span> today!' : '⚠️ ' + v.name + ' is <span style="color:#dc2626;">ABSENT</span> today.') +
+          '</div>' +
+          '</div>',
+        speech: (v.name || 'Trainer') + ' is ' + (isPresent ? 'present today.' : 'absent today.')
+      };
+    }
+
+    return null;
+  }
+
   // ── Helper: build VT detail card HTML ──────────────────────────
-  function buildVTCard(v) {
+  function buildVTCard(v, pinpoint) {
     const phone = v.phone || v.ph || '';
     const isPresent = markedSet.has(phone);
     const attRecord = ta.find(a => a.teacherID === phone);
-    let html = '<div class="ai-detail-card">';
+    const lat = v.lat || 0;
+    const lng = v.lng || 0;
+    const mapsUrl = 'https://www.google.com/maps?q=' + lat + ',' + lng;
+    const dirUrl  = 'https://www.google.com/maps/dir/?api=1&destination=' + lat + ',' + lng;
+
+    let html = '';
+    if (pinpoint && pinpoint.banner) {
+      html += pinpoint.banner;
+    }
+
+    html += '<div class="ai-detail-card">';
     html += '<div class="dc-name">👩‍🏫 ' + (v.name || '—') + ' <span class="dc-badge ' + (isPresent ? 'present' : 'absent') + '">' + (isPresent ? '✅ Present' : '⚠️ Absent') + '</span></div>';
-    html += '<div class="dc-row"><span class="dc-label">📱 Phone</span><span class="dc-val">' + (phone || '—') + '</span></div>';
+    html += '<div class="dc-row"><span class="dc-label">📱 Phone</span><span class="dc-val"><a href="tel:' + phone + '" style="color:#2563eb;font-weight:700;">' + (phone || '—') + '</a></span></div>';
     if (v.sector)   html += '<div class="dc-row"><span class="dc-label">💼 Sector</span><span class="dc-val">' + v.sector + '</span></div>';
     if (v.school)   html += '<div class="dc-row"><span class="dc-label">🏫 School</span><span class="dc-val">' + v.school + '</span></div>';
     if (v.district) html += '<div class="dc-row"><span class="dc-label">🗺️ District</span><span class="dc-val">' + v.district + '</span></div>';
@@ -9000,47 +9142,79 @@ function generateAIResponse(query, fullData) {
     if (v.hm) {
       html += '<hr class="dc-divider">';
       html += '<div class="dc-row"><span class="dc-label">👨‍💼 HM/Principal</span><span class="dc-val">' + v.hm + '</span></div>';
-      if (v.hmPhone) html += '<div class="dc-row"><span class="dc-label">📞 HM Phone</span><span class="dc-val">' + v.hmPhone + '</span></div>';
+      if (v.hmPhone) html += '<div class="dc-row"><span class="dc-label">📞 HM Phone</span><span class="dc-val"><a href="tel:' + v.hmPhone + '" style="color:#2563eb;">' + v.hmPhone + '</a></span></div>';
     }
     if (v.udise)  html += '<div class="dc-row"><span class="dc-label">🏷️ UDISE</span><span class="dc-val">' + v.udise + '</span></div>';
     if (v.scheme) html += '<div class="dc-row"><span class="dc-label">📋 Scheme</span><span class="dc-val">' + v.scheme + '</span></div>';
-    if (v.lat && v.lng) html += '<div class="dc-row"><span class="dc-label">🌍 Coordinates</span><span class="dc-val" style="font-size:0.75rem">' + v.lat + ', ' + v.lng + '</span></div>';
+
+    // Google Maps Location Link
+    if (lat && lng) {
+      html += '<hr class="dc-divider">';
+      html += '<div class="dc-row"><span class="dc-label">🌍 GPS Location</span><span class="dc-val" style="font-size:0.75rem">' + lat + ', ' + lng + '</span></div>';
+      html += '<div style="margin-top:8px;margin-bottom:6px;display:flex;gap:6px;flex-wrap:wrap;">';
+      html += '<a href="' + mapsUrl + '" target="_blank" rel="noopener" class="ai-maps-btn">📍 Open in Google Maps</a>';
+      html += '<a href="' + dirUrl + '" target="_blank" rel="noopener" class="ai-maps-btn dir">🧭 Get Directions</a>';
+      html += '</div>';
+    }
+
     if (attRecord) {
       html += '<hr class="dc-divider">';
       if (attRecord.checkInTime) html += '<div class="dc-row"><span class="dc-label">🕐 Check-In</span><span class="dc-val">' + attRecord.checkInTime + '</span></div>';
       if (attRecord.checkInDistance != null) html += '<div class="dc-row"><span class="dc-label">📏 Distance</span><span class="dc-val">' + attRecord.checkInDistance + 'm from school</span></div>';
     }
     html += '</div>';
-    const plain = (v.name || 'VT') + ' is ' + (isPresent ? 'present today' : 'absent today') + '. School: ' + (v.school || '—') + '. District: ' + (v.district || '—') + '.';
+
+    const plain = (pinpoint && pinpoint.speech) ? pinpoint.speech : ((v.name || 'VT') + ' is ' + (isPresent ? 'present today' : 'absent today') + '. School: ' + (v.school || '—') + '. District: ' + (v.district || '—') + '.');
     return { html, plain };
   }
 
   // ── Helper: build School detail card HTML ──────────────────────
-  function buildSchoolCard(schoolVTs, matchedHM) {
+  function buildSchoolCard(schoolVTs, matchedHM, pinpoint) {
     if (!schoolVTs.length) return null;
     const ref = schoolVTs[0];
     const schoolName = ref.school || '—';
     const presentCount = schoolVTs.filter(v => markedSet.has(v.phone || v.ph)).length;
-    let html = '<div class="ai-detail-card">';
+    const lat = ref.lat || 0;
+    const lng = ref.lng || 0;
+    const mapsUrl = 'https://www.google.com/maps?q=' + lat + ',' + lng;
+    const dirUrl  = 'https://www.google.com/maps/dir/?api=1&destination=' + lat + ',' + lng;
+
+    let html = '';
+    if (pinpoint && pinpoint.banner) {
+      html += pinpoint.banner;
+    }
+
+    html += '<div class="ai-detail-card">';
     html += '<div class="dc-name">🏫 ' + schoolName + '</div>';
     if (ref.district) html += '<div class="dc-row"><span class="dc-label">🗺️ District</span><span class="dc-val">' + ref.district + '</span></div>';
     if (ref.mandal)   html += '<div class="dc-row"><span class="dc-label">📍 Mandal</span><span class="dc-val">' + ref.mandal + '</span></div>';
     if (ref.udise)    html += '<div class="dc-row"><span class="dc-label">🏷️ UDISE</span><span class="dc-val">' + ref.udise + '</span></div>';
     if (ref.hm || matchedHM) {
       html += '<div class="dc-row"><span class="dc-label">👨‍💼 Principal/HM</span><span class="dc-val">' + (ref.hm || matchedHM || '—') + '</span></div>';
-      if (ref.hmPhone) html += '<div class="dc-row"><span class="dc-label">📞 HM Phone</span><span class="dc-val">' + ref.hmPhone + '</span></div>';
+      if (ref.hmPhone) html += '<div class="dc-row"><span class="dc-label">📞 HM Phone</span><span class="dc-val"><a href="tel:' + ref.hmPhone + '" style="color:#2563eb;">' + ref.hmPhone + '</a></span></div>';
     }
+
+    // Google Maps Location Link for school
+    if (lat && lng) {
+      html += '<div class="dc-row"><span class="dc-label">🌍 GPS Location</span><span class="dc-val" style="font-size:0.75rem">' + lat + ', ' + lng + '</span></div>';
+      html += '<div style="margin-top:8px;margin-bottom:6px;display:flex;gap:6px;flex-wrap:wrap;">';
+      html += '<a href="' + mapsUrl + '" target="_blank" rel="noopener" class="ai-maps-btn">📍 Open in Google Maps</a>';
+      html += '<a href="' + dirUrl + '" target="_blank" rel="noopener" class="ai-maps-btn dir">🧭 Get Directions</a>';
+      html += '</div>';
+    }
+
     html += '<div class="dc-row"><span class="dc-label">👩‍🏫 VTs at school</span><span class="dc-val">' + schoolVTs.length + ' (' + presentCount + ' present today)</span></div>';
     html += '<hr class="dc-divider">';
     schoolVTs.forEach((v, i) => {
       const ph = v.phone || v.ph || '';
       const pres = markedSet.has(ph);
       html += '<div style="margin-bottom:4px;font-size:0.81rem"><strong>' + (i+1) + '. ' + (v.name||'—') + '</strong> <span style="color:' + (pres ? '#059669':'#dc2626') + ';font-size:0.73rem">' + (pres ? '✅':'⚠️') + '</span>';
-      if (v.sector) html += '<br><span style="font-size:0.73rem;color:#64748b">💼 ' + v.sector + '</span>';
+      if (v.sector) html += '<br><span style="font-size:0.73rem;color:#64748b">💼 ' + v.sector + ' · 📱 <a href="tel:' + ph + '" style="color:#2563eb;">' + ph + '</a></span>';
       html += '</div>';
     });
     html += '</div>';
-    const plain = schoolName + ' in ' + (ref.district || '') + ' has ' + schoolVTs.length + ' vocational trainers. Principal: ' + (ref.hm || '—') + '. Today ' + presentCount + ' present.';
+
+    const plain = (pinpoint && pinpoint.speech) ? pinpoint.speech : (schoolName + ' in ' + (ref.district || '') + ' has ' + schoolVTs.length + ' vocational trainers. Principal: ' + (ref.hm || '—') + '. Today ' + presentCount + ' present.');
     return { html, plain };
   }
 
@@ -9055,17 +9229,18 @@ function generateAIResponse(query, fullData) {
     const top = scored[0];
     const mf  = top.matchField;
     const v   = top.v;
+    const pinpoint = getPinpointAnswer(v);
 
     // ── VT by name / phone / UDISE ──────────────────────────────
     if (mf === 'name' || mf === 'phone' || mf === 'udise' || (mf === 'yug')) {
-      return buildVTCard(v);
+      return buildVTCard(v, pinpoint);
     }
 
     // ── School by school name or mandal/village ─────────────────
     if (mf === 'school' || mf === 'mandal') {
       const nSchool = yugAINorm(v.school);
       const schoolVTs = vts.filter(x => yugAINorm(x.school) === nSchool);
-      const card = buildSchoolCard(schoolVTs, null);
+      const card = buildSchoolCard(schoolVTs, null, pinpoint);
       if (card) return card;
     }
 
@@ -9073,7 +9248,7 @@ function generateAIResponse(query, fullData) {
     if (mf === 'principal') {
       const nSchool = yugAINorm(v.school);
       const schoolVTs = vts.filter(x => yugAINorm(x.school) === nSchool);
-      const card = buildSchoolCard(schoolVTs, v.hm);
+      const card = buildSchoolCard(schoolVTs, v.hm, pinpoint);
       if (card) return card;
     }
 
@@ -9093,12 +9268,8 @@ function generateAIResponse(query, fullData) {
     }
   }
 
-  // ══════════════════════════════════════════════════════════════════
-  // ── AGGREGATE HANDLERS (unchanged) ───────────────────────────────
-  // ══════════════════════════════════════════════════════════════════
-
-  // ── 1. Absent list ─────────────────────────────────────────────
-  if (q.includes('absent') && !q.includes('school') && !q.includes('district')) {
+  // ── 1. Absent list ──
+  if (q.includes('absent') || /రాలేదు|లేరు|గైర్హాజరు/.test(query)) {
     if (absentList.length === 0) {
       return { html: '🎉 <strong>All ' + tch.length + ' VTs are present today!</strong> 100% attendance.', plain: 'All vocational trainers are present today. Full attendance achieved.' };
     }
@@ -9110,8 +9281,8 @@ function generateAIResponse(query, fullData) {
     return { html, plain: absentList.length + ' trainers are absent today. ' + ap.length + ' are present.' };
   }
 
-  // ── 2. Present list ────────────────────────────────────────────
-  if (q.includes('present') && !q.includes('school') && !q.includes('district')) {
+  // ── 2. Present list ──
+  if (q.includes('present') || /హాజరు|ఉన్నారు|వచ్చారు/.test(query)) {
     if (presentList.length === 0) {
       return { html: '⚠️ <strong>No VTs have marked attendance today yet.</strong>', plain: 'No vocational trainers have marked attendance today.' };
     }
@@ -9123,8 +9294,8 @@ function generateAIResponse(query, fullData) {
     return { html, plain: presentList.length + ' trainers are present today. Attendance rate is ' + pct + ' percent.' };
   }
 
-  // ── 3. Summary / count ─────────────────────────────────────────
-  if (q.includes('summary') || q.includes('total') || q.includes('count') || q.includes('how many') || q.includes('status')) {
+  // ── 3. Summary / Count ──
+  if (q.includes('summary') || q.includes('total') || q.includes('count') || q.includes('how many') || /మొత్తం|సమ్మరీ|లెక్క/.test(query)) {
     const html = '📊 <strong>Attendance Summary — ' + td + ':</strong><br><br>' +
       '• <strong>Total VTs:</strong> ' + tch.length + '<br>' +
       '• <strong>Present:</strong> ' + ap.length + ' (' + pct + '%)<br>' +
@@ -9134,44 +9305,10 @@ function generateAIResponse(query, fullData) {
     return { html, plain: 'Today ' + ap.length + ' of ' + tch.length + ' vocational trainers are present. Attendance is ' + pct + ' percent.' };
   }
 
-  // ── 4. District map ────────────────────────────────────────────
-  if (q.includes('district') || q.includes('all district') || q.includes('districtwise')) {
-    const distMap = {};
-    vts.forEach(v => {
-      const d = (v.district || 'UNKNOWN').toUpperCase();
-      if (!distMap[d]) distMap[d] = { total: 0, present: 0 };
-      distMap[d].total++;
-      if (markedSet.has(v.phone || v.ph)) distMap[d].present++;
-    });
-    const dists = Object.entries(distMap).sort((a, b) => b[1].total - a[1].total);
-    const specific = findDistrictInQuery(q, vts);
-    if (specific && distMap[specific.toUpperCase()]) {
-      const c = distMap[specific.toUpperCase()];
-      return { html: '🏛️ <strong>District: ' + specific.toUpperCase() + '</strong><br><br>• Total VTs: ' + c.total + '<br>• Present: ' + c.present + '<br>• Absent: ' + (c.total - c.present) + '<br>• Schools: ' + [...new Set(vts.filter(v => (v.district||'').toUpperCase() === specific.toUpperCase()).map(v => v.school))].size, plain: specific + ' district has ' + c.total + ' VTs, ' + c.present + ' present today.' };
-    }
-    let html = '🗺️ <strong>District-wise Attendance:</strong><br><br>';
-    dists.slice(0, 10).forEach(([d, c]) => {
-      const pct2 = Math.round(c.present / c.total * 100);
-      html += '<div style="margin-bottom:4px;font-size:0.81rem"><strong>' + d + '</strong> — ' + c.present + '/' + c.total + ' <span style="color:' + (pct2 >= 80 ? '#059669' : pct2 >= 50 ? '#d97706' : '#dc2626') + '">(' + pct2 + '%)</span></div>';
-    });
-    if (dists.length > 10) html += '<span style="font-size:0.76rem;color:#64748b">+ ' + (dists.length - 10) + ' more districts</span>';
-    return { html, plain: 'District breakdown shown. ' + dists.length + ' districts covered.' };
-  }
-
-  // ── 5. Sector Breakdown ────────────────────────────────────────
-  if (q.includes('sector') || q.includes('trade') || q.includes('health') || q.includes('apparel') || q.includes('it ') || q.includes('beauty') || q.includes('electronics')) {
+  // ── 4. Sector Breakdown ──
+  if (q.includes('sector') || q.includes('trade') || q.includes('health') || q.includes('apparel') || q.includes('beauty') || q.includes('electronics')) {
     const secMap = {};
     vts.forEach(v => { const s2 = (v.sector || 'OTHER').toUpperCase(); if (!secMap[s2]) secMap[s2] = { total: 0, present: 0 }; secMap[s2].total++; if (markedSet.has(v.phone || v.ph)) secMap[s2].present++; });
-    const sectorWords = ['health care', 'apparel', 'it/ites', 'beauty', 'electronics', 'agriculture', 'retail'];
-    const specificSec = sectorWords.find(sw => q.includes(sw));
-    if (specificSec) {
-      const sKey = specificSec.toUpperCase();
-      const svts = vts.filter(v => (v.sector || '').toUpperCase().includes(sKey.split('/')[0]));
-      let html = '💼 <strong>' + specificSec.toUpperCase() + ' Trainers (' + svts.length + '):</strong><br><br>';
-      svts.slice(0, 8).forEach((v, i) => { html += '<div style="margin-bottom:4px;font-size:0.81rem"><strong>' + (i+1) + '. ' + v.name + '</strong><br><span style="font-size:0.73rem;color:#64748b">' + (v.school || '') + ' · ' + (v.district || '') + '</span></div>'; });
-      if (svts.length > 8) html += '<span style="font-size:0.76rem;color:#64748b">+ ' + (svts.length - 8) + ' more</span>';
-      return { html, plain: specificSec.toUpperCase() + ' sector has ' + svts.length + ' vocational trainers.' };
-    }
     let html = '💼 <strong>Trainers by Vocational Sector:</strong><br><br>';
     Object.entries(secMap).sort((a, b) => b[1].total - a[1].total).forEach(([k, v]) => {
       html += '• <strong>' + k + ':</strong> ' + v.total + ' VTs (' + v.present + ' present)<br>';
@@ -9179,49 +9316,22 @@ function generateAIResponse(query, fullData) {
     return { html, plain: 'Sector breakdown shown. ' + Object.keys(secMap).length + ' sectors in Yug Shakti.' };
   }
 
-  // ── 6. GPS / Geofence ─────────────────────────────────────────
-  if (q.includes('gps') || q.includes('geofence') || q.includes('location') || q.includes('radius') || q.includes('map')) {
+  // ── 5. GPS / Geofence ──
+  if (q.includes('gps') || q.includes('geofence') || q.includes('radius')) {
     const html = '📍 <strong>GPS Geofence Status:</strong><br><br>' +
       '• <strong>Allowed Radius:</strong> ' + (s.radius || 300) + 'm per school<br>' +
       '• <strong>GPS Mode:</strong> High-precision satellite (MaximumAge: 0)<br>' +
       '• <strong>Total VTs Geotagged:</strong> ' + vts.filter(v => v.lat && v.lng).length + '/' + vts.length + '<br>' +
-      '• <strong>School Visits:</strong> Live draggable pin + road navigator<br>' +
       '• <strong>Attendance Window:</strong> ' + (s.open || '06:00') + ' – ' + (s.close || '18:30');
-    return { html, plain: 'GPS geofence is active with ' + (s.radius || 300) + ' metre radius. ' + vts.filter(v => v.lat && v.lng).length + ' VTs are geotagged.' };
+    return { html, plain: 'GPS geofence is active with ' + (s.radius || 300) + ' metre radius.' };
   }
 
-  // ── 7. Late Mark ───────────────────────────────────────────────
-  if (q.includes('late') || q.includes('delay')) {
-    const lateThreshold = s.open || '08:30';
-    const lateRecords = ta.filter(a => { const t2 = a.checkInTime || a.time || ''; return t2 && t2 > lateThreshold; });
-    if (lateRecords.length === 0) {
-      return { html: '✅ <strong>No late arrivals today!</strong> All trainers marked within the attendance window.', plain: 'No late arrivals today.' };
-    }
-    let html = '🕐 <strong>' + lateRecords.length + ' Late Arrivals Today:</strong><br><br>';
-    lateRecords.slice(0, 6).forEach((a, i) => {
-      html += '<div style="margin-bottom:4px;font-size:0.81rem"><strong>' + (i+1) + '. ' + (a.teacherName || a.teacherID) + '</strong> — <span style="color:#d97706">' + (a.checkInTime || a.time) + '</span></div>';
-    });
-    return { html, plain: lateRecords.length + ' trainers marked attendance late today.' };
-  }
-
-  // ── 8. Schools overview ────────────────────────────────────────
-  if (q.includes('school') || q.includes('coverage')) {
-    const schools = [...new Set(vts.map(v => v.school).filter(Boolean))];
-    const html = '🏫 <strong>School Coverage:</strong><br><br>' +
-      '• <strong>Total Schools:</strong> ' + schools.length + '<br>' +
-      '• <strong>HS (L1&L2 · 9th&10th):</strong> ~134 schools<br>' +
-      '• <strong>HSS (L3&L4 · 11th&12th):</strong> ~120 schools<br>' +
-      '• <strong>School Types:</strong> ZPHS, TGMS, KGBV, TGRS, GHS, TSMS<br><br>' +
-      '<em>Ask: "School details of ZPHS Jeedimetla" for full info!</em>';
-    return { html, plain: 'Yug Shakti covers ' + schools.length + ' schools across Telangana with ' + vts.length + ' vocational trainers.' };
-  }
-
-  // ── Default ────────────────────────────────────────────────────
+  // ── Default ──
   const html = '🤖 I analyzed <strong>' + tch.length + ' VTs</strong> across Telangana.<br><br>' +
     '• <strong>' + ap.length + '</strong> present (' + pct + '%)<br>' +
     '• <strong>' + absentList.length + '</strong> absent<br><br>' +
-    'Try:<br>• "Details of [VT Name]"<br>• "School details of [School Name]"<br>• "Principal of [School]"<br>• "Absent in [District]"<br>• "All IT sector trainers"';
-  return { html, plain: 'Currently ' + ap.length + ' of ' + tch.length + ' trainers are present. Attendance rate is ' + pct + ' percent.' };
+    'Try:<br>• "Give me Anand phone number"<br>• "Anand location link"<br>• "Details of Rajeshwari"<br>• "School details of Ragannaguda"';
+  return { html, plain: 'Currently ' + ap.length + ' of ' + tch.length + ' trainers are present.' };
 }
 
 // ── Utility: Find district name in query ────────────────────────
