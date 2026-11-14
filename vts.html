@@ -270,7 +270,7 @@ tbody td strong{color:var(--ink);font-weight:600}
   }
 </style>
 
-<script src="vts_data.js?v=20261114_4"></script>
+<script src="vts_data.js?v=20261114_5"></script>
 </head>
 <body>
 
@@ -477,17 +477,20 @@ function getAdminToken(fallbackToken) {
 }
 
 async function loadProtectedVTData(passedToken) {
-  const token = getAdminToken(passedToken);
-  const tbody = document.getElementById('tbody');
+  // 1. Immediately display all 254 records from MASTER_VTS_DATA if available (instant load)
+  if (window.MASTER_VTS_DATA && window.MASTER_VTS_DATA.length) {
+    VT = window.MASTER_VTS_DATA;
+    console.log('Loaded ' + VT.length + ' VT records immediately from MASTER_VTS_DATA.');
+    syncVTWithDB();
+    populateDistrictDropdown();
+    buildTags();
+    filterAll();
+  }
 
+  const token = getAdminToken(passedToken);
   if (!token) {
-    if (window.parent === window) {
-      window.location.replace('/');
-    } else {
-      console.warn('Waiting for parent admin session token...');
-      if (tbody && (!VT || VT.length === 0)) {
-        tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:40px;color:var(--ink3);font-size:1rem">⏳ Connecting to Admin session...</td></tr>';
-      }
+    if (!VT || VT.length === 0) {
+      console.warn('Waiting for VT data or session token...');
     }
     return;
   }
@@ -497,59 +500,32 @@ async function loadProtectedVTData(passedToken) {
     localStorage.setItem('yug_admin_token', token);
   } catch(e){}
 
-  if (tbody && (!VT || VT.length === 0)) {
-    tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:40px;color:var(--ink3);font-size:1rem">⏳ Loading VT records securely...</td></tr>';
-  }
-
+  // 2. Fetch server updates in background if token available
   try {
     const res = await fetch('/api/vts', {
       headers: { 'Authorization': 'Bearer ' + token }
     });
 
-    if (res.status === 401 || res.status === 403) {
-      console.warn('Unauthorized access to VT register.');
-      if (window.parent === window) {
-        sessionStorage.removeItem('yug_admin_token');
-        localStorage.removeItem('yug_admin_token');
-        window.location.replace('/');
-      } else if (tbody) {
-        tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:40px;color:var(--rose);font-weight:700">🔒 Please log in as Administrator in the main portal to view VT details.</td></tr>';
+    if (res.ok) {
+      const serverData = await res.json();
+      if (Array.isArray(serverData) && serverData.length) {
+        VT = serverData;
+        console.log('Updated with ' + VT.length + ' protected VT records from API.');
+        syncVTWithDB();
+        populateDistrictDropdown();
+        buildTags();
+        filterAll();
       }
-      return;
     }
-
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-
-    VT = await res.json();
-    console.log('Loaded ' + VT.length + ' protected VT records securely.');
-
-    syncVTWithDB();
-    populateDistrictDropdown();
-    buildTags();
-    filterAll();
   } catch(err) {
-    // Fallback to pre-bundled data if available
-    if (window.MASTER_VTS_DATA && window.MASTER_VTS_DATA.length) {
-      VT = window.MASTER_VTS_DATA;
-      console.log('Loaded ' + VT.length + ' VT records from MASTER_VTS_DATA.');
-      syncVTWithDB();
-      populateDistrictDropdown();
-      buildTags();
-      filterAll();
-      return;
-    }
-
-    console.error('Failed to load protected VT records:', err);
-    if (tbody && (!VT || VT.length === 0)) {
-      tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:40px;color:var(--rose);font-weight:700">❌ Error loading VT records. Please refresh or re-login.</td></tr>';
-    }
+    console.warn('Background API sync note:', err.message);
   }
 }
 
-window.addEventListener('message', function(ev) {
-  if (ev.data && (ev.data.type === 'SET_AUTH_TOKEN' || ev.data.token)) {
-    const tok = ev.data.token || ev.data;
-    if (typeof tok === 'string' && tok.length > 20) {
+window.addEventListener('message', (ev) => {
+  if (ev.data && ev.data.type === 'SET_ADMIN_TOKEN') {
+    const tok = ev.data.token;
+    if (tok && typeof tok === 'string' && tok.length > 20) {
       loadProtectedVTData(tok);
     }
   }

@@ -31,7 +31,7 @@
 <meta name="apple-mobile-web-app-title" content="YS Geo-FRS" />
 <link rel="apple-touch-icon" href="/logo.png" />
 <script src="https://unpkg.com/lucide@latest"></script>
-<script src="vts_data.js?v=20261114_4"></script>
+<script src="vts_data.js?v=20261114_5"></script>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
 <meta http-equiv="Expires" content="0" />
@@ -8648,9 +8648,31 @@ function yugAINorm(s) {
     .trim();
 }
 
-// ── Master Fuzzy Search Engine — covers all 254 VTs ─────────────
+// ── Fuzzy Levenshtein Similarity (0.0 to 1.0) ───────────────────
+function fuzzySimilarity(s1, s2) {
+  if (!s1 || !s2) return 0;
+  if (s1.length < 3 || s2.length < 3) return s1 === s2 ? 1.0 : 0;
+  if (s1 === s2) return 1.0;
+  if (s1.includes(s2) || s2.includes(s1)) return 0.95;
+
+  const l1 = s1.length, l2 = s2.length;
+  if (Math.abs(l1 - l2) > Math.max(l1, l2) * 0.45) return 0;
+
+  const d = [];
+  for (let i = 0; i <= l1; i++) d[i] = [i];
+  for (let j = 0; j <= l2; j++) d[0][j] = j;
+  for (let i = 1; i <= l1; i++) {
+    for (let j = 1; j <= l2; j++) {
+      const cost = s1[i - 1] === s2[j - 1] ? 0 : 1;
+      d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + cost);
+    }
+  }
+  return 1 - (d[l1][l2] / Math.max(l1, l2));
+}
+
+// ── Master Phonetic + Fuzzy Search Engine — covers all 254 VTs ──
 function yugAISearchVTS(rawQuery, vts) {
-  // 1. Convert Telugu script to Roman English
+  // 1. Convert Telugu script to Roman English phonetically
   const qRoman = teluguToRoman(rawQuery).toLowerCase();
 
   // 2. Intent keywords detection
@@ -8670,7 +8692,7 @@ function yugAISearchVTS(rawQuery, vts) {
   const scored = [];
   for (const v of vts) {
     let score = 0;
-    let matchField = '';
+    const hitFields = new Set();
 
     const vPhone   = (v.phone || v.ph || '');
     const vUdise   = (v.udise || '');
@@ -8685,53 +8707,123 @@ function yugAISearchVTS(rawQuery, vts) {
     const cMandal  = getConsonants(nvMandal);
 
     // Exact Phone & UDISE match
-    if (vPhone && qRoman.includes(vPhone)) { score += 500; matchField = 'phone'; }
-    if (vUdise && qRoman.includes(vUdise)) { score += 480; matchField = 'udise'; }
+    if (vPhone && qRoman.includes(vPhone)) { score += 500; hitFields.add('phone'); }
+    if (vUdise && qRoman.includes(vUdise)) { score += 480; hitFields.add('udise'); }
 
-    // Full phrase matching
+    // Full phrase exact & consonant matching
     if (nCleanQ.length >= 3) {
-      if (nvSchool.includes(nCleanQ)) { score += asksForSchool ? 400 : 250; matchField = 'school'; }
-      else if (getConsonants(nCleanQ).length >= 3 && cSchool.includes(getConsonants(nCleanQ))) { score += asksForSchool ? 380 : 240; matchField = 'school'; }
+      if (nvSchool.includes(nCleanQ)) { score += asksForSchool ? 400 : 250; hitFields.add('school'); }
+      else if (getConsonants(nCleanQ).length >= 3 && cSchool.includes(getConsonants(nCleanQ))) { score += asksForSchool ? 380 : 240; hitFields.add('school'); }
 
-      if (nvName.includes(nCleanQ)) { score += asksForVT ? 400 : 260; if (!matchField || asksForVT) matchField = 'name'; }
-      else if (getConsonants(nCleanQ).length >= 3 && cName.includes(getConsonants(nCleanQ))) { score += asksForVT ? 380 : 240; if (!matchField || asksForVT) matchField = 'name'; }
+      if (nvName.includes(nCleanQ)) { score += asksForVT ? 400 : 260; hitFields.add('name'); }
+      else if (getConsonants(nCleanQ).length >= 3 && cName.includes(getConsonants(nCleanQ))) { score += asksForVT ? 380 : 240; hitFields.add('name'); }
 
-      if (nvHM.includes(nCleanQ)) { score += asksForPrincipal ? 400 : 200; if (!matchField || asksForPrincipal) matchField = 'principal'; }
-      else if (getConsonants(nCleanQ).length >= 3 && cHM.includes(getConsonants(nCleanQ))) { score += asksForPrincipal ? 380 : 190; if (!matchField || asksForPrincipal) matchField = 'principal'; }
+      if (nvHM.includes(nCleanQ)) { score += asksForPrincipal ? 400 : 200; hitFields.add('principal'); }
+      else if (getConsonants(nCleanQ).length >= 3 && cHM.includes(getConsonants(nCleanQ))) { score += asksForPrincipal ? 380 : 190; hitFields.add('principal'); }
 
-      if (nvMandal.includes(nCleanQ)) { score += asksForVillage ? 350 : 180; if (!matchField) matchField = 'mandal'; }
-      if (nvDist.includes(nCleanQ)) { score += 120; if (!matchField) matchField = 'district'; }
+      if (nvMandal.includes(nCleanQ)) { score += asksForVillage ? 350 : 180; hitFields.add('mandal'); }
+      if (nvDist.includes(nCleanQ)) { score += 120; hitFields.add('district'); }
     }
 
-    // Word-by-word token matching
+    // Word token matching: Exact, Consonants & Levenshtein Fuzzy
+    const nameWords   = nvName.split(/\s+/).filter(w => w.length >= 3);
+    const schoolWords = nvSchool.split(/\s+/).filter(w => w.length >= 3);
+    const hmWords     = nvHM.split(/\s+/).filter(w => w.length >= 3);
+    const mandalWords = nvMandal.split(/\s+/).filter(w => w.length >= 3);
+
     for (let i = 0; i < nWords.length; i++) {
       const nw = nWords[i];
       const cw = cWords[i] || '';
       if (nw.length < 3) continue;
 
+      let matchedWord = false;
+
+      // 1. Substring & Consonant match
       if (nvSchool.includes(nw) || (cw.length >= 3 && cSchool.includes(cw))) {
         score += asksForSchool ? 150 : 80;
-        if (!matchField) matchField = 'school';
+        hitFields.add('school');
+        matchedWord = true;
       }
       if (nvName.includes(nw) || (cw.length >= 3 && cName.includes(cw))) {
         score += asksForVT ? 150 : 85;
-        if (!matchField) matchField = 'name';
+        hitFields.add('name');
+        matchedWord = true;
       }
       if (nvHM.includes(nw) || (cw.length >= 3 && cHM.includes(cw))) {
         score += asksForPrincipal ? 150 : 70;
-        if (!matchField) matchField = 'principal';
+        hitFields.add('principal');
+        matchedWord = true;
       }
       if (nvMandal.includes(nw) || (cw.length >= 3 && cMandal.includes(cw))) {
         score += asksForVillage ? 150 : 65;
-        if (!matchField) matchField = 'mandal';
+        hitFields.add('mandal');
+        matchedWord = true;
       }
       if (nvDist.includes(nw)) {
         score += 50;
-        if (!matchField) matchField = 'district';
+        hitFields.add('district');
+        matchedWord = true;
+      }
+
+      // 2. Fuzzy Levenshtein match (fallback when speech drops syllables like 'Ragaguda' vs 'Ragannaguda')
+      if (!matchedWord) {
+        let bestSchoolSim = 0;
+        for (const sw of schoolWords) {
+          const sim = fuzzySimilarity(nw, sw);
+          if (sim > bestSchoolSim) bestSchoolSim = sim;
+        }
+        if (bestSchoolSim >= 0.70) {
+          score += Math.round(bestSchoolSim * (asksForSchool ? 200 : 120));
+          hitFields.add('school');
+        }
+
+        let bestNameSim = 0;
+        for (const nameW of nameWords) {
+          const sim = fuzzySimilarity(nw, nameW);
+          if (sim > bestNameSim) bestNameSim = sim;
+        }
+        if (bestNameSim >= 0.70) {
+          score += Math.round(bestNameSim * (asksForVT ? 200 : 130));
+          hitFields.add('name');
+        }
+
+        let bestHMSim = 0;
+        for (const hw of hmWords) {
+          const sim = fuzzySimilarity(nw, hw);
+          if (sim > bestHMSim) bestHMSim = sim;
+        }
+        if (bestHMSim >= 0.70) {
+          score += Math.round(bestHMSim * (asksForPrincipal ? 200 : 110));
+          hitFields.add('principal');
+        }
+
+        let bestMandalSim = 0;
+        for (const mw of mandalWords) {
+          const sim = fuzzySimilarity(nw, mw);
+          if (sim > bestMandalSim) bestMandalSim = sim;
+        }
+        if (bestMandalSim >= 0.70) {
+          score += Math.round(bestMandalSim * 100);
+          hitFields.add('mandal');
+        }
       }
     }
 
-    if (score >= 50) scored.push({ v, score, matchField });
+    if (score >= 50) {
+      // Determine primary matchField based on intent and hits
+      let primaryField = 'school';
+      if (hitFields.has('phone')) primaryField = 'phone';
+      else if (hitFields.has('udise')) primaryField = 'udise';
+      else if (asksForPrincipal && hitFields.has('principal')) primaryField = 'principal';
+      else if (asksForSchool && hitFields.has('school')) primaryField = 'school';
+      else if (hitFields.has('name')) primaryField = 'name';
+      else if (hitFields.has('principal')) primaryField = 'principal';
+      else if (hitFields.has('school')) primaryField = 'school';
+      else if (hitFields.has('mandal')) primaryField = 'mandal';
+      else if (hitFields.has('district')) primaryField = 'district';
+
+      scored.push({ v, score, matchField: primaryField });
+    }
   }
 
   scored.sort((a, b) => b.score - a.score);
