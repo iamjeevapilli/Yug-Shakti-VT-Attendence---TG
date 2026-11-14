@@ -2093,6 +2093,150 @@ tbody td{padding:10px 12px;vertical-align:middle}
     background: #1d4ed8;
     transform: scale(1.06);
   }
+
+  /* ── Voice Mic Button ── */
+  .ai-mic-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: #f1f5f9;
+    border: 1.5px solid rgba(226, 232, 240, 0.9);
+    color: #64748b;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+  }
+  .ai-mic-btn:hover { background: #eff6ff; border-color: #3b82f6; color: #2563eb; }
+  .ai-mic-btn.listening {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    border-color: #ef4444;
+    color: #fff;
+    animation: micPulse 1.1s infinite;
+  }
+  @keyframes micPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.5); }
+    50% { box-shadow: 0 0 0 8px rgba(239,68,68,0); }
+  }
+
+  /* ── Speak button on bot messages ── */
+  .ai-speak-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 7px;
+    background: none;
+    border: 1px solid rgba(226,232,240,0.9);
+    border-radius: 10px;
+    padding: 3px 10px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.18s ease;
+  }
+  .ai-speak-btn:hover { background: #eff6ff; color: #2563eb; border-color: #3b82f6; }
+  .ai-speak-btn.speaking { background: #dcfce7; color: #059669; border-color: #10b981; }
+
+  /* ── AI Monitor Status Bar ── */
+  .ai-monitor-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 7px 18px;
+    background: linear-gradient(90deg, rgba(5,150,105,0.08), rgba(37,99,235,0.07));
+    border-bottom: 1px solid rgba(16,185,129,0.15);
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #059669;
+  }
+  .ai-monitor-pulse { width:7px;height:7px;border-radius:50%;background:#10b981;animation:livePulseDot 1.4s infinite; }
+  .ai-monitor-badges { display:flex;gap:6px;flex-wrap:wrap; }
+  .ai-monitor-badge {
+    background: rgba(255,255,255,0.8);
+    border: 1px solid rgba(226,232,240,0.8);
+    border-radius: 8px;
+    padding: 2px 8px;
+    font-size: 0.69rem;
+    font-weight: 700;
+    color: #334155;
+  }
+
+  /* ── VT / School Detail Card inside chat ── */
+  .ai-detail-card {
+    background: linear-gradient(135deg, #f8faff 0%, #f0f9ff 100%);
+    border: 1.5px solid rgba(37,99,235,0.18);
+    border-radius: 16px;
+    padding: 14px 16px;
+    margin-top: 6px;
+    font-size: 0.82rem;
+    line-height: 1.6;
+  }
+  .ai-detail-card .dc-name {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 0.95rem;
+    color: #1e40af;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .ai-detail-card .dc-row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 3px;
+    font-size: 0.8rem;
+  }
+  .ai-detail-card .dc-label {
+    color: #64748b;
+    font-weight: 700;
+    min-width: 90px;
+    flex-shrink: 0;
+  }
+  .ai-detail-card .dc-val { color: #0f172a; font-weight: 600; }
+  .ai-detail-card .dc-badge {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 8px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    background: rgba(37,99,235,0.1);
+    color: #1d4ed8;
+  }
+  .ai-detail-card .dc-badge.present { background:rgba(5,150,105,0.1);color:#059669; }
+  .ai-detail-card .dc-badge.absent { background:rgba(220,38,38,0.1);color:#dc2626; }
+  .ai-detail-card .dc-divider { border:none;border-top:1px solid rgba(226,232,240,0.7);margin:8px 0; }
+
+  /* ── School Multi-VT Summary Card ── */
+  .ai-school-card {
+    background: linear-gradient(135deg, #fff7ed, #fefce8);
+    border: 1.5px solid rgba(245,158,11,0.25);
+    border-radius: 16px;
+    padding: 14px 16px;
+    margin-top: 6px;
+    font-size: 0.82rem;
+  }
+  .ai-school-card .sc-name {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 0.95rem;
+    color: #92400e;
+    margin-bottom: 8px;
+  }
+  .ai-school-vt-list { margin-top: 8px; }
+  .ai-school-vt-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 5px 0;
+    border-bottom: 1px solid rgba(226,232,240,0.5);
+    font-size: 0.79rem;
+  }
+  .ai-school-vt-item:last-child { border-bottom: none; }
 </style>
 
 </head>
@@ -7458,45 +7602,72 @@ function renderThemeGrid() {
 
 <!-- FLOATING AI COPILOT LAUNCHER -->
 <button type="button" id="aiCopilotBtn" onclick="openAICopilot()" class="ai-copilot-pill" aria-label="Open AI Copilot">
-  <span style="font-size:1.15rem;">✨</span>
-  <span>Ask Yug AI</span>
+  <span style="font-size:1.15rem;">🤖</span>
+  <span>Yug AI</span>
   <span class="ai-sparkle-dot"></span>
 </button>
 
-<!-- AI COPILOT DRAWER (Interactive Intelligence) -->
+<!-- AI COPILOT DRAWER (Interactive Intelligence + Voice + Monitor) -->
 <div id="aiDrawerOverlay" class="ai-drawer-overlay" onclick="if(event.target===this)closeAICopilot()">
   <div class="ai-drawer-card">
+
+    <!-- Header -->
     <div class="ai-drawer-head">
       <div class="ai-drawer-title">
         <div class="ai-avatar-badge">🤖</div>
         <div>
-          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:0.95rem;color:#0f172a;">Yug AI Copilot</div>
-          <div style="font-size:0.72rem;color:#059669;font-weight:700;">● Active Attendance Intelligence</div>
+          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:0.95rem;color:#0f172a;">Yug AI Monitor</div>
+          <div id="aiStatusLine" style="font-size:0.72rem;color:#059669;font-weight:700;">● Live · Watching all 254 VTs</div>
         </div>
       </div>
-      <button type="button" onclick="closeAICopilot()" class="theme-close-btn" style="width:32px;height:32px;font-size:1.2rem;">&times;</button>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <button type="button" id="aiVoiceToggleBtn" onclick="toggleAIVoice()" title="Toggle voice responses" style="background:rgba(37,99,235,0.08);border:1px solid rgba(37,99,235,0.2);border-radius:10px;padding:4px 10px;font-size:0.74rem;font-weight:700;color:#2563eb;cursor:pointer;">🔊 Voice</button>
+        <button type="button" onclick="closeAICopilot()" class="theme-close-btn" style="width:32px;height:32px;font-size:1.2rem;">&times;</button>
+      </div>
     </div>
 
-    <!-- Quick Prompt Chips (from reference image) -->
+    <!-- Live Monitor Status Bar -->
+    <div class="ai-monitor-bar">
+      <div style="display:flex;align-items:center;gap:6px;">
+        <div class="ai-monitor-pulse"></div>
+        <span>Live Monitoring</span>
+      </div>
+      <div class="ai-monitor-badges" id="aiMonitorBadges">
+        <span class="ai-monitor-badge" id="monBadgePresent">✅ — Present</span>
+        <span class="ai-monitor-badge" id="monBadgeAbsent">⚠️ — Absent</span>
+        <span class="ai-monitor-badge" id="monBadgeRate">📊 —%</span>
+      </div>
+    </div>
+
+    <!-- Quick Prompt Chips -->
     <div class="ai-chips-scroll">
-      <button type="button" class="ai-chip" onclick="askAIQuick('today')">⚡ Today's Summary</button>
-      <button type="button" class="ai-chip" onclick="askAIQuick('absent')">⚠️ Who is Absent?</button>
-      <button type="button" class="ai-chip" onclick="askAIQuick('rates')">📈 Attendance Rates</button>
-      <button type="button" class="ai-chip" onclick="askAIQuick('levels')">🏫 HS vs HSS</button>
+      <button type="button" class="ai-chip" onclick="askAIQuick('today')">⚡ Summary</button>
+      <button type="button" class="ai-chip" onclick="askAIQuick('absent')">⚠️ Absent</button>
+      <button type="button" class="ai-chip" onclick="askAIQuick('present')">✅ Present</button>
+      <button type="button" class="ai-chip" onclick="askAIQuick('schools')">🏫 Schools</button>
       <button type="button" class="ai-chip" onclick="askAIQuick('sectors')">💼 Sectors</button>
-      <button type="button" class="ai-chip" onclick="askAIQuick('gps')">📍 GPS Alerts</button>
+      <button type="button" class="ai-chip" onclick="askAIQuick('districts')">🗺️ Districts</button>
+      <button type="button" class="ai-chip" onclick="askAIQuick('gps')">📍 GPS</button>
+      <button type="button" class="ai-chip" onclick="askAIQuick('late')">🕐 Late Mark</button>
     </div>
 
     <!-- Chat Messages Stream -->
     <div class="ai-chat-body" id="aiChatBody">
       <div class="ai-msg bot">
-        👋 <strong>Hello Administrator!</strong> I am your <strong>Yug AI Copilot</strong>. Ask me anything about today's attendance, vocational trainers, absent staff, school coordinates, or sector analytics!
+        👋 <strong>Hello Administrator!</strong> I am <strong>Yug AI</strong> — your live monitor.<br><br>
+        I watch all <strong>254 VTs</strong> in real-time. Try asking:<br>
+        • <em>"Details of Rajeshwari"</em><br>
+        • <em>"Absent in Medchal district"</em><br>
+        • <em>"School details of ZPHS Jeedimetla"</em><br>
+        • <em>"All VTs in IT sector"</em><br><br>
+        Tap 🎤 to speak your question!
       </div>
     </div>
 
-    <!-- Input Footer -->
+    <!-- Input Footer with Mic -->
     <form class="ai-chat-foot" onsubmit="event.preventDefault();submitAIChat();">
-      <input type="text" id="aiChatInput" class="ai-input-box" placeholder="Ask AI: e.g. 'Who is absent in Sangareddy?'..." autocomplete="off"/>
+      <button type="button" id="aiMicBtn" class="ai-mic-btn" onclick="toggleAIMic()" title="Speak your question" aria-label="Voice input">🎤</button>
+      <input type="text" id="aiChatInput" class="ai-input-box" placeholder="Ask: 'Details of Rajeshwari' or 'ZPHS Jeedimetla'..." autocomplete="off"/>
       <button type="submit" class="ai-send-btn" aria-label="Send">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"></path></svg>
       </button>
@@ -7806,45 +7977,195 @@ function switchDashboardView(mode) {
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   AI COPILOT INTELLIGENCE ENGINE (Natural Language Attendance Query)
+   YUG AI MONITOR ENGINE v2 — Voice · Deep Lookup · Live Monitor
+   Features: TTS speak, STT mic, VT detail card, school card,
+   district/sector/absent/present queries, real-time monitor bar
 ══════════════════════════════════════════════════════════════════ */
+
+// ── State ──────────────────────────────────────────────────────
+let yugAIVoiceEnabled = true;
+let yugAIMicRecognition = null;
+let yugAIMicActive = false;
+let yugAIMonitorTimer = null;
+let yugAIFullData = null; // cached full VTS data from /api/vts or SEED
+
+// ── Load Full VTS Data (rich: district, mandal, UDISE, HM etc.) ──
+async function yugAILoadFullData() {
+  if (yugAIFullData) return yugAIFullData;
+  try {
+    const token = localStorage.getItem('yug_admin_token') || sessionStorage.getItem('yug_admin_token') || '';
+    const r = await fetch('/api/vts', { headers: { Authorization: 'Bearer ' + token } });
+    if (r.ok) {
+      const j = await r.json();
+      if (j.ok && j.data) {
+        yugAIFullData = j.data;
+        return yugAIFullData;
+      }
+    }
+  } catch(e) {}
+  // Fallback to SEED (less fields)
+  yugAIFullData = DB.get('teachers', window.SEED || []).map(t => ({
+    name: t.name, phone: t.ph, sector: t.sector, school: t.school,
+    lat: t.lat, lng: t.lng, yug: t.yug
+  }));
+  return yugAIFullData;
+}
+
+// ── Open / Close ────────────────────────────────────────────────
 function openAICopilot() {
   const overlay = document.getElementById('aiDrawerOverlay');
   if (overlay) {
     overlay.style.display = 'flex';
-    setTimeout(() => {
-      const inp = document.getElementById('aiChatInput');
-      if (inp) inp.focus();
-    }, 100);
+    yugAIUpdateMonitorBar();
+    if (!yugAIMonitorTimer) {
+      yugAIMonitorTimer = setInterval(yugAIUpdateMonitorBar, 15000);
+    }
+    setTimeout(() => { const inp = document.getElementById('aiChatInput'); if (inp) inp.focus(); }, 150);
   }
 }
 
 function closeAICopilot() {
   const overlay = document.getElementById('aiDrawerOverlay');
   if (overlay) overlay.style.display = 'none';
+  if (yugAIMicActive) stopAIMic();
+  if (yugAIMonitorTimer) { clearInterval(yugAIMonitorTimer); yugAIMonitorTimer = null; }
 }
 
-function appendAIMessage(sender, htmlContent) {
+// ── Monitor Bar Live Update ─────────────────────────────────────
+function yugAIUpdateMonitorBar() {
+  const att = DB.get('att', []);
+  const tch = DB.get('teachers', window.SEED || []);
+  const td = today();
+  const ta = att.filter(a => a.date === td);
+  const ap = ta.filter(a => a.status === 'approved');
+  const pct = tch.length ? Math.round(ap.length / tch.length * 100) : 0;
+  const absent = tch.length - ap.length;
+  const bp = document.getElementById('monBadgePresent');
+  const ba = document.getElementById('monBadgeAbsent');
+  const br = document.getElementById('monBadgeRate');
+  if (bp) bp.textContent = '✅ ' + ap.length + ' Present';
+  if (ba) ba.textContent = '⚠️ ' + absent + ' Absent';
+  if (br) br.textContent = '📊 ' + pct + '%';
+}
+
+// ── Voice Toggle ────────────────────────────────────────────────
+function toggleAIVoice() {
+  yugAIVoiceEnabled = !yugAIVoiceEnabled;
+  const btn = document.getElementById('aiVoiceToggleBtn');
+  if (btn) {
+    btn.textContent = yugAIVoiceEnabled ? '🔊 Voice' : '🔇 Muted';
+    btn.style.background = yugAIVoiceEnabled ? 'rgba(37,99,235,0.08)' : 'rgba(239,68,68,0.08)';
+    btn.style.color = yugAIVoiceEnabled ? '#2563eb' : '#dc2626';
+  }
+  if (!yugAIVoiceEnabled && window.speechSynthesis) window.speechSynthesis.cancel();
+}
+
+// ── TTS Speak ───────────────────────────────────────────────────
+function yugAISpeak(text) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  // Strip HTML tags for speech
+  const plain = text.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().substring(0, 500);
+  const utt = new SpeechSynthesisUtterance(plain);
+  utt.lang = 'en-IN';
+  utt.rate = 0.95;
+  utt.pitch = 1.05;
+  // Prefer Indian English voice
+  const voices = window.speechSynthesis.getVoices();
+  const indian = voices.find(v => v.lang === 'en-IN') || voices.find(v => v.lang.startsWith('en'));
+  if (indian) utt.voice = indian;
+  window.speechSynthesis.speak(utt);
+}
+
+// ── Mic (Speech-to-Text) ────────────────────────────────────────
+function toggleAIMic() {
+  if (yugAIMicActive) { stopAIMic(); return; }
+  if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+    appendAIMessage('bot', '🎤 Voice input is not supported in this browser. Please use Chrome on Android or Desktop.');
+    return;
+  }
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  yugAIMicRecognition = new SR();
+  yugAIMicRecognition.lang = 'en-IN';
+  yugAIMicRecognition.interimResults = false;
+  yugAIMicRecognition.maxAlternatives = 1;
+
+  yugAIMicRecognition.onstart = () => {
+    yugAIMicActive = true;
+    const btn = document.getElementById('aiMicBtn');
+    if (btn) { btn.classList.add('listening'); btn.textContent = '🔴'; }
+    const inp = document.getElementById('aiChatInput');
+    if (inp) inp.placeholder = 'Listening...';
+  };
+
+  yugAIMicRecognition.onresult = (e) => {
+    const transcript = e.results[0][0].transcript;
+    const inp = document.getElementById('aiChatInput');
+    if (inp) inp.value = transcript;
+    stopAIMic();
+    processAIQuery(transcript);
+  };
+
+  yugAIMicRecognition.onerror = (e) => {
+    stopAIMic();
+    if (e.error !== 'aborted') appendAIMessage('bot', '🎤 Could not hear you. Try again or type your question.');
+  };
+
+  yugAIMicRecognition.onend = () => { stopAIMic(); };
+  yugAIMicRecognition.start();
+}
+
+function stopAIMic() {
+  yugAIMicActive = false;
+  if (yugAIMicRecognition) { try { yugAIMicRecognition.abort(); } catch(e){} yugAIMicRecognition = null; }
+  const btn = document.getElementById('aiMicBtn');
+  if (btn) { btn.classList.remove('listening'); btn.textContent = '🎤'; }
+  const inp = document.getElementById('aiChatInput');
+  if (inp) inp.placeholder = "Ask: 'Details of Rajeshwari' or 'ZPHS Jeedimetla'...";
+}
+
+// ── Append Message ───────────────────────────────────────────────
+function appendAIMessage(sender, htmlContent, speakText) {
   const body = document.getElementById('aiChatBody');
   if (!body) return;
   const msgEl = document.createElement('div');
   msgEl.className = 'ai-msg ' + sender;
   msgEl.innerHTML = htmlContent;
+  if (sender === 'bot') {
+    // Add speak button
+    const speakBtn = document.createElement('button');
+    speakBtn.className = 'ai-speak-btn';
+    speakBtn.innerHTML = '🔊 Speak';
+    const capturedText = speakText || htmlContent;
+    speakBtn.onclick = () => {
+      yugAISpeak(capturedText);
+      speakBtn.classList.add('speaking');
+      speakBtn.textContent = '🔊 Speaking...';
+      setTimeout(() => { speakBtn.classList.remove('speaking'); speakBtn.innerHTML = '🔊 Speak'; }, 4000);
+    };
+    msgEl.appendChild(speakBtn);
+  }
   body.appendChild(msgEl);
   body.scrollTop = body.scrollHeight;
+  // Auto-speak bot responses if voice enabled
+  if (sender === 'bot' && yugAIVoiceEnabled) {
+    setTimeout(() => yugAISpeak(speakText || htmlContent), 300);
+  }
 }
 
+// ── Quick Chip Queries ──────────────────────────────────────────
 function askAIQuick(type) {
   const queries = {
-    today: "What is today's attendance summary?",
-    absent: "Who is absent today?",
-    rates: "Show attendance rate and timing status",
-    levels: "Show HS vs HSS school coverage",
-    sectors: "Breakdown of trainers by sector",
-    gps: "Check GPS geofence alerts"
+    today:     "What is today's attendance summary?",
+    absent:    "Who is absent today?",
+    present:   "Who is present today?",
+    schools:   "Show all school coverage",
+    sectors:   "Breakdown of trainers by sector",
+    districts: "Show all districts summary",
+    gps:       "Check GPS geofence status",
+    late:      "Who marked attendance late today?"
   };
-  const q = queries[type] || type;
-  processAIQuery(q);
+  processAIQuery(queries[type] || type);
 }
 
 function submitAIChat() {
@@ -7856,101 +8177,312 @@ function submitAIChat() {
   processAIQuery(q);
 }
 
-function processAIQuery(query) {
-  appendAIMessage('user', query);
+// ── Main Query Processor ────────────────────────────────────────
+async function processAIQuery(query) {
+  const body = document.getElementById('aiChatBody');
 
-  // Show thinking indicator
-  const thinkId = 'ai-think-' + Date.now();
-  appendAIMessage('bot', '<span id="' + thinkId + '">⚡ <em>Analyzing attendance data...</em></span>');
+  // User bubble
+  const userEl = document.createElement('div');
+  userEl.className = 'ai-msg user';
+  userEl.textContent = query;
+  if (body) { body.appendChild(userEl); body.scrollTop = body.scrollHeight; }
 
-  setTimeout(() => {
-    const el = document.getElementById(thinkId);
-    const parent = el ? el.closest('.ai-msg') : null;
-    if (parent) {
-      const reply = generateAIIntelligenceResponse(query);
-      parent.innerHTML = reply;
-      const body = document.getElementById('aiChatBody');
-      if (body) body.scrollTop = body.scrollHeight;
-    }
-  }, 400);
+  // Thinking bubble
+  const thinkEl = document.createElement('div');
+  thinkEl.className = 'ai-msg bot';
+  thinkEl.innerHTML = '<span style="color:#64748b;font-style:italic;">⚡ Analyzing data...</span>';
+  if (body) { body.appendChild(thinkEl); body.scrollTop = body.scrollHeight; }
+
+  // Load full data async
+  const fullData = await yugAILoadFullData();
+
+  // Generate response
+  const { html, plain } = generateAIResponse(query, fullData);
+
+  // Replace thinking with response + speak button
+  if (body) {
+    thinkEl.innerHTML = html;
+    const speakBtn = document.createElement('button');
+    speakBtn.className = 'ai-speak-btn';
+    speakBtn.innerHTML = '🔊 Speak';
+    speakBtn.onclick = () => {
+      yugAISpeak(plain);
+      speakBtn.classList.add('speaking');
+      speakBtn.textContent = '🔊 Speaking...';
+      setTimeout(() => { speakBtn.classList.remove('speaking'); speakBtn.innerHTML = '🔊 Speak'; }, 5000);
+    };
+    thinkEl.appendChild(speakBtn);
+    body.scrollTop = body.scrollHeight;
+  }
+
+  if (yugAIVoiceEnabled) setTimeout(() => yugAISpeak(plain), 300);
+  yugAIUpdateMonitorBar();
 }
 
-function generateAIIntelligenceResponse(query) {
+// ── Main AI Brain ───────────────────────────────────────────────
+function generateAIResponse(query, fullData) {
   const q = query.toLowerCase();
   const att = DB.get('att', []);
   const tch = DB.get('teachers', window.SEED || []);
   const td = today();
   const ta = att.filter(a => a.date === td);
   const ap = ta.filter(a => a.status === 'approved');
-  const pct = tch.length ? Math.round((ap.length / tch.length) * 100) : 0;
-  const marked = new Set(ta.map(a => a.teacherID));
-  const absent = tch.filter(t => !marked.has(t.ph));
+  const pct = tch.length ? Math.round(ap.length / tch.length * 100) : 0;
+  const markedSet = new Set(ta.map(a => a.teacherID));
+  const absentList = tch.filter(t => !markedSet.has(t.ph));
+  const presentList = tch.filter(t => markedSet.has(t.ph));
   const s = DB.get('settings', {});
+  const vts = fullData || tch;
 
-  // 1. Absent queries
-  if (q.includes('absent') || q.includes('who is not') || q.includes('missing')) {
-    if (absent.length === 0) {
-      return '🎉 <strong>Incredible! All ' + tch.length + ' trainers are present today!</strong> No absentees recorded.';
+  // ── 1. VT Detail by name or phone ──────────────────────────────
+  const vtMatch = vts.find(v => {
+    const name = (v.name || '').toLowerCase();
+    const phone = (v.phone || v.ph || '');
+    return name.includes(q.replace(/details of |details |vt |trainer /g,'').trim()) ||
+           q.includes(phone) ||
+           q.includes(name.split(' ')[0]) && name.split(' ')[0].length > 3;
+  });
+  // Also check if query contains any name word (3+ chars) from VT list
+  const vtNameMatch = !vtMatch ? vts.find(v => {
+    const words = (v.name || '').toLowerCase().split(/\s+/);
+    return words.some(w => w.length > 3 && q.includes(w));
+  }) : null;
+  const foundVT = vtMatch || vtNameMatch;
+
+  if (foundVT && (q.includes('detail') || q.includes('info') || q.includes('profile') ||
+      q.match(/\b(of|about|for|show|who is|tell me)\b/) || vtMatch)) {
+    const phone = foundVT.phone || foundVT.ph || '';
+    const isPresent = markedSet.has(phone);
+    const attRecord = ta.find(a => a.teacherID === phone);
+
+    let html = '<div class="ai-detail-card">';
+    html += '<div class="dc-name">👩‍🏫 ' + (foundVT.name || '—') + ' <span class="dc-badge ' + (isPresent ? 'present' : 'absent') + '">' + (isPresent ? '✅ Present' : '⚠️ Absent') + '</span></div>';
+    html += '<div class="dc-row"><span class="dc-label">📱 Phone</span><span class="dc-val">' + (phone || '—') + '</span></div>';
+    if (foundVT.sector) html += '<div class="dc-row"><span class="dc-label">💼 Sector</span><span class="dc-val">' + foundVT.sector + '</span></div>';
+    if (foundVT.school) html += '<div class="dc-row"><span class="dc-label">🏫 School</span><span class="dc-val">' + foundVT.school + '</span></div>';
+    if (foundVT.district) html += '<div class="dc-row"><span class="dc-label">🗺️ District</span><span class="dc-val">' + foundVT.district + '</span></div>';
+    if (foundVT.mandal) html += '<div class="dc-row"><span class="dc-label">📍 Mandal</span><span class="dc-val">' + foundVT.mandal + '</span></div>';
+    if (foundVT.yug) html += '<div class="dc-row"><span class="dc-label">🪪 YUG ID</span><span class="dc-val" style="font-size:0.76rem">' + foundVT.yug + '</span></div>';
+    if (foundVT.qual) html += '<div class="dc-row"><span class="dc-label">🎓 Qualification</span><span class="dc-val">' + foundVT.qual + '</span></div>';
+    if (foundVT.joining) html += '<div class="dc-row"><span class="dc-label">📅 Joining</span><span class="dc-val">' + foundVT.joining + '</span></div>';
+    if (foundVT.hm) {
+      html += '<hr class="dc-divider">';
+      html += '<div class="dc-row"><span class="dc-label">👨‍💼 HM/Principal</span><span class="dc-val">' + foundVT.hm + '</span></div>';
+      if (foundVT.hmPhone) html += '<div class="dc-row"><span class="dc-label">📞 HM Phone</span><span class="dc-val">' + foundVT.hmPhone + '</span></div>';
     }
-    const sample = absent.slice(0, 6);
-    let listHtml = sample.map((t, i) => '<div><strong>' + (i+1) + '. ' + t.name + '</strong> (' + (t.sector || 'General') + ')<br/><span style="color:#64748b;font-size:0.75rem;">' + (t.school || '') + ' • ' + (t.district || '') + '</span></div>').join('<hr style="border:none;border-top:1px solid #f1f5f9;margin:6px 0"/>');
-    return '⚠️ <strong>' + absent.length + ' Trainers Absent Today:</strong><br/><br/>' + listHtml + (absent.length > 6 ? '<p style="margin-top:8px;font-size:0.76rem;color:#64748b;">+ ' + (absent.length - 6) + ' more in the Trainers register.</p>' : '');
+    if (foundVT.udise) html += '<div class="dc-row"><span class="dc-label">🏷️ UDISE</span><span class="dc-val">' + foundVT.udise + '</span></div>';
+    if (foundVT.scheme) html += '<div class="dc-row"><span class="dc-label">📋 Scheme</span><span class="dc-val">' + foundVT.scheme + '</span></div>';
+    if (foundVT.lat && foundVT.lng) html += '<div class="dc-row"><span class="dc-label">🌍 Coordinates</span><span class="dc-val" style="font-size:0.75rem">' + foundVT.lat + ', ' + foundVT.lng + '</span></div>';
+    if (attRecord) {
+      html += '<hr class="dc-divider">';
+      if (attRecord.checkInTime) html += '<div class="dc-row"><span class="dc-label">🕐 Check-In</span><span class="dc-val">' + attRecord.checkInTime + '</span></div>';
+      if (attRecord.checkInDistance != null) html += '<div class="dc-row"><span class="dc-label">📏 Distance</span><span class="dc-val">' + attRecord.checkInDistance + 'm from school</span></div>';
+    }
+    html += '</div>';
+
+    const plain = foundVT.name + ' is ' + (isPresent ? 'present today' : 'absent today') + '. They teach ' +
+      (foundVT.sector || '') + ' at ' + (foundVT.school || '') + ' in ' + (foundVT.district || '') + '.';
+    return { html, plain };
   }
 
-  // 2. Summary / Rate / Today
-  if (q.includes('summary') || q.includes('rate') || q.includes('today') || q.includes('status')) {
-    return '📊 <strong>Today\'s Attendance Brief:</strong><br/><br/>' +
-      '• <strong>Attendance Rate:</strong> <span style="color:#059669;font-weight:800;">' + pct + '%</span><br/>' +
-      '• <strong>Present:</strong> ' + ap.length + ' trainers marked attendance<br/>' +
-      '• <strong>Absent:</strong> ' + absent.length + ' pending<br/>' +
-      '• <strong>Total Staff:</strong> ' + tch.length + ' across 246 schools<br/>' +
-      '• <strong>Time Window:</strong> ' + (s.open || '06:00') + ' to ' + (s.close || '18:30') + '<br/>' +
-      '• <strong>Geofence Radius:</strong> ' + (s.radius || 300) + ' meters';
-  }
+  // ── 2. School Details ──────────────────────────────────────────
+  const schoolKeywords = q.replace(/school details of |school |details of /g, '').trim();
+  const schoolMatch = vts.find(v => {
+    const sch = (v.school || '').toLowerCase();
+    return sch.includes(schoolKeywords) || schoolKeywords.includes(sch.split(' ').slice(1).join(' '));
+  });
+  const allSchoolVTs = schoolMatch ? vts.filter(v => (v.school || '').toLowerCase() === (schoolMatch.school || '').toLowerCase()) : [];
 
-  // 3. HS vs HSS
-  if (q.includes('hs') || q.includes('hss') || q.includes('level') || q.includes('school')) {
-    return '🏫 <strong>School Level Classification:</strong><br/><br/>' +
-      '• <strong>HS (High School - L1 & L2):</strong> 134 Vocational Trainers (9th & 10th grades)<br/>' +
-      '• <strong>HSS (Higher Secondary - L3 & L4):</strong> 120 Vocational Trainers (11th & 12th grades)<br/>' +
-      '• <strong>Total Statewide Hubs:</strong> 246 Government Schools';
-  }
-
-  // 4. Sector queries
-  if (q.includes('sector') || q.includes('trade') || q.includes('it') || q.includes('health') || q.includes('apparel')) {
-    const secCount = {};
-    tch.forEach(t => {
-      const s = (t.sector || 'OTHER').toUpperCase();
-      secCount[s] = (secCount[s] || 0) + 1;
+  if ((q.includes('school') || q.includes('zphs') || q.includes('tgms') || q.includes('kgbv') ||
+       q.includes('tgrs') || q.includes('ghs') || q.includes('udise') || q.includes('hm') ||
+       q.includes('principal')) && schoolMatch && allSchoolVTs.length > 0) {
+    const sv = allSchoolVTs[0];
+    let html = '<div class="ai-school-card">';
+    html += '<div class="sc-name">🏫 ' + (sv.school || schoolMatch.school) + '</div>';
+    if (sv.district) html += '<div style="font-size:0.79rem;color:#92400e;margin-bottom:6px">📍 ' + (sv.mandal || '') + (sv.mandal ? ', ' : '') + sv.district + '</div>';
+    if (sv.udise) html += '<div style="font-size:0.76rem;color:#64748b;margin-bottom:4px">UDISE: <strong>' + sv.udise + '</strong></div>';
+    if (sv.hm) html += '<div style="font-size:0.79rem;margin-bottom:2px">👨‍💼 HM: <strong>' + sv.hm + '</strong>' + (sv.hmPhone ? ' · 📞 ' + sv.hmPhone : '') + '</div>';
+    if (sv.scheme) html += '<div style="font-size:0.76rem;color:#64748b;margin-bottom:6px">Scheme: ' + sv.scheme + '</div>';
+    html += '<div style="font-size:0.8rem;font-weight:700;color:#92400e;margin:8px 0 4px">' + allSchoolVTs.length + ' Vocational Trainer(s):</div>';
+    html += '<div class="ai-school-vt-list">';
+    allSchoolVTs.forEach(v => {
+      const phone = v.phone || v.ph || '';
+      const isP = markedSet.has(phone);
+      html += '<div class="ai-school-vt-item"><div><strong>' + (v.name||'—') + '</strong><br><span style="font-size:0.73rem;color:#64748b">' + (v.sector||'') + ' · ' + (phone||'') + '</span></div><span class="dc-badge ' + (isP?'present':'absent') + '">' + (isP?'✅ Present':'⚠️ Absent') + '</span></div>';
     });
-    let sList = Object.entries(secCount).map(([k, v]) => '• <strong>' + k + ':</strong> ' + v + ' trainers').join('<br/>');
-    return '💼 <strong>Trainers by Vocational Sector:</strong><br/><br/>' + sList;
+    html += '</div></div>';
+    const plain = schoolMatch.school + ' in ' + (sv.district || '') + ' has ' + allSchoolVTs.length +
+      ' vocational trainer' + (allSchoolVTs.length !== 1 ? 's' : '') + '. HM is ' + (sv.hm || 'not listed') + '.';
+    return { html, plain };
   }
 
-  // 5. GPS / Location
-  if (q.includes('gps') || q.includes('location') || q.includes('radius') || q.includes('map')) {
-    return '📍 <strong>GPS Geofence Status:</strong><br/><br/>' +
-      '• <strong>Standard Allowed Radius:</strong> ' + (s.radius || 300) + 'm per school<br/>' +
-      '• <strong>High-Precision Satellite GPS:</strong> Active with MaximumAge: 0 fresh satellite fixes<br/>' +
-      '• <strong>Real-Time Tracking:</strong> Draggable pin and live road navigator enabled under School Visits!';
+  // ── 3. Absent List ─────────────────────────────────────────────
+  if (q.includes('absent') || q.includes('not present') || q.includes('missing')) {
+    // Check for district filter
+    const distFilter = findDistrictInQuery(q, vts);
+    let list = distFilter ? absentList.filter(t => (t.district||t.school||'').toLowerCase().includes(distFilter.toLowerCase())) : absentList;
+    if (absentList.length === 0) {
+      return { html: '🎉 <strong>All ' + tch.length + ' trainers present today!</strong>', plain: 'All ' + tch.length + ' trainers are present today.' };
+    }
+    let html = '⚠️ <strong>' + list.length + ' Absent' + (distFilter ? ' in ' + distFilter : '') + ':</strong><br><br>';
+    list.slice(0, 8).forEach((t, i) => {
+      html += '<div style="margin-bottom:6px"><strong>' + (i+1) + '. ' + t.name + '</strong> <span style="font-size:0.76rem;color:#64748b">(' + (t.sector||'') + ')</span><br><span style="font-size:0.73rem;color:#94a3b8">' + (t.school||'') + (t.district ? ' · ' + t.district : '') + '</span></div>';
+    });
+    if (list.length > 8) html += '<p style="font-size:0.76rem;color:#64748b">+ ' + (list.length - 8) + ' more absent</p>';
+    const plain = list.length + ' trainers are absent today' + (distFilter ? ' in ' + distFilter : '') + '.';
+    return { html, plain };
   }
 
-  // 6. District specific query
-  const foundDist = tch.find(t => t.district && q.includes(t.district.toLowerCase()));
+  // ── 4. Present List ────────────────────────────────────────────
+  if (q.includes('present') || q.includes('who came') || q.includes('marked')) {
+    const distFilter = findDistrictInQuery(q, vts);
+    let list = distFilter ? presentList.filter(t => (t.district||t.school||'').toLowerCase().includes(distFilter.toLowerCase())) : presentList;
+    let html = '✅ <strong>' + list.length + ' Present Today' + (distFilter ? ' in ' + distFilter : '') + ':</strong><br><br>';
+    list.slice(0, 8).forEach((t, i) => {
+      const rec = ta.find(a => a.teacherID === (t.ph || t.phone));
+      html += '<div style="margin-bottom:5px"><strong>' + (i+1) + '. ' + t.name + '</strong>' + (rec && rec.checkInTime ? ' <span style="font-size:0.73rem;color:#059669">🕐 ' + rec.checkInTime + '</span>' : '') + '<br><span style="font-size:0.73rem;color:#94a3b8">' + (t.school||'') + '</span></div>';
+    });
+    if (list.length > 8) html += '<p style="font-size:0.76rem;color:#64748b">+ ' + (list.length - 8) + ' more present</p>';
+    const plain = list.length + ' trainers are present today' + (distFilter ? ' in ' + distFilter : '') + '.';
+    return { html, plain };
+  }
+
+  // ── 5. Summary / Today ─────────────────────────────────────────
+  if (q.includes('summary') || q.includes('today') || q.includes('status') || q.includes('report') || q.includes('rate')) {
+    const html = '📊 <strong>Today\'s Live Report:</strong><br><br>' +
+      '• <strong>Attendance Rate:</strong> <span style="color:#059669;font-weight:800">' + pct + '%</span><br>' +
+      '• <strong>Present:</strong> ' + ap.length + ' trainers<br>' +
+      '• <strong>Absent:</strong> ' + absentList.length + ' trainers<br>' +
+      '• <strong>Total Staff:</strong> ' + tch.length + ' VTs across Telangana<br>' +
+      '• <strong>Time Window:</strong> ' + (s.open||'06:00') + ' – ' + (s.close||'18:30') + '<br>' +
+      '• <strong>Geofence Radius:</strong> ' + (s.radius||300) + 'm per school';
+    const plain = 'Today\'s attendance rate is ' + pct + '%. ' + ap.length + ' present, ' + absentList.length + ' absent out of ' + tch.length + ' total.';
+    return { html, plain };
+  }
+
+  // ── 6. District Summary ─────────────────────────────────────────
+  if (q.includes('district') || q.includes('all district')) {
+    const distMap = {};
+    vts.forEach(v => { const d = v.district || 'Unknown'; if (!distMap[d]) distMap[d] = { total: 0, present: 0 }; distMap[d].total++; if (markedSet.has(v.phone || v.ph)) distMap[d].present++; });
+    const dists = Object.entries(distMap).sort((a,b) => b[1].total - a[1].total);
+    let html = '🗺️ <strong>District-wise Attendance:</strong><br><br>';
+    dists.slice(0, 10).forEach(([d, c]) => {
+      const pct2 = Math.round(c.present/c.total*100);
+      html += '<div style="margin-bottom:4px;font-size:0.81rem"><strong>' + d + '</strong> — ' + c.present + '/' + c.total + ' <span style="color:' + (pct2>=80?'#059669':pct2>=50?'#d97706':'#dc2626') + '">(' + pct2 + '%)</span></div>';
+    });
+    if (dists.length > 10) html += '<span style="font-size:0.76rem;color:#64748b">+ ' + (dists.length-10) + ' more districts</span>';
+    const specific = findDistrictInQuery(q, vts);
+    if (specific && distMap[specific.toUpperCase()]) {
+      const c = distMap[specific.toUpperCase()];
+      return { html: '🏛️ <strong>District: ' + specific.toUpperCase() + '</strong><br><br>• Total VTs: ' + c.total + '<br>• Present: ' + c.present + '<br>• Absent: ' + (c.total-c.present) + '<br>• Schools: ' + new Set(vts.filter(v=>v.district===specific.toUpperCase()).map(v=>v.school)).size, plain: specific + ' district has ' + c.total + ' VTs, ' + c.present + ' present today.' };
+    }
+    return { html, plain: 'District breakdown shown. ' + dists.length + ' districts covered.' };
+  }
+
+  // ── 7. District-specific query ─────────────────────────────────
+  const foundDist = findDistrictInQuery(q, vts);
   if (foundDist) {
-    const distName = foundDist.district;
-    const distTch = tch.filter(t => t.district === distName);
-    const distPres = distTch.filter(t => marked.has(t.ph));
-    return '🏛️ <strong>District Report — ' + distName + ':</strong><br/><br/>' +
-      '• <strong>Total Trainers:</strong> ' + distTch.length + '<br/>' +
-      '• <strong>Present Today:</strong> ' + distPres.length + '<br/>' +
-      '• <strong>Absent:</strong> ' + (distTch.length - distPres.length) + '<br/>' +
-      '• <strong>Schools in District:</strong> ' + new Set(distTch.map(t=>t.school)).size;
+    const dKey = foundDist.toUpperCase();
+    const distTch = vts.filter(v => (v.district||'').toUpperCase().includes(dKey) || dKey.includes((v.district||'').toUpperCase()));
+    const distTchLocal = tch.filter(t => distTch.some(v => (v.phone||v.ph) === (t.ph||t.phone)));
+    const distPres = distTchLocal.filter(t => markedSet.has(t.ph||t.phone));
+    const distAbs = distTchLocal.filter(t => !markedSet.has(t.ph||t.phone));
+    const pct2 = distTchLocal.length ? Math.round(distPres.length/distTchLocal.length*100) : 0;
+    let html = '🏛️ <strong>District Report — ' + (distTch[0]?.district || foundDist.toUpperCase()) + ':</strong><br><br>';
+    html += '• <strong>Total VTs:</strong> ' + distTchLocal.length + '<br>';
+    html += '• <strong>Present Today:</strong> ' + distPres.length + ' (' + pct2 + '%)<br>';
+    html += '• <strong>Absent:</strong> ' + distAbs.length + '<br>';
+    html += '• <strong>Schools Covered:</strong> ' + new Set(distTch.map(v=>v.school)).size + '<br>';
+    if (distAbs.length > 0 && distAbs.length <= 5) {
+      html += '<br><strong>Absent VTs:</strong><br>';
+      distAbs.forEach(t => { html += '• ' + t.name + ' (' + (t.school||'') + ')<br>'; });
+    }
+    const plain = (distTch[0]?.district || foundDist) + ' has ' + distTchLocal.length + ' VTs. Today ' + distPres.length + ' present and ' + distAbs.length + ' absent.';
+    return { html, plain };
   }
 
-  // Default intelligent assistant response
-  return '🤖 I analyzed your query across <strong>' + tch.length + ' trainers</strong> and today\'s records.<br/><br/>' +
-    'Currently <strong>' + ap.length + '</strong> are present (' + pct + '%) and <strong>' + absent.length + '</strong> are absent. Try tapping one of the quick chips above or ask about a specific district or sector!';
+  // ── 8. Sector Breakdown ─────────────────────────────────────────
+  if (q.includes('sector') || q.includes('trade') || q.includes('health') || q.includes('apparel') || q.includes('it ') || q.includes('beauty') || q.includes('electronics')) {
+    const secMap = {};
+    vts.forEach(v => { const s2 = (v.sector||'OTHER').toUpperCase(); if (!secMap[s2]) secMap[s2] = { total:0, present:0 }; secMap[s2].total++; if (markedSet.has(v.phone||v.ph)) secMap[s2].present++; });
+    // specific sector?
+    const sectorWords = ['health care','apparel','it/ites','beauty','electronics','agriculture','retail'];
+    const specificSec = sectorWords.find(sw => q.includes(sw));
+    if (specificSec) {
+      const sKey = specificSec.toUpperCase();
+      const svts = vts.filter(v => (v.sector||'').toUpperCase().includes(sKey.split('/')[0]));
+      let html = '💼 <strong>' + specificSec.toUpperCase() + ' Trainers (' + svts.length + '):</strong><br><br>';
+      svts.slice(0,8).forEach((v,i) => { html += '<div style="margin-bottom:4px;font-size:0.81rem"><strong>' + (i+1) + '. ' + v.name + '</strong><br><span style="font-size:0.73rem;color:#64748b">' + (v.school||'') + ' · ' + (v.district||'') + '</span></div>'; });
+      if (svts.length > 8) html += '<span style="font-size:0.76rem;color:#64748b">+ ' + (svts.length-8) + ' more</span>';
+      return { html, plain: specificSec.toUpperCase() + ' sector has ' + svts.length + ' vocational trainers.' };
+    }
+    let html = '💼 <strong>Trainers by Vocational Sector:</strong><br><br>';
+    Object.entries(secMap).sort((a,b)=>b[1].total-a[1].total).forEach(([k,v]) => {
+      html += '• <strong>' + k + ':</strong> ' + v.total + ' VTs (' + v.present + ' present)<br>';
+    });
+    return { html, plain: 'Sector breakdown shown. ' + Object.keys(secMap).length + ' sectors in Yug Shakti.' };
+  }
+
+  // ── 9. GPS / Geofence ──────────────────────────────────────────
+  if (q.includes('gps') || q.includes('geofence') || q.includes('location') || q.includes('radius') || q.includes('map')) {
+    const html = '📍 <strong>GPS Geofence Status:</strong><br><br>' +
+      '• <strong>Allowed Radius:</strong> ' + (s.radius||300) + 'm per school<br>' +
+      '• <strong>GPS Mode:</strong> High-precision satellite (MaximumAge: 0)<br>' +
+      '• <strong>Total VTs Geotagged:</strong> ' + vts.filter(v=>v.lat&&v.lng).length + '/' + vts.length + '<br>' +
+      '• <strong>School Visits:</strong> Live draggable pin + road navigator<br>' +
+      '• <strong>Attendance Window:</strong> ' + (s.open||'06:00') + ' – ' + (s.close||'18:30');
+    return { html, plain: 'GPS geofence is active with ' + (s.radius||300) + ' metre radius. ' + vts.filter(v=>v.lat&&v.lng).length + ' VTs are geotagged.' };
+  }
+
+  // ── 10. Late Mark ──────────────────────────────────────────────
+  if (q.includes('late') || q.includes('after') || q.includes('delay')) {
+    const lateThreshold = s.open || '08:30';
+    const lateRecords = ta.filter(a => {
+      const t2 = a.checkInTime || a.time || '';
+      return t2 && t2 > lateThreshold;
+    });
+    if (lateRecords.length === 0) {
+      return { html: '✅ <strong>No late arrivals today!</strong> All trainers marked within the attendance window.', plain: 'No late arrivals today.' };
+    }
+    let html = '🕐 <strong>' + lateRecords.length + ' Late Arrivals Today:</strong><br><br>';
+    lateRecords.slice(0,6).forEach((a,i) => {
+      html += '<div style="margin-bottom:4px;font-size:0.81rem"><strong>' + (i+1) + '. ' + (a.teacherName||a.teacherID) + '</strong> — <span style="color:#d97706">' + (a.checkInTime||a.time) + '</span></div>';
+    });
+    return { html, plain: lateRecords.length + ' trainers marked attendance late today.' };
+  }
+
+  // ── 11. Schools overview ───────────────────────────────────────
+  if (q.includes('school') || q.includes('coverage')) {
+    const schools = [...new Set(vts.map(v=>v.school).filter(Boolean))];
+    const html = '🏫 <strong>School Coverage:</strong><br><br>' +
+      '• <strong>Total Schools:</strong> ' + schools.length + '<br>' +
+      '• <strong>HS (L1&L2 · 9th&10th):</strong> ~134 schools<br>' +
+      '• <strong>HSS (L3&L4 · 11th&12th):</strong> ~120 schools<br>' +
+      '• <strong>School Types:</strong> ZPHS, TGMS, KGBV, TGRS, GHS, TSMS<br><br>' +
+      '<em>Ask: "School details of ZPHS Jeedimetla" for full info!</em>';
+    return { html, plain: 'Yug Shakti covers ' + schools.length + ' schools across Telangana with ' + vts.length + ' vocational trainers.' };
+  }
+
+  // ── Default ────────────────────────────────────────────────────
+  const html = '🤖 I analyzed <strong>' + tch.length + ' VTs</strong> across Telangana.<br><br>' +
+    '• <strong>' + ap.length + '</strong> present (' + pct + '%)<br>' +
+    '• <strong>' + absentList.length + '</strong> absent<br><br>' +
+    'Try:<br>• "Details of [VT Name]"<br>• "School details of [School Name]"<br>• "Absent in [District]"<br>• "All IT sector trainers"';
+  return { html, plain: 'Currently ' + ap.length + ' of ' + tch.length + ' trainers are present. Attendance rate is ' + pct + ' percent.' };
+}
+
+// ── Utility: Find district name in query ────────────────────────
+function findDistrictInQuery(q, vts) {
+  const districts = [...new Set((vts||[]).map(v=>v.district).filter(Boolean))];
+  for (const d of districts) {
+    if (d && q.includes(d.toLowerCase())) return d;
+  }
+  // Common Telangana districts short forms
+  const distMap = { 'sangareddy': 'SANGAREDDY', 'medchal': 'MEDCHAL MALKAJGIRI', 'medak': 'MEDAK', 'nizamabad': 'NIZAMABAD', 'karimnagar': 'KARIMNAGAR', 'warangal': 'HANAMKONDA', 'khammam': 'KHAMMAM', 'nalgonda': 'NALGONDA', 'mahabubnagar': 'MAHABUBNAGAR', 'ranga reddy': 'RANGA REDDY', 'hyderabad': 'HYDERABAD', 'suryapet': 'SURYAPET', 'yadadri': 'YADADRI BHUVANAGIRI', 'jayashankar': 'JAYASHANKAR BHUPALPALLY', 'mancherial': 'MANCHERIAL', 'adilabad': 'ADILABAD', 'nirmal': 'NIRMAL', 'jagitial': 'JAGITIAL', 'rajanna': 'RAJANNA SIRCILLA', 'vikarabad': 'VIKARABAD', 'wanaparthy': 'WANAPARTHY', 'nagarkurnool': 'NAGARKURNOOL', 'nandyal': 'NANDYAL', 'bhadradri': 'BHADRADRI KOTHAGUDEM', 'mulugu': 'MULUGU', 'narayanpet': 'NARAYANPET', 'gadwal': 'GADWAL', 'hanamkonda': 'HANAMKONDA', 'peddapalli': 'PEDDAPALLI', 'kamareddy': 'KAMAREDDY' };
+  for (const [k, v] of Object.entries(distMap)) {
+    if (q.includes(k)) return v;
+  }
+  return null;
 }
 
 // Auto-initialize 3D on page load if active
@@ -7959,7 +8491,11 @@ window.addEventListener('load', () => {
     if (document.getElementById('pg-dashboard') && document.getElementById('pg-dashboard').classList.contains('on')) {
       init3DCommandRoom();
     }
-  }, 300);
+    // Load full VTS data quietly in background
+    yugAILoadFullData();
+    // Init TTS voice list
+    if (window.speechSynthesis) window.speechSynthesis.getVoices();
+  }, 500);
 });
 </script>
 
