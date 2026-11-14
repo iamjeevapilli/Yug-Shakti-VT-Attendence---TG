@@ -270,6 +270,7 @@ tbody td strong{color:var(--ink);font-weight:600}
   }
 </style>
 
+<script src="vts_data.js?v=20261114_4"></script>
 </head>
 <body>
 
@@ -527,6 +528,17 @@ async function loadProtectedVTData(passedToken) {
     buildTags();
     filterAll();
   } catch(err) {
+    // Fallback to pre-bundled data if available
+    if (window.MASTER_VTS_DATA && window.MASTER_VTS_DATA.length) {
+      VT = window.MASTER_VTS_DATA;
+      console.log('Loaded ' + VT.length + ' VT records from MASTER_VTS_DATA.');
+      syncVTWithDB();
+      populateDistrictDropdown();
+      buildTags();
+      filterAll();
+      return;
+    }
+
     console.error('Failed to load protected VT records:', err);
     if (tbody && (!VT || VT.length === 0)) {
       tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:40px;color:var(--rose);font-weight:700">❌ Error loading VT records. Please refresh or re-login.</td></tr>';

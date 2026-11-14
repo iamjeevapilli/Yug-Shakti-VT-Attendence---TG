@@ -31,7 +31,7 @@
 <meta name="apple-mobile-web-app-title" content="YS Geo-FRS" />
 <link rel="apple-touch-icon" href="/logo.png" />
 <script src="https://unpkg.com/lucide@latest"></script>
-<script src="vts_data.js?v=20261114_3"></script>
+<script src="vts_data.js?v=20261114_4"></script>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
 <meta http-equiv="Expires" content="0" />
@@ -8552,11 +8552,11 @@ let yugAIMicActive = false;
 let yugAIMonitorTimer = null;
 let yugAIFullData = null; // cached full VTS data from /api/vts or SEED
 
-// ── Load Full VTS Data — rich fields from bundled vts_data.js ──
+// ── Load Full VTS Data — rich fields from bundled vts_data.js?v=20261114_4 ──
 async function yugAILoadFullData() {
   if (yugAIFullData) return yugAIFullData;
 
-  // 1. Best source: bundled vts_data.js (all 254 VTs, all fields)
+  // 1. Best source: bundled vts_data.js?v=20261114_4 (all 254 VTs, all fields)
   if (window.MASTER_VTS_DATA && window.MASTER_VTS_DATA.length) {
     yugAIFullData = window.MASTER_VTS_DATA;
     return yugAIFullData;
@@ -8586,90 +8586,86 @@ async function yugAILoadFullData() {
 }
 
 
-// ── Telugu → English Transliteration Map ────────────────────────
-const TELUGU_NAME_MAP = {
-  // VT Names
-  'రాజేశ్వరి':'rajeshwari','రాజెశ్వరి':'rajeshwari','జ్యోతి':'jyothi','జ్యోతీ':'jyothi',
-  'ఆనంద్':'anand','ఉడుగు':'udugu','కళ్యాణి':'kalyani','కల్యాణి':'kalyani',
-  'సురేష్':'suresh','ప్రియాంక':'priyanka','మౌనిక':'mounika','మౌనికా':'mounika',
-  'భార్గవి':'bhargavi','దివ్య':'divya','సంతోష్':'santhosh','వీరేష్':'veeresh',
-  'అఖిలజ':'akhilaja','భాస్కర్':'bhaskar','నీరజ':'neeraja','జగదాంబ':'jagadamba',
-  'శ్రీలేఖ':'srilekha','జాన్సీరాణి':'jhansirani','వినోద':'vinoda','కమల':'kamala',
-  'వనమాల':'vanamala','అనిత':'anitha','శేఖర్':'shekar','ప్రత్యూష':'prathyusha',
-  'ఈశ్వర్':'eshwar','దీక్షిత':'deekshitha','శ్రీలత':'sreelatha','వరలక్ష్మి':'varalaxmi',
-  'వరలక్ష్మీ':'varalaxmi','కవేరి':'kaveri','మాలి':'maali',
-  // Schools
-  'రాగన్నగూడ':'ragannaguda','రాగనగూడ':'raganaguda','జీడిమెట్ల':'jeedimetla',
-  'ఉప్పునుతల':'uppunutala','వనపర్తి':'wanaparthy','బొమ్మలరామరం':'bomalaramaram',
-  'శివంపేట్':'shivampet','షాబాద్':'shabad','కొత్తూరు':'kothur',
-  'సిరికొండ':'sirikonda','మద్దిరాల':'maddirala','కరీమాబాద్':'kareemabad',
-  'అంబాట్‌పల్లి':'ambatpally','రుద్రారం':'rudraram','కోలనుపాక':'kolanupaka',
-  'బురగుల':'burgula','సింగానగుడ':'singanaguda','గుమ్మడిధల':'gumadidhala',
-  'నల్లబెల్లి':'nallabelly','శంకర్‌పల్లి':'shankarpally',
-  // Districts
-  'మేడ్చల్':'medchal','సంగారెడ్డి':'sangareddy','వరంగల్':'warangal',
-  'సిద్దిపేట':'siddipet','కరీంనగర్':'karimnagar','నిజామాబాద్':'nizamabad',
-  'నాగర్కర్నూల్':'nagarkurnool','వికారాబాద్':'vikarabad','ఖమ్మం':'khammam',
-  'నల్గొండ':'nalgonda','మహబూబ్‌నగర్':'mahabubnagar','సూర్యాపేట':'suryapet',
-  'హైదరాబాద్':'hyderabad','రంగారెడ్డి':'ranga reddy','మేడక్':'medak',
-  'ఆదిలాబాద్':'adilabad','జగిత్యాల':'jagitial','పెద్దపల్లి':'peddapalli',
-  'కామారెడ్డి':'kamareddy','ములుగు':'mulugu','నారాయణపేట':'narayanpet',
-  'మహబూబాబాద్':'mahabubabad','హనుమకొండ':'hanamkonda',
-  // Mandals
-  'అబ్దుల్లాపూర్మెట్':'abdullapurmet','అబ్దుల్లాపూర్మెట':'abdullapurmet',
-  'కుత్బుల్లాపూర్':'quthbullapur','రామన్నపేట':'ramannapeta','ఫారూఖ్‌నగర్':'farooq nagar',
-  'కొడంగల్':'kodangal','ధర్మారం':'dharmaram','బీబీనగర్':'bibinagar',
-  'లింగాల్':'lingal','శ్రీరంగాపూర్':'srirangapur',
+
+// ── Telugu Phonetic Transliteration Engine ──────────────────────
+const TE_VOWELS = {
+  'అ':'a','ఆ':'aa','ఇ':'i','ఈ':'ee','ఉ':'u','ఊ':'oo','ఋ':'ru',
+  'ఎ':'e','ఏ':'e','ఐ':'ai','ఒ':'o','ఓ':'o','ఔ':'au','అం':'am','అః':'ah'
+};
+const TE_CONSONANTS = {
+  'క':'k','ఖ':'kh','గ':'g','ఘ':'gh','ఙ':'ng',
+  'చ':'ch','ఛ':'chh','జ':'j','ఝ':'jh','ఞ':'ny',
+  'ట':'t','ఠ':'th','డ':'d','ఢ':'dh','ణ':'n',
+  'త':'t','థ':'th','ద':'d','ధ':'dh','న':'n',
+  'ప':'p','ఫ':'ph','బ':'b','భ':'bh','మ':'m',
+  'య':'y','ర':'r','ల':'l','వ':'v','శ':'sh','ష':'sh','స':'s','హ':'h','ళ':'l','క్ష':'ksh','ఱ':'r'
+};
+const TE_MATRAS = {
+  'ా':'aa','ి':'i','ీ':'ee','ు':'u','ూ':'oo','ృ':'ru','ె':'e','ే':'e','ై':'ai','ొ':'o','ో':'o','ౌ':'au','ం':'m','ః':'h','్':''
 };
 
-// Telugu filler/command words to strip
-const TELUGU_FILLER_RE = /వివరాలు|వివరం|చెప్పు|చూపించు|ఎవరు|ఎవరి|గురించి|ఇవ్వండి|తెలుపు|తెలియజేయి|స్కూల్|పాఠశాల|ప్రిన్సిపాల్|హెచ్ఎం|టీచర్|ట్రైనర్|యొక్క|అన్ని|మొత్తం|ఎంతమంది|ఉన్నారు|లేరు|ఉన్నారా|హాజరు|గైరు|హాజరైన|గైర్హాజరు|జిల్లా|మండలం|గ్రామం|ఊరు|దయచేసి|నాకు|చెప్పండి|ఏమిటి|ఎలా|ఎక్కడ|ప్రస్తుతం/gi;
-
-// Telugu intent keywords for context detection
-const TELUGU_INTENT_MAP = {
-  principal: /ప్రిన్సిపాల్|హెచ్ఎం|ప్రధానోపాధ్యాయ|హెడ్‌మాస్టర్/i,
-  school: /స్కూల్|పాఠశాల|బడి|విద్యాలయం/i,
-  village: /గ్రామం|ఊరు|మండలం|ప్రాంతం/i,
-  absent: /గైర్హాజరు|గైరు|రాలేదు|లేరు/i,
-  present: /హాజరు|వచ్చారు|ఉన్నారు/i,
-  trainer: /టీచర్|ట్రైనర్|ఉపాధ్యాయ/i,
-  summary: /మొత్తం|సారాంశం|ఎంతమంది/i,
-};
-
-function yugAITransliterate(text) {
-  let res = text;
-  for (const [te, en] of Object.entries(TELUGU_NAME_MAP)) {
-    res = res.replace(new RegExp(te, 'gi'), en);
+function teluguToRoman(text) {
+  if (!text) return '';
+  let out = '';
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    const next = text[i + 1];
+    if (TE_CONSONANTS[ch]) {
+      const c = TE_CONSONANTS[ch];
+      if (next && TE_MATRAS[next] !== undefined) {
+        out += c + TE_MATRAS[next];
+        i++;
+      } else if (next === '్') {
+        out += c;
+        i++;
+      } else {
+        out += c + 'a';
+      }
+    } else if (TE_VOWELS[ch]) {
+      out += TE_VOWELS[ch];
+    } else if (TE_MATRAS[ch]) {
+      out += TE_MATRAS[ch];
+    } else {
+      out += ch;
+    }
   }
-  // Strip remaining Telugu filler words
-  res = res.replace(TELUGU_FILLER_RE, ' ');
-  return res.replace(/\s+/g, ' ').trim();
+  return out;
 }
 
-function detectTeluguIntent(rawQuery) {
-  const intents = {};
-  for (const [key, re] of Object.entries(TELUGU_INTENT_MAP)) {
-    intents[key] = re.test(rawQuery);
-  }
-  return intents;
+function getConsonants(str) {
+  return (str || '').toLowerCase().replace(/[aeiou\s]/g, '');
 }
 
-// ── Fuzzy Search Engine — covers all 254 VTs across all fields ──
+// Normalize: lowercase + phonetics + collapse repeated chars + strip punctuation
+function yugAINorm(s) {
+  if (!s) return '';
+  return s.toLowerCase()
+    .replace(/w/g, 'v')
+    .replace(/ksh/g, 'x')
+    .replace(/[^a-z0-9]/gi, ' ')
+    .replace(/(.)\1+/g, '$1')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+// ── Master Fuzzy Search Engine — covers all 254 VTs ─────────────
 function yugAISearchVTS(rawQuery, vts) {
-  const qLower = rawQuery.toLowerCase();
+  // 1. Convert Telugu script to Roman English
+  const qRoman = teluguToRoman(rawQuery).toLowerCase();
 
-  // Detect intent keywords
-  const asksForPrincipal = /\b(principal|hm|headmaster|head master|head mistress|headmistress)\b/i.test(rawQuery);
-  const asksForSchool    = /\b(school|campus|vidyalaya|high school)\b/i.test(rawQuery);
-  const asksForVT        = /\b(vt|trainer|teacher)\b/i.test(rawQuery);
-  const asksForVillage   = /\b(village|mandal|block|place|area)\b/i.test(rawQuery);
+  // 2. Intent keywords detection
+  const asksForPrincipal = /\b(principal|hm|headmaster|head master|head mistress|prinsipaal|prinsipal)\b/i.test(qRoman);
+  const asksForSchool    = /\b(school|campus|vidyalaya|high school|skool|skoal|paatashaala)\b/i.test(qRoman);
+  const asksForVT        = /\b(vt|trainer|teacher|techar)\b/i.test(qRoman);
+  const asksForVillage   = /\b(village|mandal|block|place|area|ooru|graamam)\b/i.test(qRoman);
 
-  // Strip query filler words to extract the core search term
-  const fluffRe = /\b(give me|can you give|can you show|tell me about|tell me|who is the principal of|who is the vt of|who is the hm of|who is the teacher of|who is|what is the school of|what is|where is|details of school|school details of|details of vt|vt details of|details of|school details|vt details|principal name|village name|school name|details|school|vt|trainer|principal|hm|headmaster|headmistress|village|mandal|district|please|show me|find|search for|about|info|profile|phone number|phone no|mobile number|mobile no|contact number|contact no|phone|mobile|number|call|location link|location|maps link|maps url|map link|map url|maps|map|gps|coordinates|coordinate|direction link|directions|direction|navigate|address|udise code|udise)\b/gi;
-  const cleanQ = rawQuery.replace(fluffRe, ' ').replace(/\s+/g, ' ').trim();
+  // 3. Strip fluff & question filler words
+  const fluffRe = /\b(give me|can you give|can you show|tell me about|tell me|who is the principal of|who is the vt of|who is the hm of|who is the teacher of|who is|what is the school of|what is|where is|details of school|school details of|details of vt|vt details of|details of|school details|vt details|principal name|village name|school name|details|school|vt|trainer|principal|hm|headmaster|headmistress|village|mandal|district|please|show me|find|search for|about|info|profile|phone number|phone no|mobile number|mobile no|contact number|contact no|phone|mobile|number|call|location link|location|maps link|maps url|map link|map url|maps|map|gps|coordinates|coordinate|direction link|directions|direction|navigate|address|udise code|udise|deeteyils|vivaraalu|vivaralu|vivaram|cheppu|chupu|chupinchu|evaru|evariki|gurinchi|ivvandi|telupu|teliyacheyi|skool|skoal|paatashaala|badhi|prinsipaal|prinsipal|of)\b/gi;
+  const cleanQ = qRoman.replace(fluffRe, ' ').replace(/\s+/g, ' ').trim();
   const nCleanQ = yugAINorm(cleanQ);
-  const qWords = cleanQ.toLowerCase().split(/\s+/).filter(w => w.length >= 3);
+  const qWords = cleanQ.split(/\s+/).filter(w => w.length >= 3);
   const nWords = qWords.map(w => yugAINorm(w));
+  const cWords = nWords.map(w => getConsonants(w)).filter(w => w.length >= 3);
 
   const scored = [];
   for (const v of vts) {
@@ -8678,38 +8674,61 @@ function yugAISearchVTS(rawQuery, vts) {
 
     const vPhone   = (v.phone || v.ph || '');
     const vUdise   = (v.udise || '');
-    const vName    = (v.name   || '').toLowerCase();  const nvName    = yugAINorm(v.name);
-    const vSchool  = (v.school || '').toLowerCase();  const nvSchool  = yugAINorm(v.school);
-    const vHM      = (v.hm     || '').toLowerCase();  const nvHM      = yugAINorm(v.hm);
-    const vMandal  = (v.mandal || '').toLowerCase();  const nvMandal  = yugAINorm(v.mandal);
-    const vDist    = (v.district || '').toLowerCase(); const nvDist   = yugAINorm(v.district);
-    const vSector  = (v.sector || '').toLowerCase();
+    const nvName   = yugAINorm(v.name);
+    const nvSchool = yugAINorm(v.school);
+    const nvHM     = yugAINorm(v.hm);
+    const nvMandal = yugAINorm(v.mandal);
+    const nvDist   = yugAINorm(v.district);
+    const cSchool  = getConsonants(nvSchool);
+    const cName    = getConsonants(nvName);
+    const cHM      = getConsonants(nvHM);
+    const cMandal  = getConsonants(nvMandal);
 
-    // Exact identifiers (highest priority)
-    if (vPhone && qLower.includes(vPhone))   { score += 500; matchField = 'phone'; }
-    if (vUdise && qLower.includes(vUdise))   { score += 480; matchField = 'udise'; }
+    // Exact Phone & UDISE match
+    if (vPhone && qRoman.includes(vPhone)) { score += 500; matchField = 'phone'; }
+    if (vUdise && qRoman.includes(vUdise)) { score += 480; matchField = 'udise'; }
 
-    // Full-phrase match against cleaned query
-    if (cleanQ.length >= 3) {
-      if (nvHM.includes(nCleanQ)     || vHM.includes(cleanQ))    { score += asksForPrincipal ? 300 : 180; matchField = 'principal'; }
-      if (nvSchool.includes(nCleanQ) || vSchool.includes(cleanQ)) { score += asksForSchool    ? 300 : 200; if (!matchField || asksForSchool) matchField = 'school'; }
-      if (nvMandal.includes(nCleanQ) || vMandal.includes(cleanQ)) { score += asksForVillage   ? 290 : 160; if (!matchField || asksForVillage) matchField = 'mandal'; }
-      if (nvName.includes(nCleanQ)   || vName.includes(cleanQ))   { score += asksForVT        ? 300 : 220; if (!matchField || asksForVT) matchField = 'name'; }
-      if (nvDist.includes(nCleanQ)   || vDist.includes(cleanQ))   { score += 120; if (!matchField) matchField = 'district'; }
-      if (vSector.includes(cleanQ))                               { score += 80; if (!matchField) matchField = 'sector'; }
+    // Full phrase matching
+    if (nCleanQ.length >= 3) {
+      if (nvSchool.includes(nCleanQ)) { score += asksForSchool ? 400 : 250; matchField = 'school'; }
+      else if (getConsonants(nCleanQ).length >= 3 && cSchool.includes(getConsonants(nCleanQ))) { score += asksForSchool ? 380 : 240; matchField = 'school'; }
+
+      if (nvName.includes(nCleanQ)) { score += asksForVT ? 400 : 260; if (!matchField || asksForVT) matchField = 'name'; }
+      else if (getConsonants(nCleanQ).length >= 3 && cName.includes(getConsonants(nCleanQ))) { score += asksForVT ? 380 : 240; if (!matchField || asksForVT) matchField = 'name'; }
+
+      if (nvHM.includes(nCleanQ)) { score += asksForPrincipal ? 400 : 200; if (!matchField || asksForPrincipal) matchField = 'principal'; }
+      else if (getConsonants(nCleanQ).length >= 3 && cHM.includes(getConsonants(nCleanQ))) { score += asksForPrincipal ? 380 : 190; if (!matchField || asksForPrincipal) matchField = 'principal'; }
+
+      if (nvMandal.includes(nCleanQ)) { score += asksForVillage ? 350 : 180; if (!matchField) matchField = 'mandal'; }
+      if (nvDist.includes(nCleanQ)) { score += 120; if (!matchField) matchField = 'district'; }
     }
 
-    // Token-level matches (each word in the cleaned query)
-    for (let i = 0; i < qWords.length; i++) {
-      const w  = qWords[i];
+    // Word-by-word token matching
+    for (let i = 0; i < nWords.length; i++) {
       const nw = nWords[i];
-      if (w.length < 3) continue;
-      if (nvHM.includes(nw)     || vHM.includes(w))     { score += asksForPrincipal ? 90 : 55; if (!matchField) matchField = 'principal'; }
-      if (nvSchool.includes(nw) || vSchool.includes(w))  { score += asksForSchool    ? 90 : 60; if (!matchField) matchField = 'school'; }
-      if (nvMandal.includes(nw) || vMandal.includes(w))  { score += asksForVillage   ? 90 : 50; if (!matchField) matchField = 'mandal'; }
-      if (nvName.includes(nw)   || vName.includes(w))    { score += asksForVT        ? 90 : 65; if (!matchField) matchField = 'name'; }
-      if (nvDist.includes(nw)   || vDist.includes(w))    { score += 40; if (!matchField) matchField = 'district'; }
-      if (vSector.includes(w))                           { score += 30; if (!matchField) matchField = 'sector'; }
+      const cw = cWords[i] || '';
+      if (nw.length < 3) continue;
+
+      if (nvSchool.includes(nw) || (cw.length >= 3 && cSchool.includes(cw))) {
+        score += asksForSchool ? 150 : 80;
+        if (!matchField) matchField = 'school';
+      }
+      if (nvName.includes(nw) || (cw.length >= 3 && cName.includes(cw))) {
+        score += asksForVT ? 150 : 85;
+        if (!matchField) matchField = 'name';
+      }
+      if (nvHM.includes(nw) || (cw.length >= 3 && cHM.includes(cw))) {
+        score += asksForPrincipal ? 150 : 70;
+        if (!matchField) matchField = 'principal';
+      }
+      if (nvMandal.includes(nw) || (cw.length >= 3 && cMandal.includes(cw))) {
+        score += asksForVillage ? 150 : 65;
+        if (!matchField) matchField = 'mandal';
+      }
+      if (nvDist.includes(nw)) {
+        score += 50;
+        if (!matchField) matchField = 'district';
+      }
     }
 
     if (score >= 50) scored.push({ v, score, matchField });
@@ -8717,16 +8736,6 @@ function yugAISearchVTS(rawQuery, vts) {
 
   scored.sort((a, b) => b.score - a.score);
   return { cleanQ, asksForPrincipal, asksForSchool, asksForVT, asksForVillage, scored };
-}
-
-// Normalize: lowercase + collapse repeated chars + strip punctuation
-function yugAINorm(s) {
-  if (!s) return '';
-  return s.toLowerCase()
-    .replace(/[^\w\s]/g, ' ')
-    .replace(/(.)\1+/g, '$1')
-    .replace(/\s+/g, ' ')
-    .trim();
 }
 
 // ── Open / Close ────────────────────────────────────────────────
