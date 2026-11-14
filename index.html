@@ -4554,8 +4554,7 @@ function rDash(){
           <span>${s.radius || 300}m / School</span>
         </div>
       </div>
-    </div>
-  `justify-content:space-between;font-weight:800;font-size:.86rem;margin-bottom:5px"><span>Attendance Rate</span><span style="color:var(--p)">${pct}%</span></div><div class="pw"><div class="pb" style="width:${pct}%"></div></div><p style="color:var(--t2);font-size:.78rem;margin-top:6px">${ap.length} of ${tch.length} trainers present</p><hr style="margin:12px 0;border:none;border-top:1px solid var(--bd)"><div style="font-size:.81rem;line-height:1.9"><div>🕐 Window: ${s.open||'06:00'} – ${s.close||'18:30'}</div><div>📍 Radius: ${s.radius||300}m per school</div><div>👥 Total Staff: ${tch.length}</div></div>`;
+    </div>`;
   const marked=new Set(ta.map(a=>a.teacherID));
   const absent=tch.filter(t=>!marked.has(t.ph));
   $('absA').innerHTML=absent.length===0?`<div class="alt a-s">🎉 All ${tch.length} trainers marked attendance today!</div>`
