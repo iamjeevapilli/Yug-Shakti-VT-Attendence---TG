@@ -4526,11 +4526,15 @@ async function syncSecureTime() {
   // 1. Primary: Fresh, uncached HEAD request to origin server with cache buster
   try {
     const freshUrl = window.location.origin + window.location.pathname + '?_t=' + Date.now();
+    const ctrl1 = new AbortController();
+    const t1 = setTimeout(() => ctrl1.abort(), 1500);
     const res = await fetch(freshUrl, {
       method: 'HEAD',
+      signal: ctrl1.signal,
       cache: 'no-store',
       headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache' }
     });
+    clearTimeout(t1);
     const dateStr = res.headers.get('date');
     if (dateStr) {
       const ts = new Date(dateStr).getTime();
@@ -4552,7 +4556,10 @@ async function syncSecureTime() {
     ];
     for (const ep of endpoints) {
       try {
-        const res = await fetch(ep.url, { cache: 'no-store' });
+        const ctrl2 = new AbortController();
+        const t2 = setTimeout(() => ctrl2.abort(), 1500);
+        const res = await fetch(ep.url, { signal: ctrl2.signal, cache: 'no-store' });
+        clearTimeout(t2);
         if (!res.ok) continue;
         const data = await res.json();
         let ts = null;
@@ -4719,24 +4726,31 @@ async function doLogin(r){
       LOCKOUT.reset();
       CU={name:'Administrator',role:'admin'};
       SESSION.create(CU);
-      try {
-        const authRes = await fetch('/api/auth', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username: 'admin', hash: inputHash })
-        });
-        if (authRes.ok) {
-          const authData = await authRes.json();
-          if (authData.token) {
-            sessionStorage.setItem('yug_admin_token', authData.token);
-            try { localStorage.setItem('yug_admin_token', authData.token); } catch(e){}
-          }
-        }
-      } catch(authErr) {
-        console.warn('Server token fetch warning:', authErr);
-      }
+      // ⚡ Boot dashboard INSTANTLY — fetch token & VTS data non-blocking in background
       boot();
-      loadAdminVtsData();
+      setTimeout(async () => {
+        try {
+          const ctrl = new AbortController();
+          const tid = setTimeout(() => ctrl.abort(), 1500);
+          const authRes = await fetch('/api/auth', {
+            method: 'POST',
+            signal: ctrl.signal,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: 'admin', hash: inputHash })
+          });
+          clearTimeout(tid);
+          if (authRes.ok) {
+            const authData = await authRes.json();
+            if (authData.token) {
+              sessionStorage.setItem('yug_admin_token', authData.token);
+              try { localStorage.setItem('yug_admin_token', authData.token); } catch(e){}
+            }
+          }
+        } catch(authErr) {
+          console.warn('Server token fetch warning (non-blocking):', authErr);
+        }
+        loadAdminVtsData();
+      }, 0);
     } else {
       const d=LOCKOUT.record();
       const rem=LOCKOUT.remaining();
@@ -9318,7 +9332,7 @@ function startAIMicWithLang(lang) {
       const msgs = {
         'not-allowed':   '🎤 Microphone permission denied. Please allow microphone access in browser settings.',
         'no-speech':     '🎤 No speech detected. Tap 🎤 and speak clearly — say something like "details of Anand".',
-        'network':       '🎤 Speech service temporarily unreachable. You can type your query in the box or tap 🎤 to retry.',
+        'network':       '🎤 Speech service temporarily unreachable. You can type your query in the box or tap 🎤 to retry. <br><small style="color:#999;font-size:0.75rem">💡 Tip: Use Google Chrome on a stable internet connection for best voice support.</small>',
         'audio-capture': '🎤 No microphone found. Please connect a microphone and try again.'
       };
       const msg = msgs[e.error] || ('🎤 Voice recognition error: ' + e.error);
