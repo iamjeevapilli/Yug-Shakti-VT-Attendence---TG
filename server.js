@@ -1,10 +1,9 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
-const url = require('url');
 
-const PORT = process.env.PORT || 3000;
-const ROOT = __dirname;
+const PORT = 3000;
+const BASE_DIR = __dirname;
 
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -17,91 +16,48 @@ const MIME_TYPES = {
   '.gif': 'image/gif',
   '.svg': 'image/svg+xml',
   '.ico': 'image/x-icon',
-  '.bin': 'application/octet-stream',
-  '.txt': 'text/plain; charset=utf-8',
-  '.xml': 'application/xml; charset=utf-8'
+  '.wav': 'audio/wav',
+  '.mp3': 'audio/mpeg'
 };
 
-const server = http.createServer(async (req, res) => {
-  const parsedUrl = url.parse(req.url, true);
+const server = http.createServer((req, res) => {
+  const parsedUrl = new URL(req.url, `http://localhost:${PORT}`);
   let pathname = decodeURIComponent(parsedUrl.pathname);
-
-  // Helper response methods for Vercel-style handlers
-  res.status = function(code) {
-    res.statusCode = code;
-    return res;
-  };
-  res.json = function(data) {
-    res.setHeader('Content-Type', 'application/json; charset=utf-8');
-    res.end(JSON.stringify(data));
-    return res;
-  };
-
-  // API routing for serverless handlers
-  if (pathname === '/api/auth' || pathname === '/api/auth/') {
-    try {
-      const handler = require('./api/auth.js');
-      let bodyData = '';
-      req.on('data', chunk => { bodyData += chunk; });
-      req.on('end', async () => {
-        req.body = bodyData;
-        req.query = parsedUrl.query;
-        await handler(req, res);
-      });
-      return;
-    } catch (err) {
-      console.error('API /api/auth Error:', err);
-      res.writeHead(500, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ ok: false, error: err.message }));
-      return;
-    }
+  
+  if (pathname.endsWith('/') || pathname === '') {
+    pathname += 'index.html';
   }
 
-  if (pathname === '/api/vts' || pathname === '/api/vts/') {
-    try {
-      const handler = require('./api/vts.js');
-      let bodyData = '';
-      req.on('data', chunk => { bodyData += chunk; });
-      req.on('end', async () => {
-        req.body = bodyData;
-        req.query = parsedUrl.query;
-        await handler(req, res);
-      });
-      return;
-    } catch (err) {
-      console.error('API /api/vts Error:', err);
-      res.writeHead(500, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ ok: false, error: err.message }));
-      return;
-    }
-  }
+  let fullPath = path.join(BASE_DIR, pathname);
 
-  // Static file serving
-  if (pathname === '/') pathname = '/index.html';
-  const filePath = path.join(ROOT, pathname);
-
-  if (!filePath.startsWith(ROOT)) {
+  // Security check to avoid directory traversal
+  if (!fullPath.startsWith(BASE_DIR)) {
     res.writeHead(403);
-    return res.end('Forbidden');
+    res.end('Forbidden');
+    return;
   }
 
-  fs.stat(filePath, (err, stats) => {
+  fs.stat(fullPath, (err, stats) => {
     if (err || !stats.isFile()) {
       res.writeHead(404, { 'Content-Type': 'text/plain' });
-      return res.end('404 Not Found: ' + pathname);
+      res.end('404 Not Found');
+      return;
     }
 
-    const ext = path.extname(filePath).toLowerCase();
+    const ext = path.extname(fullPath).toLowerCase();
     const contentType = MIME_TYPES[ext] || 'application/octet-stream';
-    res.writeHead(200, { 'Content-Type': contentType });
-    fs.createReadStream(filePath).pipe(res);
+
+    res.writeHead(200, {
+      'Content-Type': contentType,
+      'Access-Control-Allow-Origin': '*'
+    });
+    fs.createReadStream(fullPath).pipe(res);
   });
 });
 
-server.listen(PORT, () => {
-  console.log(`\n==============================================`);
-  console.log(`  GeoAttend Portal running locally:`);
-  console.log(`  http://localhost:${PORT}`);
-  console.log(`  http://127.0.0.1:${PORT}`);
-  console.log(`==============================================\n`);
+server.listen(PORT, '127.0.0.1', () => {
+  console.log(`PORTAL_SERVER_RUNNING: http://127.0.0.1:${PORT}`);
+});
+server.on('error', (e) => {
+  console.error('Server error:', e);
 });

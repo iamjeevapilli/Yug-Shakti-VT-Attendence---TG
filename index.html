@@ -143,7 +143,7 @@ if ('caches' in window) {
 @keyframes scanFail{0%{background:rgba(217,48,37,0)}40%{background:rgba(217,48,37,.3)}100%{background:rgba(217,48,37,0)}}
 .scan-fail{animation:scanFail .9s ease forwards;}
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--p:#1a73e8;--s:#0f9d58;--d:#d93025;--o:#f9ab00;--bg:#f0f4f8;--w:#fff;--bd:#dadce0;--t:#202124;--t2:#5f6368}
+:root{--p:#555555;--s:#777777;--d:#999999;--o:#bbbbbb;--bg:#f5f5f5;--w:#ffffff;--bd:#dddddd;--t:#222222;--t2:#555555}
 body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--t);min-height:100vh}
 #loader{display:none!important}
 #loader::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 30% 40%,rgba(255,255,255,.08) 0%,transparent 60%),radial-gradient(circle at 70% 60%,rgba(255,255,255,.05) 0%,transparent 50%);pointer-events:none}
@@ -5285,11 +5285,51 @@ function rDash(){
   const s=DB.get('settings',{});
   $('wBanner').innerHTML=`<div class="wb"><div><h2>👋 Welcome, Administrator!</h2><p>${s.name||'Yug Shakti Vocational Education Telangana'} — ${getSecureDate().toLocaleDateString('en',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</p></div><img src="logo.png" alt="Yug Shakti Logo" style="height:60px; object-fit:contain; margin-left:auto;"></div>`;
   $('sGrid').innerHTML=`
-    <div class="sc cb"><span class="si">👩‍🏫</span><div><div class="sv" id="stat-total" data-text="${tch.length}">${tch.length}</div><div class="sl">Total Trainers</div></div></div>
-    <div class="sc cg"><span class="si">✅</span><div><div class="sv" id="stat-present" data-text="${ap.length}">${ap.length}</div><div class="sl">Present Today</div></div></div>
-    <div class="sc cr"><span class="si">❌</span><div><div class="sv" id="stat-absent" data-text="${tch.length-ap.length}">${tch.length-ap.length}</div><div class="sl">Absent Today</div></div></div>
-    <div class="sc co"><span class="si">📊</span><div><div class="sv" id="stat-rate" data-text="${pct}%">${pct}%</div><div class="sl">Rate</div></div></div>`;
-  
+    <div class="glass-card-ai" style="display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.5px">Total Trainers</div>
+        <div style="font-size:1.85rem;font-weight:800;color:#0f172a;margin-top:2px" id="stat-total" data-text="${tch.length}">${tch.length}</div>
+        <div style="font-size:0.75rem;color:#059669;font-weight:700;margin-top:4px;display:flex;align-items:center;gap:3px">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M7 17L17 7M17 7H7M17 7V17"/></svg>
+          <span>All 245 Schools</span>
+        </div>
+      </div>
+      <div style="width:48px;height:48px;border-radius:14px;background:rgba(37,99,235,0.08);border:1px solid rgba(37,99,235,0.18);display:grid;place-items:center;font-size:1.5rem">👩‍🏫</div>
+    </div>
+
+    <div class="glass-card-ai" style="display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.5px">Present Today</div>
+        <div style="font-size:1.85rem;font-weight:800;color:#059669;margin-top:2px" id="stat-present" data-text="${ap.length}">${ap.length}</div>
+        <div style="font-size:0.75rem;color:#059669;font-weight:700;margin-top:4px;display:flex;align-items:center;gap:3px">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M7 17L17 7M17 7H7M17 7V17"/></svg>
+          <span>${pct}% Checked-In</span>
+        </div>
+      </div>
+      <div style="width:48px;height:48px;border-radius:14px;background:rgba(5,150,105,0.08);border:1px solid rgba(5,150,105,0.18);display:grid;place-items:center;font-size:1.5rem">✅</div>
+    </div>
+
+    <div class="glass-card-ai" style="display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.5px">Absent Today</div>
+        <div style="font-size:1.85rem;font-weight:800;color:#e11d48;margin-top:2px" id="stat-absent" data-text="${tch.length-ap.length}">${tch.length-ap.length}</div>
+        <div style="font-size:0.75rem;color:#e11d48;font-weight:700;margin-top:4px;display:flex;align-items:center;gap:3px">
+          <span>⚠️ Pending Check-In</span>
+        </div>
+      </div>
+      <div style="width:48px;height:48px;border-radius:14px;background:rgba(225,29,72,0.08);border:1px solid rgba(225,29,72,0.18);display:grid;place-items:center;font-size:1.5rem">❌</div>
+    </div>
+
+    <div class="glass-card-ai" style="display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-size:0.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.5px">Attendance Rate</div>
+        <div style="font-size:1.85rem;font-weight:800;color:#0f172a;margin-top:2px" id="stat-rate" data-text="${pct}%">${pct}%</div>
+        <div style="font-size:0.75rem;color:#2563eb;font-weight:700;margin-top:4px;display:flex;align-items:center;gap:3px">
+          <span>🎯 Real-Time Score</span>
+        </div>
+      </div>
+      <div style="width:48px;height:48px;border-radius:14px;background:rgba(37,99,235,0.08);border:1px solid rgba(37,99,235,0.18);display:grid;place-items:center;font-size:1.5rem">📊</div>
+    </div>`;
 
   $('progA').innerHTML = `
     <div class="circular-gauge-wrap">
@@ -8072,6 +8112,26 @@ const speedo = pct => {
 
 <script id="theme-engine-script">
 const BG_THEMES = {
+  gray: {
+    name: 'Sleek Modern Gray',
+    desc: 'High-contrast studio gray, pure slate, and subtle metallic accents',
+    base: '#1e242b',
+    orb1: 'radial-gradient(circle, #64748b 0%, rgba(100,116,139,0) 70%)',
+    orb2: 'radial-gradient(circle, #475569 0%, rgba(71,85,105,0) 70%)',
+    orb3: 'radial-gradient(circle, #334155 0%, rgba(51,65,85,0) 70%)',
+    orb4: 'radial-gradient(circle, #94a3b8 0%, rgba(148,163,184,0) 70%)',
+    preview: 'linear-gradient(135deg, #64748b, #334155, #1e293b)'
+  },
+  cream: {
+    name: 'Warm Nordic Cream',
+    desc: 'Soft ivory cream, warm sand tones, and relaxed luxury glass',
+    base: '#f4efe6',
+    orb1: 'radial-gradient(circle, #e2d9cc 0%, rgba(226,217,204,0) 70%)',
+    orb2: 'radial-gradient(circle, #d6c7b2 0%, rgba(214,199,178,0) 70%)',
+    orb3: 'radial-gradient(circle, #ecdcc9 0%, rgba(236,220,201,0) 70%)',
+    orb4: 'radial-gradient(circle, #f9f5ee 0%, rgba(249,245,238,0) 70%)',
+    preview: 'linear-gradient(135deg, #d6c7b2, #ecdcc9, #f4efe6)'
+  },
   aurora: {
     name: 'Aurora Glow',
     desc: 'Cosmic teal, cyan, and amethyst aurora lights',
@@ -8215,9 +8275,9 @@ function renderThemeGrid() {
 
 // Initialize theme on load
 (function initBgTheme() {
-  let saved = 'aurora';
+  let saved = 'gray';
   try {
-    saved = localStorage.getItem('yug_bg_theme') || 'aurora';
+    saved = localStorage.getItem('yug_bg_theme') || 'gray';
   } catch(e){}
   applyBgTheme(saved);
 
@@ -8315,6 +8375,7 @@ function renderThemeGrid() {
 ══════════════════════════════════════════════════════════════════ */
 let scene3D, camera3D, renderer3D, controls3D, animFrame3D;
 let interactiveObjects3D = [];
+let robotAvatars = [];
 let autoRotate3D = true;
 let is3DInitialized = false;
 
@@ -8330,15 +8391,21 @@ function init3DCommandRoom() {
   const width = container.clientWidth || 800;
   const height = container.clientHeight || 450;
 
-  // Scene & Isometric Camera
+  // Scene & Isometric Camera - Cream / Gray Luxury Office Studio Environment
   scene3D = new THREE.Scene();
-  scene3D.background = new THREE.Color(0x0a1128);
+  scene3D.background = new THREE.Color(0xf1ece1); // Warm luxury cream/light gray studio
 
   const aspect = width / height;
-  const d = 14;
+  const isMobileInit = window.innerWidth <= 768;
+  const d = isMobileInit ? 18.5 : 14;
   camera3D = new THREE.OrthographicCamera(-d * aspect, d * aspect, d, -d, 1, 1000);
-  camera3D.position.set(20, 22, 20);
-  camera3D.lookAt(0, 2, 0);
+  if (isMobileInit) {
+    camera3D.position.set(24, 26, 24);
+    camera3D.lookAt(0, 1.5, 0);
+  } else {
+    camera3D.position.set(20, 22, 20);
+    camera3D.lookAt(0, 2, 0);
+  }
 
   // Renderer with anti-aliasing
   renderer3D = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
@@ -8370,40 +8437,54 @@ function init3DCommandRoom() {
     hintEl.innerHTML = '👆 Touch & drag to rotate • Pinch to zoom • Tap desks';
   }
 
-  // Lighting
-  const ambientLight = new THREE.AmbientLight(0xdbeafe, 0.7);
+  // Lighting - Warm Studio Setup
+  const ambientLight = new THREE.AmbientLight(0xfffaf0, 0.9);
   scene3D.add(ambientLight);
 
-  const sunLight = new THREE.DirectionalLight(0xffffff, 0.9);
-  sunLight.position.set(18, 30, 15);
+  const sunLight = new THREE.DirectionalLight(0xfff7ed, 1.1);
+  sunLight.position.set(20, 35, 18);
   sunLight.castShadow = true;
   sunLight.shadow.mapSize.width = 1024;
   sunLight.shadow.mapSize.height = 1024;
   scene3D.add(sunLight);
 
-  // Colored accent light (Cyan & Magenta tech glow)
-  const cyanLight = new THREE.PointLight(0x06b6d4, 1.2, 35);
-  cyanLight.position.set(-8, 6, -8);
-  scene3D.add(cyanLight);
+  // Soft warm fill light
+  const warmLight = new THREE.PointLight(0xfef3c7, 0.7, 40);
+  warmLight.position.set(-8, 8, -8);
+  scene3D.add(warmLight);
 
-  const purpleLight = new THREE.PointLight(0x8b5cf6, 1.2, 35);
-  purpleLight.position.set(8, 6, 8);
-  scene3D.add(purpleLight);
-
-  // Floor (Warm luxury parquet grid)
+  // Floor (Warm luxury wood oak / cream parquet)
   const floorGeo = new THREE.PlaneGeometry(24, 20);
-  const floorMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.4, metalness: 0.1 });
+  const floorMat = new THREE.MeshStandardMaterial({ color: 0xd4a373, roughness: 0.5, metalness: 0.05 });
   const floor = new THREE.Mesh(floorGeo, floorMat);
   floor.rotation.x = -Math.PI / 2;
   floor.receiveShadow = true;
   scene3D.add(floor);
 
-  // Floor border rim
+  // Floor border rim (Clean white / ivory trim)
   const rimGeo = new THREE.BoxGeometry(24.4, 0.3, 20.4);
-  const rimMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.2 });
+  const rimMat = new THREE.MeshStandardMaterial({ color: 0xe2d9cc, roughness: 0.3 });
   const rim = new THREE.Mesh(rimGeo, rimMat);
   rim.position.y = -0.16;
   scene3D.add(rim);
+
+  // Add stylish office meeting rug (Circular cream rug on the right)
+  const rugGeo = new THREE.CircleGeometry(3.6, 32);
+  const rugMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.9 });
+  const rug = new THREE.Mesh(rugGeo, rugMat);
+  rug.rotation.x = -Math.PI / 2;
+  rug.position.set(7.2, 0.01, 4.2);
+  rug.receiveShadow = true;
+  scene3D.add(rug);
+
+  // Circular meeting table in rug area
+  const tableGeo = new THREE.CylinderGeometry(1.6, 1.6, 0.9, 32);
+  const tableMat = new THREE.MeshStandardMaterial({ color: 0xfaf5ef, roughness: 0.2 });
+  const table = new THREE.Mesh(tableGeo, tableMat);
+  table.position.set(7.2, 0.45, 4.2);
+  table.castShadow = true;
+  table.receiveShadow = true;
+  scene3D.add(table);
 
   // Back Screen Wall (Large command monitor)
   createBigWallScreen();
@@ -8414,9 +8495,24 @@ function init3DCommandRoom() {
   // Raycaster for hover/click tooltips
   setup3DRaycaster(container);
 
-  // Animation Loop
+  // Animation Loop with Robot Hover & Typing Motion
+  let clock3D = new THREE.Clock();
   function animate3D() {
     animFrame3D = requestAnimationFrame(animate3D);
+    const elapsedTime = clock3D.getElapsedTime();
+
+    // Subtle robot floating / breathing animation
+    if (robotAvatars && robotAvatars.length) {
+      robotAvatars.forEach(rob => {
+        const t = elapsedTime * 2.2 + rob.userData.seed;
+        rob.position.y = Math.sin(t) * 0.08;
+        if (rob.userData.armLeft && rob.userData.armRight) {
+          rob.userData.armLeft.rotation.x = -Math.PI / 3 + Math.sin(t * 3.5) * 0.08;
+          rob.userData.armRight.rotation.x = -Math.PI / 3 - Math.sin(t * 3.5) * 0.08;
+        }
+      });
+    }
+
     if (controls3D) controls3D.update();
     renderer3D.render(scene3D, camera3D);
   }
@@ -8431,17 +8527,17 @@ function createBigWallScreen() {
   canvas.height = 256;
   const ctx = canvas.getContext('2d');
 
-  // Background
-  ctx.fillStyle = '#0f172a';
+  // Background - Modern Dark Gray Frame in light room
+  ctx.fillStyle = '#1e242b';
   ctx.fillRect(0, 0, 512, 256);
-  ctx.strokeStyle = '#2563eb';
+  ctx.strokeStyle = '#475569';
   ctx.lineWidth = 4;
   ctx.strokeRect(4, 4, 504, 248);
 
   // Content
-  ctx.fillStyle = '#5eead4';
-  ctx.font = 'bold 22px sans-serif';
-  ctx.fillText('GEO-FRS COMMAND CENTER — LIVE', 24, 42);
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = 'bold 20px sans-serif';
+  ctx.fillText('GEO-FRS VOCATIONAL COMMAND', 24, 42);
 
   const tch = DB.get('teachers', []);
   const att = DB.get('att', []).filter(a => a.date === today());
@@ -8452,12 +8548,12 @@ function createBigWallScreen() {
   ctx.font = 'bold 44px sans-serif';
   ctx.fillText(pct + '% ATTENDANCE', 24, 105);
 
-  ctx.fillStyle = '#94a3b8';
-  ctx.font = '18px sans-serif';
+  ctx.fillStyle = '#cbd5e1';
+  ctx.font = '17px sans-serif';
   ctx.fillText('ACTIVE: ' + ap.length + ' / ' + tch.length + ' TRAINERS  |  246 SCHOOLS', 24, 145);
 
-  // Draw decorative mini bar chart
-  ctx.fillStyle = '#10b981';
+  // Modern clean bar chart
+  ctx.fillStyle = '#38bdf8';
   for (let i = 0; i < 18; i++) {
     const h = 20 + Math.sin(i * 0.5) * 45 + Math.random() * 20;
     ctx.fillRect(24 + (i * 26), 230 - h, 18, h);
@@ -8474,67 +8570,142 @@ function createBigWallScreen() {
 
 function createVirtualOfficeDesks() {
   const sectors = [
-    { name: 'Apparel', color: 0x2563eb, x: -7, z: -3 },
-    { name: 'Beauty & Wellness', color: 0xe11d48, x: -2.3, z: -3 },
-    { name: 'Healthcare', color: 0x059669, x: 2.3, z: -3 },
-    { name: 'Automotive', color: 0xd97706, x: 7, z: -3 },
-    { name: 'IT/ITES', color: 0x7c3aed, x: -4.5, z: 3 },
-    { name: 'Electronics', color: 0x0284c7, x: 4.5, z: 3 }
+    { name: 'Apparel', color: 0x64748b, x: -7, z: -3 },
+    { name: 'Beauty & Wellness', color: 0x78716c, x: -2.3, z: -3 },
+    { name: 'Healthcare', color: 0x475569, x: 2.3, z: -3 },
+    { name: 'Automotive', color: 0x57534e, x: 7, z: -3 },
+    { name: 'IT/ITES', color: 0x334155, x: -4.5, z: 3 },
+    { name: 'Electronics', color: 0x52525b, x: 4.5, z: 3 }
   ];
 
   sectors.forEach((sec, idx) => {
-    // Desk
+    // Desk - Clean Nordic White / Cream workstation
     const deskGeo = new THREE.BoxGeometry(3.6, 1.4, 2.2);
-    const deskMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.3 });
+    const deskMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.25 });
     const desk = new THREE.Mesh(deskGeo, deskMat);
     desk.position.set(sec.x, 0.7, sec.z);
     desk.castShadow = true;
     desk.receiveShadow = true;
     scene3D.add(desk);
 
-    // Laptop
+    // Laptop (Sleek Space Gray)
     const lapGeo = new THREE.BoxGeometry(0.9, 0.05, 0.65);
-    const lapMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.8 });
+    const lapMat = new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.85, roughness: 0.2 });
     const laptop = new THREE.Mesh(lapGeo, lapMat);
     laptop.position.set(sec.x, 1.43, sec.z + 0.1);
     scene3D.add(laptop);
 
     // Laptop Screen
     const screenGeo = new THREE.BoxGeometry(0.9, 0.6, 0.04);
-    const screenMat = new THREE.MeshStandardMaterial({ color: sec.color, emissive: sec.color, emissiveIntensity: 0.6 });
+    const screenMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, emissive: 0x38bdf8, emissiveIntensity: 0.5 });
     const lapScreen = new THREE.Mesh(screenGeo, screenMat);
     lapScreen.position.set(sec.x, 1.72, sec.z - 0.22);
     lapScreen.rotation.x = -0.2;
     scene3D.add(lapScreen);
 
-    // 3D Avatar (Stylized low-poly trainer figure)
-    const bodyGeo = new THREE.CylinderGeometry(0.35, 0.45, 1.3, 16);
-    const bodyMat = new THREE.MeshStandardMaterial({ color: sec.color, roughness: 0.3 });
-    const body = new THREE.Mesh(bodyGeo, bodyMat);
-    body.position.set(sec.x, 1.65, sec.z + 1.2);
-    body.castShadow = true;
+    // Office potted plant next to desk
+    const potGeo = new THREE.CylinderGeometry(0.24, 0.18, 0.45, 12);
+    const potMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3 });
+    const pot = new THREE.Mesh(potGeo, potMat);
+    pot.position.set(sec.x - 2.1, 0.22, sec.z);
+    pot.castShadow = true;
+    scene3D.add(pot);
+    const plantGeo = new THREE.SphereGeometry(0.28, 8, 8);
+    const plantMat = new THREE.MeshStandardMaterial({ color: 0x15803d, roughness: 0.8 });
+    const plant = new THREE.Mesh(plantGeo, plantMat);
+    plant.position.set(sec.x - 2.1, 0.55, sec.z);
+    scene3D.add(plant);
 
-    const headGeo = new THREE.SphereGeometry(0.32, 16, 16);
-    const headMat = new THREE.MeshStandardMaterial({ color: 0xfde047, roughness: 0.5 });
-    const head = new THREE.Mesh(headGeo, headMat);
-    head.position.set(sec.x, 2.5, sec.z + 1.2);
-    head.castShadow = true;
+    // 3D Robot Worker Model (Stylized Sci-Fi AI Android in Metallic Silver/Graphite)
+    const robotGroup = new THREE.Group();
+    
+    // Robot Torso (Rounded metallic graphite chassis)
+    const torsoGeo = new THREE.BoxGeometry(0.7, 0.85, 0.45);
+    const torsoMat = new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.85, roughness: 0.25 });
+    const torso = new THREE.Mesh(torsoGeo, torsoMat);
+    torso.position.y = 1.6;
+    torso.castShadow = true;
+    robotGroup.add(torso);
 
-    // Group for interaction
-    const group = new THREE.Group();
-    group.add(body);
-    group.add(head);
-    group.userData = {
+    // Torso Core Light (Subtle cyan reactor)
+    const chestGeo = new THREE.CylinderGeometry(0.14, 0.14, 0.08, 16);
+    const chestMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, emissive: 0x38bdf8, emissiveIntensity: 0.8 });
+    const chestCore = new THREE.Mesh(chestGeo, chestMat);
+    chestCore.rotation.x = Math.PI / 2;
+    chestCore.position.set(0, 1.65, 0.23);
+    robotGroup.add(chestCore);
+
+    // Robot Head (Curved helmet)
+    const rHeadGeo = new THREE.BoxGeometry(0.55, 0.45, 0.5);
+    const rHeadMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.9, roughness: 0.2 });
+    const rHead = new THREE.Mesh(rHeadGeo, rHeadMat);
+    rHead.position.set(0, 2.25, 0);
+    rHead.castShadow = true;
+    robotGroup.add(rHead);
+
+    // Robot Visor (Glowing AI screen / eye bar)
+    const visorGeo = new THREE.BoxGeometry(0.46, 0.16, 0.08);
+    const visorMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, emissive: 0x38bdf8, emissiveIntensity: 1.2 });
+    const visor = new THREE.Mesh(visorGeo, visorMat);
+    visor.position.set(0, 2.25, -0.25); // facing toward desk
+    robotGroup.add(visor);
+
+    // Antenna on head
+    const antGeo = new THREE.CylinderGeometry(0.02, 0.02, 0.25, 8);
+    const antMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.9 });
+    const ant = new THREE.Mesh(antGeo, antMat);
+    ant.position.set(0, 2.58, 0);
+    const antTip = new THREE.Mesh(new THREE.SphereGeometry(0.06, 8, 8), new THREE.MeshBasicMaterial({ color: 0x38bdf8 }));
+    antTip.position.set(0, 2.7, 0);
+    robotGroup.add(ant);
+    robotGroup.add(antTip);
+
+    // Robot Arms (Typing at laptop)
+    const armMat = new THREE.MeshStandardMaterial({ color: 0x64748b, metalness: 0.7, roughness: 0.3 });
+    const leftArm = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.65, 0.14), armMat);
+    leftArm.position.set(-0.46, 1.6, -0.15);
+    leftArm.rotation.x = -Math.PI / 3;
+    leftArm.rotation.z = -0.15;
+    robotGroup.add(leftArm);
+
+    const rightArm = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.65, 0.14), armMat);
+    rightArm.position.set(0.46, 1.6, -0.15);
+    rightArm.rotation.x = -Math.PI / 3;
+    rightArm.rotation.z = 0.15;
+    robotGroup.add(rightArm);
+
+    // Robot Base / Hover Thruster
+    const thrusterGeo = new THREE.CylinderGeometry(0.3, 0.12, 0.6, 16);
+    const thrusterMat = new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.8 });
+    const thruster = new THREE.Mesh(thrusterGeo, thrusterMat);
+    thruster.position.y = 0.95;
+    robotGroup.add(thruster);
+
+    // Thruster glow ring
+    const ringGeo = new THREE.TorusGeometry(0.24, 0.04, 8, 24);
+    const ringMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
+    const thrusterRing = new THREE.Mesh(ringGeo, ringMat);
+    thrusterRing.rotation.x = Math.PI / 2;
+    thrusterRing.position.y = 0.65;
+    robotGroup.add(thrusterRing);
+
+    robotGroup.position.set(sec.x, 0, sec.z + 1.25);
+    robotGroup.userData = {
       sector: sec.name,
       deskId: idx + 1,
-      info: 'Vocational Hub • ' + sec.name
+      info: 'Vocational Hub • ' + sec.name,
+      initialY: 0,
+      armLeft: leftArm,
+      armRight: rightArm,
+      seed: idx * 1.5
     };
 
-    scene3D.add(group);
-    interactiveObjects3D.push(body);
-    interactiveObjects3D.push(head);
-    body.userData = group.userData;
-    head.userData = group.userData;
+    scene3D.add(robotGroup);
+    robotAvatars.push(robotGroup);
+    interactiveObjects3D.push(torso);
+    interactiveObjects3D.push(rHead);
+    torso.userData = robotGroup.userData;
+    rHead.userData = robotGroup.userData;
   });
 }
 
@@ -8588,15 +8759,30 @@ function setup3DRaycaster(container) {
 function onWindowResize3D() {
   const container = document.getElementById('room3DCanvas');
   if (!container || !renderer3D || !camera3D) return;
-  const width = container.clientWidth;
-  const height = container.clientHeight;
+  const width = container.clientWidth || 800;
+  const height = container.clientHeight || 450;
   const aspect = width / height;
-  const d = 14;
+  
+  // Responsive camera zoom: wider framing on mobile to prevent clipping into corner
+  const isMobile = window.innerWidth <= 768;
+  const d = isMobile ? 18.5 : 14;
+
   camera3D.left = -d * aspect;
   camera3D.right = d * aspect;
   camera3D.top = d;
   camera3D.bottom = -d;
   camera3D.updateProjectionMatrix();
+
+  if (isMobile) {
+    camera3D.position.set(24, 26, 24);
+    camera3D.lookAt(0, 1.5, 0);
+    if (controls3D) controls3D.target.set(0, 1.5, 0);
+  } else {
+    camera3D.position.set(20, 22, 20);
+    camera3D.lookAt(0, 2, 0);
+    if (controls3D) controls3D.target.set(0, 2, 0);
+  }
+
   renderer3D.setSize(width, height);
 }
 
