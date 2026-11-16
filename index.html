@@ -611,16 +611,16 @@ tbody td{padding:10px 12px;vertical-align:middle}
   }
   .app-main-content {
     margin-left: 0 !important;
-    padding: max(16px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(100px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)) !important;
+    padding: max(20px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(100px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)) !important;
     width: 100% !important;
     overflow-x: hidden !important;
   }
   .top-header {
     padding: 10px 14px !important;
     margin-bottom: 14px !important;
-    position: sticky !important;
-    top: max(8px, env(safe-area-inset-top)) !important;
-    z-index: 100 !important;
+    position: relative !important;
+    top: auto !important;
+    z-index: 20 !important;
     backdrop-filter: blur(16px) !important;
     -webkit-backdrop-filter: blur(16px) !important;
   }
@@ -632,47 +632,65 @@ tbody td{padding:10px 12px;vertical-align:middle}
   }
   /* Mobile 3D Command Floor optimizations */
   .room-3d-card {
-    height: clamp(300px, 46vh, 360px) !important;
+    height: clamp(340px, 50vh, 400px) !important;
     border-radius: 20px !important;
+    margin-top: 6px !important;
   }
   .room-3d-overlay-head {
     top: 10px !important;
     left: 10px !important;
     right: 10px !important;
     gap: 6px !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
   }
   .room-3d-badge {
     font-size: 0.68rem !important;
-    padding: 4px 10px !important;
+    padding: 5px 10px !important;
+    justify-content: center !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
   }
   .room-3d-controls {
     gap: 5px !important;
+    width: 100% !important;
+    display: flex !important;
+    justify-content: space-between !important;
   }
   .room-ctrl-btn {
-    padding: 4px 8px !important;
+    flex: 1 !important;
+    justify-content: center !important;
+    padding: 5px 6px !important;
     font-size: 0.72rem !important;
     border-radius: 8px !important;
   }
   .room-3d-hint {
     bottom: 8px !important;
     left: 10px !important;
+    right: 10px !important;
+    text-align: center !important;
     font-size: 0.68rem !important;
-    padding: 3px 8px !important;
+    padding: 4px 8px !important;
   }
   /* Dashboard toggle bar on mobile */
   .dash-view-toggle-bar {
     gap: 8px !important;
     margin-bottom: 12px !important;
+    flex-direction: column !important;
   }
   .dash-mode-segmented {
     width: 100% !important;
     display: flex !important;
+    box-sizing: border-box !important;
   }
   .dash-mode-btn {
     flex: 1 !important;
     justify-content: center !important;
-    padding: 7px 10px !important;
-    font-size: 0.8rem !important;
+    padding: 8px 10px !important;
+    font-size: 0.82rem !important;
+  }
+  .dash-view-toggle-bar > button.room-ctrl-btn {
+    display: none !important; /* hide duplicate Ask AI button to prevent overlap with floating Yug AI */
   }
   /* Background fluid orbs 60fps performance on mobile */
   .bg-orb {
@@ -8765,7 +8783,7 @@ function onWindowResize3D() {
   
   // Responsive camera zoom: wider framing on mobile to prevent clipping into corner
   const isMobile = window.innerWidth <= 768;
-  const d = isMobile ? 18.5 : 14;
+  const d = isMobile ? 22 : 14;
 
   camera3D.left = -d * aspect;
   camera3D.right = d * aspect;
@@ -8774,9 +8792,9 @@ function onWindowResize3D() {
   camera3D.updateProjectionMatrix();
 
   if (isMobile) {
-    camera3D.position.set(24, 26, 24);
-    camera3D.lookAt(0, 1.5, 0);
-    if (controls3D) controls3D.target.set(0, 1.5, 0);
+    camera3D.position.set(22, 28, 22);
+    camera3D.lookAt(0, 1.0, 0);
+    if (controls3D) controls3D.target.set(0, 1.0, 0);
   } else {
     camera3D.position.set(20, 22, 20);
     camera3D.lookAt(0, 2, 0);
@@ -8788,9 +8806,16 @@ function onWindowResize3D() {
 
 function reset3DCamera() {
   if (!camera3D || !controls3D) return;
-  camera3D.position.set(20, 22, 20);
-  camera3D.lookAt(0, 2, 0);
-  controls3D.target.set(0, 2, 0);
+  const isMobile = window.innerWidth <= 768;
+  if (isMobile) {
+    camera3D.position.set(22, 28, 22);
+    camera3D.lookAt(0, 1.0, 0);
+    controls3D.target.set(0, 1.0, 0);
+  } else {
+    camera3D.position.set(20, 22, 20);
+    camera3D.lookAt(0, 2, 0);
+    controls3D.target.set(0, 2, 0);
+  }
   controls3D.update();
 }
 
