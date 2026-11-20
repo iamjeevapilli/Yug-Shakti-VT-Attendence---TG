@@ -270,7 +270,7 @@ tbody td strong{color:var(--ink);font-weight:600}
   }
 </style>
 
-<script src="vts_data.js?v=20261115_1"></script>
+<script src="vts_data.js?v=20261121_1"></script>
 </head>
 <body>
 
@@ -840,7 +840,7 @@ function filterAll(){
       v.schoolType,
       v.scheme,
       v.qual,
-      v.expCurr,
+      v.expCurr||v.exp,
       v.expTotal,
       v.joining,
       v.dob,
@@ -881,7 +881,7 @@ function render(){
       <td class="joining">${formatDate(v.joining)}</td>
       <td class="dob">${formatDate(v.dob)}</td>
       <td class="qual">${v.qual||'—'}</td>
-      <td class="exp">${v.expCurr||'—'}</td>
+      <td class="exp">${v.expCurr||v.exp||'—'}</td>
       <td class="exp">${v.expTotal||'—'}</td>
     </tr>`).join('')
     :`<tr><td colspan="14"><div class="empty"><div class="ei">🔍</div><p>No records match your filters</p></div></td></tr>`;
@@ -947,7 +947,7 @@ function openModal(sno){
     <div class="mrow"><span class="ml">Joining Date</span><span class="mv">${formatDate(v.joining)}</span></div>
     <div class="mrow"><span class="ml">Date of Birth</span><span class="mv">${formatDate(v.dob)}</span></div>
     <div class="mrow"><span class="ml">Qualification</span><span class="mv">${v.qual||'—'}</span></div>
-    <div class="mrow"><span class="ml">Current Exp</span><span class="mv">${v.expCurr||'—'}</span></div>
+    <div class="mrow"><span class="ml">Current Exp</span><span class="mv">${v.expCurr||v.exp||'—'}</span></div>
     <div class="mrow"><span class="ml">Total Exp</span><span class="mv">${v.expTotal||'—'}</span></div>
     <div class="mrow"><span class="ml">Aadhar No.</span><span class="mv" style="font-family:monospace">${v.aadhar||'—'}</span></div>
     <div class="mrow"><span class="ml">PAN No.</span><span class="mv" style="font-family:monospace">${v.pan||'—'}</span></div>

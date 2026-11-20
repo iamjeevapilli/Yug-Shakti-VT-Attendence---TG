@@ -31,7 +31,7 @@
 <meta name="apple-mobile-web-app-title" content="YS Geo-FRS" />
 <link rel="apple-touch-icon" href="/logo.png" />
 <script src="https://unpkg.com/lucide@latest"></script>
-<script src="vts_data.js?v=20261115_1"></script>
+<script src="vts_data.js?v=20261118_2"></script>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
 <meta http-equiv="Expires" content="0" />
@@ -1051,6 +1051,12 @@ tbody td{padding:10px 12px;vertical-align:middle}
 
 .ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,.38);transform:scale(0);animation:rippleAnim .5s linear;pointer-events:none}
 @keyframes rippleAnim{to{transform:scale(3);opacity:0}}
+</style>
+<style>
+@media(max-width:768px){
+  #pg-vtsdata{padding:0!important;margin:0!important;max-width:100%!important;}
+  #vtsFrame{height:calc(100dvh - 115px)!important;min-height:420px!important;}
+}
 </style>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -3258,8 +3264,8 @@ tbody td{padding:10px 12px;vertical-align:middle}
   </div>
 
   <!-- VTS DATA SHEET (Full searchable grid with HS & HSS Tabs and School Directory) -->
-  <div class="pg" id="pg-vtsdata" style="padding:0;">
-    <iframe id="vtsFrame" src="about:blank" style="width:100%; height:calc(100vh - 60px); border:none; display:block;"></iframe>
+  <div class="pg" id="pg-vtsdata" style="padding:0;margin:0;max-width:100%;">
+    <iframe id="vtsFrame" src="about:blank" style="width:100%; height:calc(100dvh - 115px); min-height:420px; border:none; display:block; border-radius:12px;"></iframe>
   </div>
 
   <!-- TRAINER PROFILE (subfolder) -->
