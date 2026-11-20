@@ -1,1322 +1,1326 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<script>
-// Standalone access guard: only redirect if opened directly as top-level window without login
-(function() {
-  try {
-    if (window.parent === window) {
-      const p = new URLSearchParams(window.location.search);
-      const token = p.get('token') || sessionStorage.getItem('yug_admin_token') || localStorage.getItem('yug_admin_token');
-      const sess = sessionStorage.getItem('yugg_sess_user') || localStorage.getItem('yugg_sess_user');
-      if (!token && !sess) {
-        window.location.replace('/');
-      }
-    }
-  } catch(e) {}
-})();
-</script>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>VT's Details — Yug Shakti Vocational Education, Telangana</title>
-<meta name="description" content="VT's Details Master Register for Yug Shakti Vocational Education." />
-
-<!-- Open Graph / Social Media Meta Tags -->
-<meta property="og:title" content="VT's Details - Yug Shakti" />
-<meta property="og:description" content="VT's Details Master Register for Yug Shakti Vocational Education." />
-<meta property="og:image" content="https://yugshaktivtattendancetg.vercel.app/favicon.jpg" />
-<meta property="og:image:type" content="image/jpeg" />
-<meta property="og:url" content="https://yugshaktivtattendancetg.vercel.app/" />
-<meta property="og:type" content="website" />
-
-<meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="VT's Details - Yug Shakti" />
-<meta name="twitter:description" content="VT's Details Master Register for Yug Shakti Vocational Education." />
-<meta name="twitter:image" content="https://yugshaktivtattendancetg.vercel.app/favicon.jpg" />
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-:root{
-  --ink:#0f172a;--ink2:#334155;--ink3:#64748b;--ink4:#94a3b8;
-  --bg:#f8fafc;--surface:#ffffff;--border:#e2e8f0;
-  --teal:#0d9488;--teal2:#ccfbf1;--teal3:#f0fdfa;
-  --amber:#d97706;--amber2:#fef3c7;
-  --rose:#e11d48;--rose2:#fce7f3;
-  --blue:#2563eb;--blue2:#dbeafe;
-  --violet:#7c3aed;--violet2:#ede9fe;
-  --emerald:#059669;--emerald2:#d1fae5;
-  --shadow:0 1px 3px rgba(0,0,0,.07),0 4px 16px rgba(0,0,0,.05);
-  --shadow-lg:0 8px 32px rgba(0,0,0,.12);
-}
-body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}
-
-/* HEADER */
-.header{background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 60%,#0d4f45 100%);padding:36px 24px 32px;position:relative;overflow:hidden}
-.header::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")}
-.header-inner{max-width:1200px;margin:0 auto;position:relative;z-index:1}
-.header-badge{display:inline-flex;align-items:center;gap:7px;background:rgba(13,148,136,.25);border:1px solid rgba(13,148,136,.4);color:#5eead4;font-family:'Syne',sans-serif;font-size:.72rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:5px 12px;border-radius:20px;margin-bottom:16px}
-.header h1{font-family:'Syne',sans-serif;font-size:clamp(1.6rem,4vw,2.6rem);font-weight:800;color:#fff;line-height:1.15;margin-bottom:8px}
-.header h1 span{color:#5eead4}
-.header p{color:#94a3b8;font-size:.9rem;margin-bottom:20px}
-.header-stats{display:flex;gap:20px;flex-wrap:wrap}
-.hstat{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:10px 16px}
-.hstat .v{font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;color:#fff}
-.hstat .l{font-size:.72rem;color:#94a3b8;font-weight:500;letter-spacing:.5px;text-transform:uppercase;margin-top:1px}
-
-/* TABS */
-.tabs{max-width:1200px;margin:0 auto;padding:16px 16px 0;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-.tab{padding:9px 16px;border-radius:12px;border:1.5px solid var(--border);background:var(--surface);color:var(--ink2);font-family:'DM Sans',sans-serif;font-size:.84rem;font-weight:700;cursor:pointer;transition:all .18s ease;display:inline-flex;align-items:center;gap:8px;white-space:nowrap;line-height:1;box-shadow:0 1px 2px rgba(0,0,0,.04)}
-.tab:hover{border-color:var(--teal);color:var(--teal);transform:translateY(-1px);box-shadow:0 3px 8px rgba(13,148,136,.15)}
-.tab.active{background:linear-gradient(135deg,#0d9488,#0f766e);border-color:#0d9488;color:#fff;box-shadow:0 4px 12px rgba(13,148,136,.3)}
-.tab-pill{display:inline-flex;align-items:center;justify-content:center;padding:2px 8px;border-radius:20px;font-size:.74rem;font-weight:800;background:rgba(15,23,42,.08);color:inherit}
-.tab.active .tab-pill{background:rgba(255,255,255,.25);color:#fff}
-
-/* CONTROLS */
-.controls{max-width:1200px;margin:12px auto 0;padding:0 16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-.search-wrap{flex:1;min-width:200px;position:relative}
-.search-wrap input{width:100%;padding:10px 14px 10px 38px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.88rem;background:var(--surface);color:var(--ink);outline:none;transition:.2s}
-.search-wrap input:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(13,148,136,.12)}
-.search-wrap .si{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:.9rem;color:var(--ink3)}
-.ctl-select{padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.85rem;background:var(--surface);color:var(--ink);outline:none;cursor:pointer}
-.ctl-select:focus{border-color:var(--teal)}
-.btn-export{padding:10px 18px;border:none;border-radius:10px;background:var(--teal);color:#fff;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:.2s;white-space:nowrap}
-.btn-export:hover{background:#0f766e;transform:translateY(-1px);box-shadow:0 4px 12px rgba(13,148,136,.3)}
-
-/* SUMMARY */
-.summary{max-width:1200px;margin:12px auto 0;padding:0 16px;display:flex;gap:8px;flex-wrap:wrap}
-.stag{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;font-size:.76rem;font-weight:600;cursor:pointer;transition:.2s;user-select:none}
-.stag:hover{transform:translateY(-1px)}
-.stag.all{background:var(--ink);color:#fff}
-.stag.app{background:var(--blue2);color:var(--blue)}
-.stag.bw{background:var(--rose2);color:var(--rose)}
-.stag.hc{background:var(--emerald2);color:var(--emerald)}
-.stag.au{background:var(--amber2);color:var(--amber)}
-.stag.it{background:var(--violet2);color:var(--violet)}
-.stag.eh{background:#e0f2fe;color:#0369a1}
-.stag.active{outline:2px solid currentColor;outline-offset:2px}
-
-/* TABLE AREA */
-.table-wrap{max-width:1200px;margin:16px auto 0;padding:0 16px 40px}
-.card{background:var(--surface);border-radius:14px;box-shadow:var(--shadow);border:1px solid var(--border);overflow:hidden}
-.card-head{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
-.card-head span{font-family:'Syne',sans-serif;font-size:.82rem;font-weight:700;color:var(--ink2)}
-.count-badge{background:var(--teal3);color:var(--teal);font-weight:700;font-size:.76rem;padding:3px 10px;border-radius:20px}
-.tw{overflow-x:auto}
-table{width:100%;border-collapse:collapse;font-size:.8rem}
-thead{position:sticky;top:0;z-index:2}
-thead th{padding:11px 14px;text-align:left;font-family:'Syne',sans-serif;font-weight:700;font-size:.71rem;letter-spacing:.6px;text-transform:uppercase;color:var(--ink3);background:#f8fafc;border-bottom:2px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none}
-thead th:hover{color:var(--teal)}
-tbody tr{border-bottom:1px solid #f1f5f9;transition:.12s}
-tbody tr:hover{background:#f8fafc}
-tbody tr:last-child{border:none}
-tbody td{padding:10px 14px;vertical-align:middle;color:var(--ink2)}
-tbody td strong{color:var(--ink);font-weight:600}
-.sno{color:var(--ink4);font-weight:600;font-size:.75rem}
-.phone{font-family:'DM Sans',sans-serif;font-weight:600;color:var(--teal);letter-spacing:.3px;font-size:.79rem}
-.yug{font-size:.72rem;color:var(--ink3);font-family:monospace}
-.school{font-size:.78rem;color:var(--ink2)}
-.district{font-size:.75rem;color:var(--ink3)}
-.qual{font-size:.74rem;color:var(--ink3)}
-.exp{font-size:.75rem;font-weight:600;color:var(--ink2)}
-.joining{font-size:.74rem;color:var(--ink3)}
-.dob{font-size:.74rem;color:var(--ink3)}
-
-/* sector badges */
-.sec{display:inline-block;padding:3px 9px;border-radius:20px;font-size:.68rem;font-weight:700;letter-spacing:.3px;text-transform:uppercase;white-space:nowrap}
-.s-ap{background:var(--blue2);color:var(--blue)}
-.s-bw{background:var(--rose2);color:var(--rose)}
-.s-hc{background:var(--emerald2);color:var(--emerald)}
-.s-au{background:var(--amber2);color:var(--amber)}
-.s-it{background:var(--violet2);color:var(--violet)}
-.s-eh{background:#e0f2fe;color:#0369a1}
-
-.udise{font-family:monospace;font-size:.7rem;background:#f1f5f9;color:var(--ink3);padding:2px 7px;border-radius:5px;display:inline-block}
-.stype{font-size:.67rem;font-weight:700;padding:2px 7px;border-radius:5px;display:inline-block;white-space:nowrap}
-.stype-pmshri{background:#fef9c3;color:#a16207}
-.stype-samagra{background:#ede9fe;color:#6d28d9}
-.stype-other{background:#f1f5f9;color:#64748b}
-.lvl-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:6px;font-size:.7rem;font-weight:700;letter-spacing:.3px;white-space:nowrap}
-.lvl-hs{background:#e0f2fe;color:#0369a1;border:1px solid #bae6fd}
-.lvl-hss{background:#fef3c7;color:#92400e;border:1px solid #fde68a}
-.lvl-sub{display:block;font-size:.66rem;color:var(--ink3);font-weight:500;margin-top:1px}
-
-
-.empty{text-align:center;padding:60px 20px;color:var(--ink3)}
-.empty .ei{font-size:3rem;margin-bottom:10px}
-
-/* PAGINATION */
-.pgr{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;padding:16px 0 4px}
-.pbn{padding:6px 12px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);color:var(--ink2);font-size:.8rem;font-weight:600;cursor:pointer;transition:.15s}
-.pbn:hover{border-color:var(--teal);color:var(--teal)}
-.pbn.on{background:var(--teal);border-color:var(--teal);color:#fff}
-
-/* MAP */
-#mapView{display:none}
-#mapView.active{display:block}
-.map-wrap{max-width:1200px;margin:16px auto 0;padding:0 16px 40px}
-#theMap{height:580px;border-radius:14px;box-shadow:var(--shadow);border:1px solid var(--border)}
-.map-legend{max-width:1200px;margin:0 auto 0;padding:0 16px 12px;display:flex;gap:10px;flex-wrap:wrap}
-.leg{display:flex;align-items:center;gap:5px;font-size:.76rem;font-weight:600}
-.leg-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
-
-/* MODAL */
-.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;align-items:center;justify-content:center;padding:16px;transition:all 0.3s ease}
-.modal-bg.open{display:flex}
-.modal{background:var(--surface);border-radius:16px;max-width:560px;width:95%;box-shadow:var(--shadow-lg);animation:mIn .25s cubic-bezier(.22,.68,0,1.25) both;overflow:hidden}
-@keyframes mIn{from{transform:translateY(-22px) scale(.95);opacity:0}to{transform:none;opacity:1;scale:1}}
-.modal-header{padding:20px 22px 14px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;gap:10px;position:sticky;top:0;background:var(--surface);z-index:1}
-.modal-avatar{width:52px;height:52px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,var(--teal),#0d47a1);color:#fff;font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;display:flex;align-items:center;justify-content:center}
-.modal-name{font-family:'Syne',sans-serif;font-weight:800;font-size:1.05rem;color:var(--ink)}
-.modal-sub{font-size:.78rem;color:var(--ink3);margin-top:3px}
-.modal-close{background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--ink3);padding:4px;border-radius:6px;flex-shrink:0;transition:all 0.2s}
-.modal-close:hover{background:#f1f5f9;color:var(--ink)}
-.modal-body{padding:18px 22px 14px;max-height:55vh;overflow-y:auto;text-align:left}
-.mrow{display:flex;padding:9px 0;border-bottom:1px solid #f1f5f9;font-size:.82rem;gap:12px}
-.mrow:last-child{border:none}
-.ml{color:var(--ink3);font-weight:600;min-width:130px;flex-shrink:0}
-.mv{color:var(--ink);word-break:break-word;text-align:left}
-.modal-actions{padding:12px 16px;border-top:1px solid var(--border);background:#f8fafc;display:flex;gap:7px;flex-wrap:wrap;align-items:center;justify-content:flex-start}
-.modal-footer{display:flex;justify-content:flex-end;padding:10px 16px;border-top:1px solid var(--border);background:#f8fafc}
-
-/* BUTTONS UTILITY */
-.btn{padding:10px 17px;border:none;border-radius:8px;cursor:pointer;font-size:.88rem;font-weight:700;transition:.2s;display:inline-flex;align-items:center;gap:7px}
-.bp{background:var(--blue);color:#fff}.bp:hover{background:#1558b0;transform:translateY(-1px)}
-.bs{background:var(--teal);color:#fff}.bs:hover{background:#0b8a4d;transform:translateY(-1px)}
-.bo{background:transparent;color:var(--blue);border:2px solid var(--blue)}.bo:hover{background:#eef2ff}
-.bw{background:var(--amber);color:#fff}
-
-#tableView{display:block}
-#tableView.hidden{display:none}
-
-@media(max-width:700px){
-  .header-stats{gap:12px}
-  .hstat{padding:8px 12px}
-  .hstat .v{font-size:1.1rem}
-  thead th:nth-child(n+6){display:none}
-  tbody td:nth-child(n+6){display:none}
-}
-
-@media(max-width:600px){
-  .modal-bg{padding:8px;align-items:flex-end}
-  .modal{border-radius:18px 18px 0 0;max-width:100%;width:100%;max-height:92vh}
-  .modal-header{padding:14px 16px 10px}
-  .modal-body{padding:14px 16px 18px;max-height:48vh}
-  .ml{min-width:105px;font-size:.78rem}
-  .mv{font-size:.8rem}
-  .modal-actions{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important;padding:12px}
-  .modal-actions a, .modal-actions button{justify-content:center!important;font-size:.8rem!important;padding:10px 8px!important;display:inline-flex;align-items:center}
-}
-</style>
-
-<!-- GLISSE LIQUID GLASS STYLES FOR VTS -->
-<style id="glisse-liquid-glass-vts">
-  body {
-    background-color: #f8fafc !important;
-    background-image: 
-      radial-gradient(at 10% 10%, rgba(13, 148, 136, 0.12) 0px, transparent 40%),
-      radial-gradient(at 90% 15%, rgba(59, 130, 246, 0.12) 0px, transparent 40%),
-      radial-gradient(at 50% 90%, rgba(139, 92, 246, 0.08) 0px, transparent 50%) !important;
-    background-attachment: fixed !important;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+// Standalone access guard: only redirect if opened directly as top-level window without login
+(function() {
+  try {
+    if (window.parent === window) {
+      const p = new URLSearchParams(window.location.search);
+      const token = p.get('token') || sessionStorage.getItem('yug_admin_token') || localStorage.getItem('yug_admin_token');
+      const sess = sessionStorage.getItem('yugg_sess_user') || localStorage.getItem('yugg_sess_user');
+      if (!token && !sess) {
+        window.location.replace('/');
+      }
+    }
+  } catch(e) {}
+})();
+</script>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>VT's Details — Yug Shakti Vocational Education, Telangana</title>
+<meta name="description" content="VT's Details Master Register for Yug Shakti Vocational Education." />
+
+<!-- Open Graph / Social Media Meta Tags -->
+<meta property="og:title" content="VT's Details - Yug Shakti" />
+<meta property="og:description" content="VT's Details Master Register for Yug Shakti Vocational Education." />
+<meta property="og:image" content="https://yugshaktivtattendancetg.vercel.app/favicon.jpg" />
+<meta property="og:image:type" content="image/jpeg" />
+<meta property="og:url" content="https://yugshaktivtattendancetg.vercel.app/" />
+<meta property="og:type" content="website" />
+
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="VT's Details - Yug Shakti" />
+<meta name="twitter:description" content="VT's Details Master Register for Yug Shakti Vocational Education." />
+<meta name="twitter:image" content="https://yugshaktivtattendancetg.vercel.app/favicon.jpg" />
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --ink:#0f172a;--ink2:#334155;--ink3:#64748b;--ink4:#94a3b8;
+  --bg:#f8fafc;--surface:#ffffff;--border:#e2e8f0;
+  --teal:#0d9488;--teal2:#ccfbf1;--teal3:#f0fdfa;
+  --amber:#d97706;--amber2:#fef3c7;
+  --rose:#e11d48;--rose2:#fce7f3;
+  --blue:#2563eb;--blue2:#dbeafe;
+  --violet:#7c3aed;--violet2:#ede9fe;
+  --emerald:#059669;--emerald2:#d1fae5;
+  --shadow:0 1px 3px rgba(0,0,0,.07),0 4px 16px rgba(0,0,0,.05);
+  --shadow-lg:0 8px 32px rgba(0,0,0,.12);
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}
+
+/* HEADER */
+.header{background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 60%,#0d4f45 100%);padding:36px 24px 32px;position:relative;overflow:hidden}
+.header::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")}
+.header-inner{max-width:1200px;margin:0 auto;position:relative;z-index:1}
+.header-badge{display:inline-flex;align-items:center;gap:7px;background:rgba(13,148,136,.25);border:1px solid rgba(13,148,136,.4);color:#5eead4;font-family:'Syne',sans-serif;font-size:.72rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:5px 12px;border-radius:20px;margin-bottom:16px}
+.header h1{font-family:'Syne',sans-serif;font-size:clamp(1.6rem,4vw,2.6rem);font-weight:800;color:#fff;line-height:1.15;margin-bottom:8px}
+.header h1 span{color:#5eead4}
+.header p{color:#94a3b8;font-size:.9rem;margin-bottom:20px}
+.header-stats{display:flex;gap:20px;flex-wrap:wrap}
+.hstat{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:10px 16px}
+.hstat .v{font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;color:#fff}
+.hstat .l{font-size:.72rem;color:#94a3b8;font-weight:500;letter-spacing:.5px;text-transform:uppercase;margin-top:1px}
+
+/* TABS */
+.tabs{max-width:1200px;margin:0 auto;padding:16px 16px 0;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.tab{padding:9px 16px;border-radius:12px;border:1.5px solid var(--border);background:var(--surface);color:var(--ink2);font-family:'DM Sans',sans-serif;font-size:.84rem;font-weight:700;cursor:pointer;transition:all .18s ease;display:inline-flex;align-items:center;gap:8px;white-space:nowrap;line-height:1;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.tab:hover{border-color:var(--teal);color:var(--teal);transform:translateY(-1px);box-shadow:0 3px 8px rgba(13,148,136,.15)}
+.tab.active{background:linear-gradient(135deg,#0d9488,#0f766e);border-color:#0d9488;color:#fff;box-shadow:0 4px 12px rgba(13,148,136,.3)}
+.tab-pill{display:inline-flex;align-items:center;justify-content:center;padding:2px 8px;border-radius:20px;font-size:.74rem;font-weight:800;background:rgba(15,23,42,.08);color:inherit}
+.tab.active .tab-pill{background:rgba(255,255,255,.25);color:#fff}
+
+/* CONTROLS */
+.controls{max-width:1200px;margin:12px auto 0;padding:0 16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.search-wrap{flex:1;min-width:200px;position:relative}
+.search-wrap input{width:100%;padding:10px 14px 10px 38px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.88rem;background:var(--surface);color:var(--ink);outline:none;transition:.2s}
+.search-wrap input:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(13,148,136,.12)}
+.search-wrap .si{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:.9rem;color:var(--ink3)}
+.ctl-select{padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.85rem;background:var(--surface);color:var(--ink);outline:none;cursor:pointer}
+.ctl-select:focus{border-color:var(--teal)}
+.btn-export{padding:10px 18px;border:none;border-radius:10px;background:var(--teal);color:#fff;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:.2s;white-space:nowrap}
+.btn-export:hover{background:#0f766e;transform:translateY(-1px);box-shadow:0 4px 12px rgba(13,148,136,.3)}
+
+/* SUMMARY */
+.summary{max-width:1200px;margin:12px auto 0;padding:0 16px;display:flex;gap:8px;flex-wrap:wrap}
+.stag{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;font-size:.76rem;font-weight:600;cursor:pointer;transition:.2s;user-select:none}
+.stag:hover{transform:translateY(-1px)}
+.stag.all{background:var(--ink);color:#fff}
+.stag.app{background:var(--blue2);color:var(--blue)}
+.stag.bw{background:var(--rose2);color:var(--rose)}
+.stag.hc{background:var(--emerald2);color:var(--emerald)}
+.stag.au{background:var(--amber2);color:var(--amber)}
+.stag.it{background:var(--violet2);color:var(--violet)}
+.stag.eh{background:#e0f2fe;color:#0369a1}
+.stag.active{outline:2px solid currentColor;outline-offset:2px}
+
+/* TABLE AREA */
+.table-wrap{max-width:1200px;margin:16px auto 0;padding:0 16px 40px}
+.card{background:var(--surface);border-radius:14px;box-shadow:var(--shadow);border:1px solid var(--border);overflow:hidden}
+.card-head{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.card-head span{font-family:'Syne',sans-serif;font-size:.82rem;font-weight:700;color:var(--ink2)}
+.count-badge{background:var(--teal3);color:var(--teal);font-weight:700;font-size:.76rem;padding:3px 10px;border-radius:20px}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.8rem}
+thead{position:sticky;top:0;z-index:2}
+thead th{padding:11px 14px;text-align:left;font-family:'Syne',sans-serif;font-weight:700;font-size:.71rem;letter-spacing:.6px;text-transform:uppercase;color:var(--ink3);background:#f8fafc;border-bottom:2px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none}
+thead th:hover{color:var(--teal)}
+tbody tr{border-bottom:1px solid #f1f5f9;transition:.12s}
+tbody tr:hover{background:#f8fafc}
+tbody tr:last-child{border:none}
+tbody td{padding:10px 14px;vertical-align:middle;color:var(--ink2)}
+tbody td strong{color:var(--ink);font-weight:600}
+.sno{color:var(--ink4);font-weight:600;font-size:.75rem}
+.phone{font-family:'DM Sans',sans-serif;font-weight:600;color:var(--teal);letter-spacing:.3px;font-size:.79rem}
+.yug{font-size:.72rem;color:var(--ink3);font-family:monospace}
+.school{font-size:.78rem;color:var(--ink2)}
+.district{font-size:.75rem;color:var(--ink3)}
+.qual{font-size:.74rem;color:var(--ink3)}
+.exp{font-size:.75rem;font-weight:600;color:var(--ink2)}
+.joining{font-size:.74rem;color:var(--ink3)}
+.dob{font-size:.74rem;color:var(--ink3)}
+
+/* sector badges */
+.sec{display:inline-block;padding:3px 9px;border-radius:20px;font-size:.68rem;font-weight:700;letter-spacing:.3px;text-transform:uppercase;white-space:nowrap}
+.s-ap{background:var(--blue2);color:var(--blue)}
+.s-bw{background:var(--rose2);color:var(--rose)}
+.s-hc{background:var(--emerald2);color:var(--emerald)}
+.s-au{background:var(--amber2);color:var(--amber)}
+.s-it{background:var(--violet2);color:var(--violet)}
+.s-eh{background:#e0f2fe;color:#0369a1}
+
+.udise{font-family:monospace;font-size:.7rem;background:#f1f5f9;color:var(--ink3);padding:2px 7px;border-radius:5px;display:inline-block}
+.stype{font-size:.67rem;font-weight:700;padding:2px 7px;border-radius:5px;display:inline-block;white-space:nowrap}
+.stype-pmshri{background:#fef9c3;color:#a16207}
+.stype-samagra{background:#ede9fe;color:#6d28d9}
+.stype-other{background:#f1f5f9;color:#64748b}
+.lvl-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:6px;font-size:.7rem;font-weight:700;letter-spacing:.3px;white-space:nowrap}
+.lvl-hs{background:#e0f2fe;color:#0369a1;border:1px solid #bae6fd}
+.lvl-hss{background:#fef3c7;color:#92400e;border:1px solid #fde68a}
+.lvl-sub{display:block;font-size:.66rem;color:var(--ink3);font-weight:500;margin-top:1px}
+
+
+.empty{text-align:center;padding:60px 20px;color:var(--ink3)}
+.empty .ei{font-size:3rem;margin-bottom:10px}
+
+/* PAGINATION */
+.pgr{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;padding:16px 0 4px}
+.pbn{padding:6px 12px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);color:var(--ink2);font-size:.8rem;font-weight:600;cursor:pointer;transition:.15s}
+.pbn:hover{border-color:var(--teal);color:var(--teal)}
+.pbn.on{background:var(--teal);border-color:var(--teal);color:#fff}
+
+/* MAP */
+#mapView{display:none}
+#mapView.active{display:block}
+.map-wrap{max-width:1200px;margin:16px auto 0;padding:0 16px 40px}
+#theMap{height:580px;border-radius:14px;box-shadow:var(--shadow);border:1px solid var(--border)}
+.map-legend{max-width:1200px;margin:0 auto 0;padding:0 16px 12px;display:flex;gap:10px;flex-wrap:wrap}
+.leg{display:flex;align-items:center;gap:5px;font-size:.76rem;font-weight:600}
+.leg-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
+
+/* MODAL */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;align-items:center;justify-content:center;padding:16px;transition:all 0.3s ease}
+.modal-bg.open{display:flex}
+.modal{background:var(--surface);border-radius:16px;max-width:560px;width:95%;box-shadow:var(--shadow-lg);animation:mIn .25s cubic-bezier(.22,.68,0,1.25) both;overflow:hidden}
+@keyframes mIn{from{transform:translateY(-22px) scale(.95);opacity:0}to{transform:none;opacity:1;scale:1}}
+.modal-header{padding:20px 22px 14px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;gap:10px;position:sticky;top:0;background:var(--surface);z-index:1}
+.modal-avatar{width:52px;height:52px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,var(--teal),#0d47a1);color:#fff;font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;display:flex;align-items:center;justify-content:center}
+.modal-name{font-family:'Syne',sans-serif;font-weight:800;font-size:1.05rem;color:var(--ink)}
+.modal-sub{font-size:.78rem;color:var(--ink3);margin-top:3px}
+.modal-close{background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--ink3);padding:4px;border-radius:6px;flex-shrink:0;transition:all 0.2s}
+.modal-close:hover{background:#f1f5f9;color:var(--ink)}
+.modal-body{padding:18px 22px 14px;max-height:55vh;overflow-y:auto;text-align:left}
+.mrow{display:flex;padding:9px 0;border-bottom:1px solid #f1f5f9;font-size:.82rem;gap:12px}
+.mrow:last-child{border:none}
+.ml{color:var(--ink3);font-weight:600;min-width:130px;flex-shrink:0}
+.mv{color:var(--ink);word-break:break-word;text-align:left}
+.modal-actions{padding:12px 16px;border-top:1px solid var(--border);background:#f8fafc;display:flex;gap:7px;flex-wrap:wrap;align-items:center;justify-content:flex-start}
+.modal-footer{display:flex;justify-content:flex-end;padding:10px 16px;border-top:1px solid var(--border);background:#f8fafc}
+
+/* BUTTONS UTILITY */
+.btn{padding:10px 17px;border:none;border-radius:8px;cursor:pointer;font-size:.88rem;font-weight:700;transition:.2s;display:inline-flex;align-items:center;gap:7px}
+.bp{background:var(--blue);color:#fff}.bp:hover{background:#1558b0;transform:translateY(-1px)}
+.bs{background:var(--teal);color:#fff}.bs:hover{background:#0b8a4d;transform:translateY(-1px)}
+.bo{background:transparent;color:var(--blue);border:2px solid var(--blue)}.bo:hover{background:#eef2ff}
+.bw{background:var(--amber);color:#fff}
+
+#tableView{display:block}
+#tableView.hidden{display:none}
+
+@media(max-width:700px){
+  .header-stats{gap:12px}
+  .hstat{padding:8px 12px}
+  .hstat .v{font-size:1.1rem}
+  thead th:nth-child(n+6){display:none}
+  tbody td:nth-child(n+6){display:none}
+}
+
+@media(max-width:600px){
+  .modal-bg{padding:8px;align-items:flex-end}
+  .modal{border-radius:18px 18px 0 0;max-width:100%;width:100%;max-height:92vh}
+  .modal-header{padding:14px 16px 10px}
+  .modal-body{padding:14px 16px 18px;max-height:48vh}
+  .ml{min-width:105px;font-size:.78rem}
+  .mv{font-size:.8rem}
+  .modal-actions{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important;padding:12px}
+  .modal-actions a, .modal-actions button{justify-content:center!important;font-size:.8rem!important;padding:10px 8px!important;display:inline-flex;align-items:center}
+}
+</style>
+
+<!-- GLISSE LIQUID GLASS STYLES FOR VTS -->
+<style id="glisse-liquid-glass-vts">
+  body {
+    background-color: #f8fafc !important;
+    background-image: 
+      radial-gradient(at 10% 10%, rgba(13, 148, 136, 0.12) 0px, transparent 40%),
+      radial-gradient(at 90% 15%, rgba(59, 130, 246, 0.12) 0px, transparent 40%),
+      radial-gradient(at 50% 90%, rgba(139, 92, 246, 0.08) 0px, transparent 50%) !important;
+    background-attachment: fixed !important;
+  }
+  .tabs {
+    padding: 16px 16px 4px !important;
+  }
+  .tab {
+    background: rgba(255, 255, 255, 0.75) !important;
+    backdrop-filter: blur(16px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.8) !important;
+    box-shadow: inset 0 1.2px 0 rgba(255, 255, 255, 0.95), 0 4px 14px rgba(15, 23, 42, 0.05) !important;
+    border-radius: 14px !important;
+    transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1) !important;
+  }
+  .tab:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: inset 0 1.5px 0.5px #fff, 0 8px 20px rgba(13, 148, 136, 0.18) !important;
+    color: #0d9488 !important;
+  }
+  .tab.active {
+    background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%) !important;
+    border-color: #0d9488 !important;
+    color: #ffffff !important;
+    box-shadow: inset 0 1.5px 0.5px rgba(255, 255, 255, 0.45), 0 8px 24px rgba(13, 148, 136, 0.35) !important;
+  }
+  .card {
+    background: rgba(255, 255, 255, 0.8) !important;
+    backdrop-filter: blur(24px) saturate(190%) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(190%) !important;
+    border-radius: 20px !important;
+    border: 1px solid rgba(255, 255, 255, 0.75) !important;
+    box-shadow: inset 0 1.5px 0.5px #fff, 0 12px 36px -4px rgba(15, 23, 42, 0.07) !important;
+  }
+  .search-wrap input, .ctl-select {
+    background: rgba(255, 255, 255, 0.75) !important;
+    backdrop-filter: blur(12px) !important;
+    border: 1.5px solid rgba(226, 232, 240, 0.85) !important;
+    border-radius: 12px !important;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03) !important;
+  }
+  .btn-export {
+    backdrop-filter: blur(14px) !important;
+    border-radius: 12px !important;
+    box-shadow: inset 0 1.2px 0 rgba(255, 255, 255, 0.45), 0 4px 14px rgba(13, 148, 136, 0.3) !important;
+    transition: all 0.22s ease !important;
+  }
+  .btn-export:hover {
+    transform: translateY(-1.5px) !important;
+    box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, 0.6), 0 8px 22px rgba(13, 148, 136, 0.45) !important;
+  }
+</style>
+
+<script src="vts_data.js?v=20261121_2"></script>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner" style="display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap">
+    <div>
+      <div class="header-badge">📋 GeoAttend — Yug Shakti</div>
+      <h1>VT's <span>Details</span></h1>
+      <p>Vocational Trainers Master Register — Telangana State | 2025–26</p>
+      <div class="header-stats">
+        <div class="hstat"><div class="v" id="hTotal">254</div><div class="l">Total VTs</div></div>
+        <div class="hstat"><div class="v" id="hSectors">6</div><div class="l">Sectors</div></div>
+        <div class="hstat"><div class="v" id="hDistricts">—</div><div class="l">Districts</div></div>
+        <div class="hstat"><div class="v" id="hSchools">—</div><div class="l">Schools</div></div>
+
+      </div>
+    </div>
+    <div style="position:relative;z-index:1;background:rgba(255,255,255,.95);border-radius:12px;padding:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px rgba(0,0,0,.25)">
+      <img src="logo.png" alt="Yug Shakti Logo" style="height:85px;width:auto;object-fit:contain">
+    </div>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('table')" id="tabTable">📋 All VTs <span class="tab-pill" id="tabCountAll">254</span></button>
+  <button class="tab" onclick="switchTab('hs')" id="tabHS">🏫 HS · L1 &amp; L2 (9th &amp; 10th) <span class="tab-pill" id="tabCountHS">134</span></button>
+  <button class="tab" onclick="switchTab('hss')" id="tabHSS">🎓 HSS · L3 &amp; L4 (11th &amp; 12th) <span class="tab-pill" id="tabCountHSS">120</span></button>
+  <button class="tab" onclick="switchTab('schools')" id="tabSchools">🏛️ Schools <span class="tab-pill" id="tabCountSchools">246</span></button>
+  <button class="tab" onclick="switchTab('map')" id="tabMap">🗺️ Map View</button>
+</div>
+
+<div class="controls">
+  <div class="search-wrap">
+    <span class="si">🔍</span>
+    <input id="srch" placeholder="🔍 Quick search by name (first & last), mobile no, school, HM/principal, UDISE, district, trade, mandal, YUG ID..." oninput="filterAll()"/>
+  </div>
+  <select class="ctl-select" id="distF" onchange="filterAll()">
+    <option value="">All Districts</option>
+  </select>
+  <select class="ctl-select" id="secF" onchange="filterAll()">
+    <option value="">All Sectors</option>
+    <option value="APPAREL">APPAREL</option>
+    <option value="BEAUTY AND WELLNESS">BEAUTY &amp; WELLNESS</option>
+    <option value="HEALTH CARE">HEALTH CARE</option>
+    <option value="AUTOMOTIVE">AUTOMOTIVE</option>
+    <option value="IT/ITES">IT/ITES</option>
+    <option value="ELECTRONICS AND HARDWARE">ELECTRONICS &amp; HW</option>
+  </select>
+  <select class="ctl-select" id="schemeF" onchange="filterAll()">
+    <option value="">All Schemes</option>
+    <option value="PMSHRI">PM SHRI</option>
+    <option value="SAMAGRA">SAMAGRA</option>
+  </select>
+  <select class="ctl-select" id="sortF" onchange="filterAll()">
+    <option value="sno">Sort: S.No</option>
+    <option value="name">Sort: Name A–Z</option>
+    <option value="sector">Sort: Sector</option>
+    <option value="district">Sort: District</option>
+  </select>
+  <button class="btn-export" onclick="exportCSV()">📥 Export CSV</button>
+</div>
+
+<div class="summary" id="tagRow"></div>
+<div id="districtRow" style="display:flex;flex-wrap:wrap;gap:7px;padding:10px 0 6px;overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:8px"></div>
+
+<!-- TABLE VIEW -->
+<div id="tableView">
+  <div class="table-wrap">
+    <div class="card">
+      <div class="card-head">
+        <span>Vocational Trainers Register</span>
+        <span class="count-badge" id="countBadge">254 records</span>
+      </div>
+      <div class="tw">
+        <table id="vtTable">
+          <thead>
+            <tr>
+              <th>S.No</th>
+              <th>Name &amp; Contact</th>
+              <th>Sector</th>
+              <th>Level / Classes</th>
+              <th>School</th>
+              <th>District</th>
+              <th>Mandal</th>
+              <th>Scheme</th>
+              <th>UDISE</th>
+              <th>YUG Contract ID</th>
+              <th>Joining Date</th>
+              <th>DOB</th>
+              <th>Qualification</th>
+              <th>Exp (Current)</th>
+              <th>Exp (Total)</th>
+            </tr>
+          </thead>
+          <tbody id="vtBody"></tbody>
+        </table>
+      </div>
+      <div id="pgr" class="pgr"></div>
+    </div>
+  </div>
+</div>
+
+<!-- DISTRICT SCHOOLS VIEW -->
+<div id="districtView" style="display:none">
+  <div id="districtCardsContainer" style="display:grid;grid-template-columns:1fr;gap:20px">
+    <!-- Populated by renderDistrictView() -->
+  </div>
+</div>
+
+
+<!-- SCHOOLS VIEW -->
+<div id="schoolsView" style="display:none">
+  <div class="table-wrap">
+    <div class="card">
+      <div class="card-head">
+        <span>🏫 Schools Register — All Schools by VTs</span>
+        <span class="count-badge" id="schoolCountBadge">0 schools</span>
+      </div>
+      <div style="padding:12px 16px">
+        <input id="schoolSearch" placeholder="🔍 Search school name, district, mandal, UDISE, HM name..." oninput="filterSchoolsView()" style="width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.88rem;background:var(--surface);color:var(--ink);outline:none"/>
+      </div>
+      <div class="tw">
+        <table id="schoolsTable">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>School Name</th>
+              <th>Level / Classes</th>
+              <th>District</th>
+              <th>Mandal</th>
+              <th>UDISE</th>
+              <th>School Type</th>
+              <th>Scheme</th>
+              <th>HM / Principal</th>
+              <th>HM Phone</th>
+              <th>VTs Count</th>
+              <th>VT Names</th>
+            </tr>
+          </thead>
+          <tbody id="schoolsBody"></tbody>
+        </table>
+      </div>
+      <div id="schoolsPgr" class="pgr"></div>
+    </div>
+  </div>
+</div>
+<!-- MAP VIEW -->
+<div id="mapView">
+  <div class="map-legend" id="mapLegend"></div>
+  <div class="map-wrap">
+    <div id="theMap"></div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-bg" id="detailModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="modal-avatar" id="mAvt">R</div>
+        <div>
+          <div class="modal-name" id="mName">—</div>
+          <div class="modal-sub" id="mSub">—</div>
+        </div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="mBody"></div>
+    <div class="modal-actions" id="mActions"></div>
+    <div class="modal-footer">
+      <button class="btn bp" onclick="closeModal()">✕ Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let VT = [];
+
+// SECURE DATA FETCH: Only authorized requests with valid Admin JWT receive VT data
+function getAdminToken(fallbackToken) {
+  if (fallbackToken && typeof fallbackToken === 'string') return fallbackToken;
+  let token = null;
+  try {
+    const p = new URLSearchParams(window.location.search);
+    token = p.get('token');
+    if (token) return token;
+  } catch(e){}
+  try {
+    token = localStorage.getItem('yug_admin_token');
+    if (token) return token;
+  } catch(e){}
+  try {
+    token = sessionStorage.getItem('yug_admin_token');
+    if (token) return token;
+  } catch(e){}
+  if (window.parent && window.parent !== window) {
+    try {
+      token = window.parent.sessionStorage.getItem('yug_admin_token') ||
+              window.parent.localStorage.getItem('yug_admin_token');
+      if (token) return token;
+    } catch(e){}
+  }
+  return null;
+}
+
+async function loadProtectedVTData(passedToken) {
+  // 1. Immediately display all 254 records from MASTER_VTS_DATA if available (instant load)
+  if (window.MASTER_VTS_DATA && window.MASTER_VTS_DATA.length) {
+    VT = window.MASTER_VTS_DATA;
+    console.log('Loaded ' + VT.length + ' VT records immediately from MASTER_VTS_DATA.');
+    syncVTWithDB();
+    populateDistrictDropdown();
+    buildTags();
+    filterAll();
+  }
+
+  const token = getAdminToken(passedToken);
+  if (!token) {
+    if (!VT || VT.length === 0) {
+      console.warn('Waiting for VT data or session token...');
+    }
+    return;
+  }
+
+  try {
+    sessionStorage.setItem('yug_admin_token', token);
+    localStorage.setItem('yug_admin_token', token);
+  } catch(e){}
+
+  // 2. Fetch server updates in background if token available
+  try {
+    const res = await fetch('/api/vts', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+
+    if (res.ok) {
+      const serverData = await res.json();
+      if (Array.isArray(serverData) && serverData.length) {
+        VT = serverData;
+        console.log('Updated with ' + VT.length + ' protected VT records from API.');
+        syncVTWithDB();
+        populateDistrictDropdown();
+        buildTags();
+        filterAll();
+      }
+    }
+  } catch(err) {
+    console.warn('Background API sync note:', err.message);
+  }
+}
+
+window.addEventListener('message', (ev) => {
+  if (ev.data && ev.data.type === 'SET_ADMIN_TOKEN') {
+    const tok = ev.data.token;
+    if (tok && typeof tok === 'string' && tok.length > 20) {
+      loadProtectedVTData(tok);
+    }
+  }
+});
+
+const SECTOR_COLORS = {
+  'APPAREL': '#2563eb',
+  'BEAUTY AND WELLNESS': '#e11d48',
+  'HEALTH CARE': '#059669',
+  'AUTOMOTIVE': '#d97706',
+  'IT/ITES': '#7c3aed',
+  'ELECTRONICS AND HARDWARE': '#0369a1'
+};
+
+function secBadge(s){
+  const m={'APPAREL':'s-ap','BEAUTY AND WELLNESS':'s-bw','HEALTH CARE':'s-hc','AUTOMOTIVE':'s-au','IT/ITES':'s-it','ELECTRONICS AND HARDWARE':'s-eh'};
+  return `<span class="sec ${m[s]||'s-ap'}">${s}</span>`;
+}
+function schemeBadge(s){
+  const t=s?s.toUpperCase():'';
+  if(t.includes('PMSHRI')||t.includes('PM SHRI')||t.includes('PMSRI')||t.includes('PMSRHI'))
+    return `<span class="stype stype-pmshri">PM SHRI</span>`;
+  if(t.includes('SAMAGRA'))
+    return `<span class="stype stype-samagra">SAMAGRA</span>`;
+  return `<span class="stype stype-other">${s||'—'}</span>`;
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '—';
+  let cleanStr = dateStr.trim().split(' ')[0];
+  if (!cleanStr) return '—';
+  
+  let matchYMD = cleanStr.match(/^(\d{4})[-/. ](\d{1,2})[-/. ](\d{1,2})$/);
+  if (matchYMD) {
+    let y = matchYMD[1];
+    let m = matchYMD[2].padStart(2, '0');
+    let d = matchYMD[3].padStart(2, '0');
+    return `${d}-${m}-${y}`;
+  }
+  
+  let matchDMY = cleanStr.match(/^(\d{1,2})[-/. ](\d{1,2})[-/. ](\d{4})$/);
+  if (matchDMY) {
+    let d = matchDMY[1].padStart(2, '0');
+    let m = matchDMY[2].padStart(2, '0');
+    let y = matchDMY[3];
+    return `${d}-${m}-${y}`;
+  }
+
+  let matchDMY2 = cleanStr.match(/^(\d{1,2})[-/. ](\d{1,2})[-/. ](\d{2})$/);
+  if (matchDMY2) {
+    let d = matchDMY2[1].padStart(2, '0');
+    let m = matchDMY2[2].padStart(2, '0');
+    let y = matchDMY2[3];
+    let fullYear = parseInt(y) < 50 ? '20' + y : '19' + y;
+    return `${d}-${m}-${fullYear}`;
+  }
+  
+  return cleanStr;
+}
+
+const PP=25;let CUR=1;let FILTERED=[...VT];
+let mapInst=null, markers=[];
+
+
+// ── HS / HSS LEVEL MAPPING ──
+// HS  = Level 1 and Level 2 (9th class and 10th class)
+// HSS = Level 3 and Level 4 (11th class and 12th class)
+const UDISE_LEVEL_MAP = {
+  "36060301510":"HSS","36061100407":"HSS","36061601112":"HSS","36191200728":"HSS","36080500304":"HSS",
+  "36260400406":"HSS","36151000705":"HS","36151900201":"HS","36130200203":"HSS","36130500408":"HSS",
+  "36101200407":"HS","36170200307":"HSS","36170402002":"HS","36171701610":"HS","36171901803":"HS",
+  "36320403105":"HS","36280301503":"HS","36280302668":"HS","36280601217":"HSS","36281101906":"HS",
+  "36281202126":"HS","36281601404":"HS","36290401305":"HSS","36291000402":"HS","36291400910":"HSS",
+  "36291501013":"HSS","36291700827":"HSS","36292190264":"HS","36292200613":"HS","36292200624":"HSS",
+  "36330800516":"HSS","36050300402":"HS","36050390202":"HSS","36051001009":"HS","36051400513":"HS",
+  "36052190711":"HS","36052300307":"HSS","36141100507":"HSS","36230400303":"HS","36230500107":"HS",
+  "36230500706":"HS","36230801102":"HS","36230802713":"HS","36231801911":"HS","36231802706":"HS",
+  "36232000605":"HSS","36232202021":"HS","36232301111":"HS","36232502107":"HS","36232503310":"HS",
+  "36160201612":"HS","36160300906":"HS","36160403530":"HS","36160500416":"HSS","36160701512":"HSS",
+  "36160802103":"HS","36160902242":"HSS","36161000203":"HS","36161100205":"HSS","36161302403":"HSS",
+  "36161400104":"HSS","36161501303":"HS","36161502715":"HSS","36161600604":"HSS","36161703028":"HS",
+  "36161800302":"HS","36161800403":"HSS","36161900707":"HS","36162000205":"HS","36162100905":"HS",
+  "36162101104":"HS","36162201703":"HS","36162300608":"HSS","36162401621":"HSS","36162500302":"HS",
+  "36162600777":"HS","36180101404":"HSS","36180501510":"HSS","36180501608":"HSS","36180600223":"HS",
+  "36180801604":"HSS","36180900954":"HS","36180990226":"HSS","36181200203":"HSS","36181300303":"HS",
+  "36181500802":"HS","36181600606":"HS","36181701604":"HS","36181802602":"HS","36181902106":"HS",
+  "36182100629":"HSS","36182101208":"HSS","36182201410":"HSS","36300600313":"HS","36300701970":"HS",
+  "36301000808":"HS","36301200719":"HSS","36301300708":"HSS","36301501233":"HS","36302000604":"HSS",
+  "36302100629":"HS","36240200504":"HS","36240403247":"HSS","36240500203":"HSS","36240702006":"HS",
+  "36240802104":"HS","36241001509":"HS","36241490254":"HS","36241490257":"HSS","36241503108":"HS",
+  "36241700106":"HS","36241802408":"HS","36270200608":"HS","36270401709":"HSS","36270890160":"HS",
+  "36270902223":"HS","36271100733":"HSS","36110600507":"HS","36111300617":"HSS","36111400913":"HSS",
+  "36111500711":"HSS","36120900641":"HS","36200201006":"HS","36200300110":"HS","36200300621":"HS",
+  "36200300632":"HSS","36200501403":"HS","36200600502":"HS","36200602738":"HS","36200602741":"HSS",
+  "36200701009":"HS","36200802511":"HS","36200902315":"HS","36201000203":"HS","36201001718":"HSS",
+  "36201200207":"HS","36201400808":"HS","36201701211":"HSS","36091300409":"HSS","36091901114":"HSS",
+  "36220891157":"HSS","36221292074":"HS","36060200818":"HSS","36061300615":"HSS","36061501205":"HSS",
+  "36190900807":"HSS","36191200713":"HSS","36150102012":"HSS","36310401212":"HSS","36020101818":"HSS",
+  "36020606127":"HS","36020990180":"HSS","36021200707":"HSS","36021301312":"HSS","36100201908":"HSS",
+  "36101501802":"HS","36250300213":"HSS","36030601917":"HSS","36031101395":"HSS","36031390261":"HS",
+  "36031500310":"HSS","36031500806":"HS","36170901407":"HSS","36210490362":"HS","36210490365":"HS",
+  "36210500449":"HS","36320200105":"HSS","36280100906":"HS","36290600515":"HSS","36290701019":"HSS",
+  "36290890211":"HS","36292501014":"HSS","36292990229":"HS","36330501504":"HSS","36330800514":"HS",
+  "36041192809":"HSS","36052200104":"HS","36052200611":"HSS","36052701007":"HS","36070100408":"HSS",
+  "36141201405":"HSS","36230100433":"HSS","36230601453":"HS","36230601561":"HS","36230700624":"HS",
+  "36230800105":"HS","36230900754":"HSS","36231200305":"HS","36231300630":"HS","36231701819":"HSS",
+  "36231800405":"HS","36160701510":"HSS","36162002303":"HSS","36162201729":"HSS","36162201733":"HSS",
+  "36180200103":"HS","36180200710":"HSS","36181100615":"HSS","36181100618":"HSS","36181701815":"HSS",
+  "36181802749":"HSS","36182100506":"HS","36300100704":"HSS","36300300608":"HS","36300400805":"HSS",
+  "36301700915":"HSS","36240101911":"HSS","36240403276":"HSS","36240700415":"HSS","36241302606":"HS",
+  "36241501105":"HS","36241700736":"HSS","36270400810":"HS","36271200413":"HSS","36271300809":"HSS",
+  "36110701409":"HSS","36111200509":"HSS","36111300505":"HSS","36121001119":"HS","36200201904":"HS",
+  "36200701202":"HSS","36200701705":"HSS","36200800202":"HS","36200902333":"HSS","36201200904":"HSS",
+  "36201302502":"HSS","36201500118":"HS","36201600612":"HSS"
+};
+
+const SNO_OVERRIDE = {
+  225: "HSS", // TGRS thatipally (36061501205)
+  233: "HSS", // TGMS BOLLARAM (36162201733)
+  116: "HS",  // GOVT BOYS HIGH SCHOOL HUZURNAGAR (36302100629)
+  144: "HSS", // TGSWRS JC COE BOYS KONDAPUR (36161800403)
+  192: "HS",  // ZPHS BORGAON -P (36052200104)
+  251: "HS"   // E Vanamala, ZPHS Marikal (36330800514)
+};
+
+function getVTLevelInfo(v) {
+  let code = SNO_OVERRIDE[v.sno];
+  if (!code && v.udise) {
+    const clean = String(v.udise).replace(/\D/g, '');
+    code = UDISE_LEVEL_MAP[clean];
+  }
+  if (!code) {
+    // Default fallback based on school name
+    const nm = (v.school || '').toUpperCase();
+    if (nm.includes('JC') || nm.includes('JR') || nm.includes('KGBV') || nm.includes('TGMS') || nm.includes('TSMS') || nm.includes('TGRS') || nm.includes('TSWREIS') || nm.includes('TREIS')) {
+      code = 'HSS';
+    } else {
+      code = 'HS';
+    }
+  }
+  const isHSS = code === 'HSS';
+  return {
+    code: code,
+    levelName: isHSS ? 'HSS' : 'HS',
+    levels: isHSS ? 'Level 3 & 4' : 'Level 1 & 2',
+    classes: isHSS ? '11th & 12th' : '9th & 10th',
+    fullDesc: isHSS ? 'HSS · Level 3 & 4 (Class 11th & 12th)' : 'HS · Level 1 & 2 (Class 9th & 10th)',
+    badgeHtml: isHSS 
+      ? '<span class="lvl-badge lvl-hss" title="Higher Secondary School - Level 3 & 4 (11th & 12th Class)">🎓 HSS <span style="font-weight:500;opacity:.9">L3&4</span></span><span class="lvl-sub">Classes 11 &amp; 12</span>'
+      : '<span class="lvl-badge lvl-hs" title="High School - Level 1 & 2 (9th & 10th Class)">🏫 HS <span style="font-weight:500;opacity:.9">L1&2</span></span><span class="lvl-sub">Classes 9 &amp; 10</span>'
+  };
+}
+
+// Enrich each VT with level info
+VT.forEach(v => {
+  const info = getVTLevelInfo(v);
+  v.levelCode = info.code;
+  v.levelDesc = info.fullDesc;
+  v.classes = info.classes;
+  v.levels = info.levels;
+});
+
+// Tab switching
+window._activeTab = 'table';
+function switchTab(tab) {
+  window._activeTab = tab;
+  const isHS = tab === 'hs';
+  const isHSS = tab === 'hss';
+  const isTableLike = tab === 'table' || isHS || isHSS;
+
+  document.getElementById('tabTable').classList.toggle('active', tab === 'table');
+  document.getElementById('tabHS').classList.toggle('active', isHS);
+  document.getElementById('tabHSS').classList.toggle('active', isHSS);
+  document.getElementById('tabSchools').classList.toggle('active', tab === 'schools');
+  document.getElementById('tabMap').classList.toggle('active', tab === 'map');
+
+  document.getElementById('tableView').style.display = isTableLike ? 'block' : 'none';
+  document.getElementById('schoolsView').style.display = tab === 'schools' ? 'block' : 'none';
+  document.getElementById('mapView').style.display = tab === 'map' ? 'block' : 'none';
+
+  // Sync level dropdown with active tab
+  const lvlSelect = document.getElementById('lvlF');
+  if (lvlSelect) {
+    if (isHS) lvlSelect.value = 'HS';
+    else if (isHSS) lvlSelect.value = 'HSS';
+    else if (tab === 'table') lvlSelect.value = '';
+  }
+
+  if (isTableLike) {
+    filterAll();
+  } else if (tab === 'schools') {
+    renderSchoolsView();
+  } else if (tab === 'map') {
+    initMap();
+    setTimeout(() => {
+      if (mapInst) {
+        mapInst.invalidateSize();
+        fitMapToBounds();
+      }
+    }, 100);
+  }
+}
+
+function initMap() {
+  if(!mapInst) {
+    mapInst = L.map('theMap', { attributionControl: false }).setView([17.4,79.0], 7);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18
+    }).addTo(mapInst);
+  }
+  renderMapMarkers();
+}
+
+function fitMapToBounds() {
+  if (!mapInst || markers.length === 0) return;
+  const group = L.featureGroup(markers);
+  mapInst.fitBounds(group.getBounds(), { padding: [40, 40] });
+}
+
+function renderMapMarkers() {
+  markers.forEach(m => mapInst.removeLayer(m));
+  markers = [];
+  const valid = FILTERED.filter(v => v.lat && v.lng);
+  valid.forEach(v => {
+    const color = SECTOR_COLORS[v.sector] || '#64748b';
+    const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 36" width="22" height="33">
+      <path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 24 12 24s12-15 12-24C24 5.4 18.6 0 12 0z" fill="${color}" stroke="white" stroke-width="1.5"/>
+      <circle cx="12" cy="12" r="5" fill="white"/>
+    </svg>`;
+    const icon = L.divIcon({
+      html: svgIcon,
+      className: '',
+      iconSize: [22, 33],
+      iconAnchor: [11, 33],
+      popupAnchor: [0, -33]
+    });
+    const m = L.marker([v.lat, v.lng], {icon})
+      .addTo(mapInst)
+      .bindPopup(`
+        <div style="font-family:DM Sans,sans-serif;min-width:200px">
+          <div style="font-weight:700;font-size:.9rem;color:#0f172a;margin-bottom:4px">${v.name}</div>
+          <div style="font-size:.75rem;color:#64748b;margin-bottom:6px">${v.phone}</div>
+          <div style="font-size:.72rem;margin-bottom:2px"><b>Sector:</b> ${v.sector}</div>
+          <div style="font-size:.72rem;margin-bottom:2px"><b>School:</b> ${v.school}</div>
+          <div style="font-size:.72rem;margin-bottom:6px"><b>District:</b> ${v.district}</div>
+          <button onclick="openModal(${v.sno})" style="padding:5px 12px;background:#0d9488;color:#fff;border:none;border-radius:6px;font-size:.75rem;font-weight:600;cursor:pointer;width:100%">View Details</button>
+        </div>
+      `, {maxWidth: 240});
+    markers.push(m);
+  });
+
+  // Update legend
+  const counts = {};
+  FILTERED.forEach(v => { counts[v.sector] = (counts[v.sector]||0)+1; });
+  const legDiv = document.getElementById('mapLegend');
+  legDiv.innerHTML = Object.entries(SECTOR_COLORS).filter(([s]) => counts[s]).map(([s,c]) =>
+    `<div class="leg"><div class="leg-dot" style="background:${c}"></div><span>${s} (${counts[s]||0})</span></div>`
+  ).join('');
+}
+
+function filterAll(){
+  const rawQ = document.getElementById('srch').value || '';
+  const q = rawQ.trim().toLowerCase();
+  const sec = document.getElementById('secF').value;
+  const scheme = document.getElementById('schemeF').value.toUpperCase();
+  const sort = document.getElementById('sortF').value;
+  let lvl = '';
+  if (window._activeTab === 'hs') lvl = 'HS';
+  else if (window._activeTab === 'hss') lvl = 'HSS';
+  else {
+    const lvlEl = document.getElementById('lvlF');
+    if (lvlEl) lvl = lvlEl.value;
+  }
+  const distF = document.getElementById('distF');
+  if (distF && distF.value !== undefined) {
+    window._curDistrict = distF.value;
+  }
+  const dist = (window._curDistrict || '').trim().toUpperCase();
+
+  const tokens = q ? q.split(/\s+/).filter(Boolean) : [];
+
+  FILTERED = VT.filter(v => {
+    // Dropdown filters
+    const lvlOk = !lvl || v.levelCode === lvl;
+    const secOk = !sec || v.sector === sec;
+    const schOk = !scheme || (v.scheme || '').toUpperCase().includes(scheme);
+    const distOk = !dist || (v.district || '').trim().toUpperCase() === dist;
+    if (!lvlOk || !secOk || !schOk || !distOk) return false;
+
+    if (!tokens.length) return true;
+
+    // Build comprehensive haystack for quick search:
+    // Name (First/Last name), Mobile No, School Name, Principal/HM Name, HM Mobile, HM Email,
+    // UDISE Code, District, Trade/Sector, Mandal, Block, YUG ID, Email, Aadhaar, PAN,
+    // Qualification, Scheme, School Type, Experience, Joining Date, DOB, S.No
+    const haystack = [
+      v.name,
+      v.phone,
+      v.school,
+      v.hm,
+      v.hmPhone,
+      v.hmEmail,
+      v.udise,
+      v.district,
+      v.mandal,
+      v.block,
+      v.sector,
+      v.yug,
+      v.email,
+      v.aadhar,
+      v.pan,
+      v.schoolType,
+      v.scheme,
+      v.qual,
+      v.expCurr||v.exp,
+      v.expTotal,
+      v.joining,
+      v.dob,
+      String(v.sno || '')
+    ].filter(Boolean).join(' ').toLowerCase();
+
+    // Every typed token must match somewhere in the record haystack
+    return tokens.every(token => haystack.includes(token));
+  });
+
+  if (sort === 'name') FILTERED.sort((a,b) => a.name.localeCompare(b.name));
+  else if (sort === 'sector') FILTERED.sort((a,b) => a.sector.localeCompare(b.sector));
+  else if (sort === 'district') FILTERED.sort((a,b) => (a.district || '').localeCompare(b.district || ''));
+  else FILTERED.sort((a,b) => a.sno - b.sno);
+
+  CUR = 1;
+  document.getElementById('countBadge').textContent = `${FILTERED.length} records`;
+  const elHShowing = document.getElementById('hShowing'); if(elHShowing) elHShowing.textContent = FILTERED.length;
+  render();
+  if (mapInst) renderMapMarkers();
+}
+
+function render(){
+  const start=(CUR-1)*PP,end=Math.min(start+PP,FILTERED.length);
+  const sl=FILTERED.slice(start,end);
+  document.getElementById('vtBody').innerHTML=sl.length?sl.map(v=>`
+    <tr onclick="openModal(${v.sno})" style="cursor:pointer">
+      <td class="sno">${v.sno}</td>
+      <td><strong>${v.name}</strong><br><span class="phone">${v.phone}</span></td>
+      <td>${secBadge(v.sector)}</td>
+      <td>${getVTLevelInfo(v).badgeHtml}</td>
+      <td class="school"><strong>${v.school}</strong></td>
+      <td class="district">${v.district||'—'}</td>
+      <td class="district">${v.mandal||'—'}</td>
+      <td>${schemeBadge(v.scheme)}</td>
+      <td><span class="udise">${v.udise||'—'}</span></td>
+      <td class="yug">${v.yug||'—'}</td>
+      <td class="joining">${formatDate(v.joining)}</td>
+      <td class="dob">${formatDate(v.dob)}</td>
+      <td class="qual">${v.qual||'—'}</td>
+      <td class="exp">${v.expCurr||v.exp||'—'}</td>
+      <td class="exp">${v.expTotal||'—'}</td>
+    </tr>`).join('')
+    :`<tr><td colspan="14"><div class="empty"><div class="ei">🔍</div><p>No records match your filters</p></div></td></tr>`;
+  makePgr();
+}
+
+function makePgr(){
+  const pages=Math.ceil(FILTERED.length/PP)||1;
+  if(pages<=1){document.getElementById('pgr').innerHTML='';return;}
+  let html='';
+  for(let i=1;i<=pages;i++)
+    html+=`<button class="pbn${i===CUR?' on':''}" onclick="CUR=${i};render()">${i}</button>`;
+  document.getElementById('pgr').innerHTML=html;
+}
+
+// ── NEARBY SCHOOLS FEATURE ──
+function getDistanceKm(lat1,lon1,lat2,lon2){
+  const R=6371,dLat=(lat2-lat1)*Math.PI/180,dLon=(lon2-lon1)*Math.PI/180;
+  const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+function getNearbySchoolsHTML(v,allVTs){
+  if(!v.lat||!v.lng)return '';
+  const RADIUS_KM=50,MAX_SCHOOLS=5;
+  const schoolMap={};
+  allVTs.forEach(o=>{
+    if(o.sno===v.sno||!o.lat||!o.lng)return;
+    if((o.school||'').trim().toUpperCase()===(v.school||'').trim().toUpperCase())return;
+    const dist=getDistanceKm(v.lat,v.lng,o.lat,o.lng);
+    if(dist>RADIUS_KM)return;
+    const key=(o.school||'Unknown').trim();
+    if(!schoolMap[key])schoolMap[key]={school:key,district:o.district||'',dist,vts:[]};
+    schoolMap[key].vts.push({sno:o.sno,name:o.name,sector:o.sector});
+    if(dist<schoolMap[key].dist)schoolMap[key].dist=dist;
+  });
+  const schools=Object.values(schoolMap).sort((a,b)=>a.dist-b.dist).slice(0,MAX_SCHOOLS);
+  if(!schools.length)return `<hr style="border:none;border-top:1px dashed var(--border);margin:10px 0"><div style="font-weight:700;color:var(--ink2);font-size:.82rem;margin-bottom:6px">🏫 Nearby Schools <span style="font-weight:400;color:var(--ink3);font-size:.75rem">(within ${RADIUS_KM}km)</span></div><div style="color:var(--ink3);font-size:.78rem;padding:8px;background:var(--bg);border-radius:8px;text-align:center">No other VT schools within ${RADIUS_KM}km</div>`;
+  let html=`<hr style="border:none;border-top:1px dashed var(--border);margin:10px 0"><div style="font-weight:700;color:var(--ink2);font-size:.82rem;margin-bottom:8px">🏫 Nearby Schools <span style="font-weight:400;color:var(--ink3);font-size:.75rem">(within ${RADIUS_KM}km)</span></div>`;
+  schools.forEach(s=>{
+    html+=`<div style="background:linear-gradient(135deg,#f0fdfa,#e0f2fe);border:1px solid #b2e0f7;border-radius:10px;padding:10px 12px;margin-bottom:7px">`;
+    html+=`<div style="font-weight:700;font-size:.83rem;color:var(--ink);margin-bottom:4px">📍 ${s.school}</div>`;
+    html+=`<div style="font-size:.74rem;color:var(--ink3);margin-bottom:5px">${s.district?s.district+' · ':''}${s.dist.toFixed(1)} km away</div>`;
+    s.vts.forEach(t=>{
+      html+=`<div onclick="openModal(${t.sno})" style="display:flex;align-items:center;gap:6px;font-size:.78rem;color:var(--ink2);margin-top:3px;cursor:pointer;padding:4px 0" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">👤 <strong>${t.name}</strong> <span style="background:#e0f2fe;color:#0369a1;padding:1px 6px;border-radius:20px;font-size:.7rem;font-weight:600">${t.sector}</span></div>`;
+    });
+    html+=`</div>`;
+  });
+  return html;
+}
+
+function openModal(sno){
+  const v=VT.find(x=>x.sno===sno);if(!v)return;
+  document.getElementById('mAvt').textContent=v.name[0];
+  document.getElementById('mName').textContent=v.name;
+  document.getElementById('mSub').innerHTML=`${secBadge(v.sector)} &nbsp; <span class="phone">${v.phone}</span>`;
+  // Build modal body - hide fields that have no data
+  let mb="";
+  mb+=`<div class="mrow"><span class="ml">S.No</span><span class="mv">${v.sno}</span></div>`;
+  mb+=`<div class="mrow"><span class="ml">Full Name</span><span class="mv">${v.name}</span></div>`;
+  mb+=`<div class="mrow"><span class="ml">Phone</span><span class="mv">${v.phone}</span></div>`;
+  if(v.email) mb+=`<div class="mrow"><span class="ml">Email</span><span class="mv">${v.email}</span></div>`;
+  mb+=`<div class="mrow"><span class="ml">Sector</span><span class="mv">${secBadge(v.sector)}</span></div>`;
+  if(v.yug) mb+=`<div class="mrow"><span class="ml">YUG Contract ID</span><span class="mv" style="font-family:monospace;font-size:.8rem">${v.yug}</span></div>`;
+  if(v.joining) mb+=`<div class="mrow"><span class="ml">Joining Date</span><span class="mv">${formatDate(v.joining)}</span></div>`;
+  if(v.dob) mb+=`<div class="mrow"><span class="ml">Date of Birth</span><span class="mv">${formatDate(v.dob)}</span></div>`;
+  if(v.qual) mb+=`<div class="mrow"><span class="ml">Qualification</span><span class="mv">${v.qual}</span></div>`;
+  if(v.expCurr||v.exp) mb+=`<div class="mrow"><span class="ml">Current Exp</span><span class="mv">${v.expCurr||v.exp}</span></div>`;
+  if(v.expTotal) mb+=`<div class="mrow"><span class="ml">Total Exp</span><span class="mv">${v.expTotal}</span></div>`;
+  if(v.aadhar) mb+=`<div class="mrow"><span class="ml">Aadhar No.</span><span class="mv" style="font-family:monospace">${v.aadhar}</span></div>`;
+  if(v.pan) mb+=`<div class="mrow"><span class="ml">PAN No.</span><span class="mv" style="font-family:monospace">${v.pan}</span></div>`;
+  mb += '<hr style="border:none;border-top:1px dashed var(--border);margin:8px 0">';
+  mb += `<div class="mrow"><span class="ml">School Level</span><span class="mv">${getVTLevelInfo(v).badgeHtml} &nbsp; <strong>${getVTLevelInfo(v).fullDesc}</strong></span></div>`;
+  mb += `<div class="mrow"><span class="ml">School</span><span class="mv"><strong>${v.school}</strong></span></div>`;
+  if (v.district) mb += `<div class="mrow"><span class="ml">District</span><span class="mv">${v.district}</span></div>`;
+  if (v.mandal) mb += `<div class="mrow"><span class="ml">Mandal</span><span class="mv">${v.mandal}</span></div>`;
+  if (v.block) mb += `<div class="mrow"><span class="ml">Block</span><span class="mv">${v.block}</span></div>`;
+  if (v.udise) mb += `<div class="mrow"><span class="ml">UDISE Code</span><span class="mv"><span class="udise">${v.udise}</span></span></div>`;
+  if (v.schoolType) mb += `<div class="mrow"><span class="ml">School Type</span><span class="mv">${v.schoolType}</span></div>`;
+  if (v.scheme) mb += `<div class="mrow"><span class="ml">Scheme</span><span class="mv">${schemeBadge(v.scheme)}</span></div>`;
+  if (v.lat && v.lng) mb += `<div class="mrow"><span class="ml">Coordinates</span><span class="mv" style="font-family:monospace;font-size:.75rem">${v.lat.toFixed(5)}, ${v.lng.toFixed(5)}</span></div>`;
+  if (v.hm || v.hmPhone || v.hmEmail) {
+    mb += '<hr style="border:none;border-top:1px dashed var(--border);margin:8px 0">';
+    if (v.hm) mb += `<div class="mrow"><span class="ml">HM/Principal</span><span class="mv">${v.hm}</span></div>`;
+    if (v.hmPhone) mb += `<div class="mrow"><span class="ml">HM Phone</span><span class="mv">${v.hmPhone}</span></div>`;
+    if (v.hmEmail) mb += `<div class="mrow"><span class="ml">HM Email</span><span class="mv" style="font-size:.75rem">${v.hmEmail}</span></div>`;
   }
-  .tabs {
-    padding: 16px 16px 4px !important;
-  }
-  .tab {
-    background: rgba(255, 255, 255, 0.75) !important;
-    backdrop-filter: blur(16px) saturate(180%) !important;
-    -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
-    border: 1px solid rgba(255, 255, 255, 0.8) !important;
-    box-shadow: inset 0 1.2px 0 rgba(255, 255, 255, 0.95), 0 4px 14px rgba(15, 23, 42, 0.05) !important;
-    border-radius: 14px !important;
-    transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1) !important;
-  }
-  .tab:hover {
-    transform: translateY(-2px) !important;
-    box-shadow: inset 0 1.5px 0.5px #fff, 0 8px 20px rgba(13, 148, 136, 0.18) !important;
-    color: #0d9488 !important;
-  }
-  .tab.active {
-    background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%) !important;
-    border-color: #0d9488 !important;
-    color: #ffffff !important;
-    box-shadow: inset 0 1.5px 0.5px rgba(255, 255, 255, 0.45), 0 8px 24px rgba(13, 148, 136, 0.35) !important;
-  }
-  .card {
-    background: rgba(255, 255, 255, 0.8) !important;
-    backdrop-filter: blur(24px) saturate(190%) !important;
-    -webkit-backdrop-filter: blur(24px) saturate(190%) !important;
-    border-radius: 20px !important;
-    border: 1px solid rgba(255, 255, 255, 0.75) !important;
-    box-shadow: inset 0 1.5px 0.5px #fff, 0 12px 36px -4px rgba(15, 23, 42, 0.07) !important;
-  }
-  .search-wrap input, .ctl-select {
-    background: rgba(255, 255, 255, 0.75) !important;
-    backdrop-filter: blur(12px) !important;
-    border: 1.5px solid rgba(226, 232, 240, 0.85) !important;
-    border-radius: 12px !important;
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03) !important;
-  }
-  .btn-export {
-    backdrop-filter: blur(14px) !important;
-    border-radius: 12px !important;
-    box-shadow: inset 0 1.2px 0 rgba(255, 255, 255, 0.45), 0 4px 14px rgba(13, 148, 136, 0.3) !important;
-    transition: all 0.22s ease !important;
-  }
-  .btn-export:hover {
-    transform: translateY(-1.5px) !important;
-    box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, 0.6), 0 8px 22px rgba(13, 148, 136, 0.45) !important;
-  }
-</style>
-
-<script src="vts_data.js?v=20261121_1"></script>
-</head>
-<body>
-
-<div class="header">
-  <div class="header-inner" style="display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap">
-    <div>
-      <div class="header-badge">📋 GeoAttend — Yug Shakti</div>
-      <h1>VT's <span>Details</span></h1>
-      <p>Vocational Trainers Master Register — Telangana State | 2025–26</p>
-      <div class="header-stats">
-        <div class="hstat"><div class="v" id="hTotal">254</div><div class="l">Total VTs</div></div>
-        <div class="hstat"><div class="v" id="hSectors">6</div><div class="l">Sectors</div></div>
-        <div class="hstat"><div class="v" id="hDistricts">—</div><div class="l">Districts</div></div>
-        <div class="hstat"><div class="v" id="hSchools">—</div><div class="l">Schools</div></div>
-
-      </div>
-    </div>
-    <div style="position:relative;z-index:1;background:rgba(255,255,255,.95);border-radius:12px;padding:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px rgba(0,0,0,.25)">
-      <img src="logo.png" alt="Yug Shakti Logo" style="height:85px;width:auto;object-fit:contain">
-    </div>
-  </div>
-</div>
-
-<div class="tabs">
-  <button class="tab active" onclick="switchTab('table')" id="tabTable">📋 All VTs <span class="tab-pill" id="tabCountAll">254</span></button>
-  <button class="tab" onclick="switchTab('hs')" id="tabHS">🏫 HS · L1 &amp; L2 (9th &amp; 10th) <span class="tab-pill" id="tabCountHS">134</span></button>
-  <button class="tab" onclick="switchTab('hss')" id="tabHSS">🎓 HSS · L3 &amp; L4 (11th &amp; 12th) <span class="tab-pill" id="tabCountHSS">120</span></button>
-  <button class="tab" onclick="switchTab('schools')" id="tabSchools">🏛️ Schools <span class="tab-pill" id="tabCountSchools">246</span></button>
-  <button class="tab" onclick="switchTab('map')" id="tabMap">🗺️ Map View</button>
-</div>
-
-<div class="controls">
-  <div class="search-wrap">
-    <span class="si">🔍</span>
-    <input id="srch" placeholder="🔍 Quick search by name (first & last), mobile no, school, HM/principal, UDISE, district, trade, mandal, YUG ID..." oninput="filterAll()"/>
-  </div>
-  <select class="ctl-select" id="distF" onchange="filterAll()">
-    <option value="">All Districts</option>
-  </select>
-  <select class="ctl-select" id="secF" onchange="filterAll()">
-    <option value="">All Sectors</option>
-    <option value="APPAREL">APPAREL</option>
-    <option value="BEAUTY AND WELLNESS">BEAUTY &amp; WELLNESS</option>
-    <option value="HEALTH CARE">HEALTH CARE</option>
-    <option value="AUTOMOTIVE">AUTOMOTIVE</option>
-    <option value="IT/ITES">IT/ITES</option>
-    <option value="ELECTRONICS AND HARDWARE">ELECTRONICS &amp; HW</option>
-  </select>
-  <select class="ctl-select" id="schemeF" onchange="filterAll()">
-    <option value="">All Schemes</option>
-    <option value="PMSHRI">PM SHRI</option>
-    <option value="SAMAGRA">SAMAGRA</option>
-  </select>
-  <select class="ctl-select" id="sortF" onchange="filterAll()">
-    <option value="sno">Sort: S.No</option>
-    <option value="name">Sort: Name A–Z</option>
-    <option value="sector">Sort: Sector</option>
-    <option value="district">Sort: District</option>
-  </select>
-  <button class="btn-export" onclick="exportCSV()">📥 Export CSV</button>
-</div>
-
-<div class="summary" id="tagRow"></div>
-<div id="districtRow" style="display:flex;flex-wrap:wrap;gap:7px;padding:10px 0 6px;overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:8px"></div>
-
-<!-- TABLE VIEW -->
-<div id="tableView">
-  <div class="table-wrap">
-    <div class="card">
-      <div class="card-head">
-        <span>Vocational Trainers Register</span>
-        <span class="count-badge" id="countBadge">254 records</span>
-      </div>
-      <div class="tw">
-        <table id="vtTable">
-          <thead>
-            <tr>
-              <th>S.No</th>
-              <th>Name &amp; Contact</th>
-              <th>Sector</th>
-              <th>Level / Classes</th>
-              <th>School</th>
-              <th>District</th>
-              <th>Mandal</th>
-              <th>Scheme</th>
-              <th>UDISE</th>
-              <th>YUG Contract ID</th>
-              <th>Joining Date</th>
-              <th>DOB</th>
-              <th>Qualification</th>
-              <th>Exp (Current)</th>
-              <th>Exp (Total)</th>
-            </tr>
-          </thead>
-          <tbody id="vtBody"></tbody>
-        </table>
-      </div>
-      <div id="pgr" class="pgr"></div>
-    </div>
-  </div>
-</div>
-
-<!-- DISTRICT SCHOOLS VIEW -->
-<div id="districtView" style="display:none">
-  <div id="districtCardsContainer" style="display:grid;grid-template-columns:1fr;gap:20px">
-    <!-- Populated by renderDistrictView() -->
-  </div>
-</div>
-
-
-<!-- SCHOOLS VIEW -->
-<div id="schoolsView" style="display:none">
-  <div class="table-wrap">
-    <div class="card">
-      <div class="card-head">
-        <span>🏫 Schools Register — All Schools by VTs</span>
-        <span class="count-badge" id="schoolCountBadge">0 schools</span>
-      </div>
-      <div style="padding:12px 16px">
-        <input id="schoolSearch" placeholder="🔍 Search school name, district, mandal, UDISE, HM name..." oninput="filterSchoolsView()" style="width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.88rem;background:var(--surface);color:var(--ink);outline:none"/>
-      </div>
-      <div class="tw">
-        <table id="schoolsTable">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>School Name</th>
-              <th>Level / Classes</th>
-              <th>District</th>
-              <th>Mandal</th>
-              <th>UDISE</th>
-              <th>School Type</th>
-              <th>Scheme</th>
-              <th>HM / Principal</th>
-              <th>HM Phone</th>
-              <th>VTs Count</th>
-              <th>VT Names</th>
-            </tr>
-          </thead>
-          <tbody id="schoolsBody"></tbody>
-        </table>
-      </div>
-      <div id="schoolsPgr" class="pgr"></div>
-    </div>
-  </div>
-</div>
-<!-- MAP VIEW -->
-<div id="mapView">
-  <div class="map-legend" id="mapLegend"></div>
-  <div class="map-wrap">
-    <div id="theMap"></div>
-  </div>
-</div>
-
-<!-- Modal -->
-<div class="modal-bg" id="detailModal">
-  <div class="modal">
-    <div class="modal-header">
-      <div style="display:flex;align-items:center;gap:12px">
-        <div class="modal-avatar" id="mAvt">R</div>
-        <div>
-          <div class="modal-name" id="mName">—</div>
-          <div class="modal-sub" id="mSub">—</div>
-        </div>
-      </div>
-      <button class="modal-close" onclick="closeModal()">✕</button>
-    </div>
-    <div class="modal-body" id="mBody"></div>
-    <div class="modal-actions" id="mActions"></div>
-    <div class="modal-footer">
-      <button class="btn bp" onclick="closeModal()">✕ Close</button>
-    </div>
-  </div>
-</div>
-
-<script>
-let VT = [];
-
-// SECURE DATA FETCH: Only authorized requests with valid Admin JWT receive VT data
-function getAdminToken(fallbackToken) {
-  if (fallbackToken && typeof fallbackToken === 'string') return fallbackToken;
-  let token = null;
-  try {
-    const p = new URLSearchParams(window.location.search);
-    token = p.get('token');
-    if (token) return token;
-  } catch(e){}
-  try {
-    token = localStorage.getItem('yug_admin_token');
-    if (token) return token;
-  } catch(e){}
-  try {
-    token = sessionStorage.getItem('yug_admin_token');
-    if (token) return token;
-  } catch(e){}
-  if (window.parent && window.parent !== window) {
-    try {
-      token = window.parent.sessionStorage.getItem('yug_admin_token') ||
-              window.parent.localStorage.getItem('yug_admin_token');
-      if (token) return token;
-    } catch(e){}
-  }
-  return null;
-}
-
-async function loadProtectedVTData(passedToken) {
-  // 1. Immediately display all 254 records from MASTER_VTS_DATA if available (instant load)
-  if (window.MASTER_VTS_DATA && window.MASTER_VTS_DATA.length) {
-    VT = window.MASTER_VTS_DATA;
-    console.log('Loaded ' + VT.length + ' VT records immediately from MASTER_VTS_DATA.');
-    syncVTWithDB();
-    populateDistrictDropdown();
-    buildTags();
-    filterAll();
-  }
-
-  const token = getAdminToken(passedToken);
-  if (!token) {
-    if (!VT || VT.length === 0) {
-      console.warn('Waiting for VT data or session token...');
-    }
-    return;
-  }
-
-  try {
-    sessionStorage.setItem('yug_admin_token', token);
-    localStorage.setItem('yug_admin_token', token);
-  } catch(e){}
-
-  // 2. Fetch server updates in background if token available
-  try {
-    const res = await fetch('/api/vts', {
-      headers: { 'Authorization': 'Bearer ' + token }
-    });
-
-    if (res.ok) {
-      const serverData = await res.json();
-      if (Array.isArray(serverData) && serverData.length) {
-        VT = serverData;
-        console.log('Updated with ' + VT.length + ' protected VT records from API.');
-        syncVTWithDB();
-        populateDistrictDropdown();
-        buildTags();
-        filterAll();
-      }
-    }
-  } catch(err) {
-    console.warn('Background API sync note:', err.message);
-  }
-}
-
-window.addEventListener('message', (ev) => {
-  if (ev.data && ev.data.type === 'SET_ADMIN_TOKEN') {
-    const tok = ev.data.token;
-    if (tok && typeof tok === 'string' && tok.length > 20) {
-      loadProtectedVTData(tok);
-    }
-  }
-});
-
-const SECTOR_COLORS = {
-  'APPAREL': '#2563eb',
-  'BEAUTY AND WELLNESS': '#e11d48',
-  'HEALTH CARE': '#059669',
-  'AUTOMOTIVE': '#d97706',
-  'IT/ITES': '#7c3aed',
-  'ELECTRONICS AND HARDWARE': '#0369a1'
-};
-
-function secBadge(s){
-  const m={'APPAREL':'s-ap','BEAUTY AND WELLNESS':'s-bw','HEALTH CARE':'s-hc','AUTOMOTIVE':'s-au','IT/ITES':'s-it','ELECTRONICS AND HARDWARE':'s-eh'};
-  return `<span class="sec ${m[s]||'s-ap'}">${s}</span>`;
-}
-function schemeBadge(s){
-  const t=s?s.toUpperCase():'';
-  if(t.includes('PMSHRI')||t.includes('PM SHRI')||t.includes('PMSRI')||t.includes('PMSRHI'))
-    return `<span class="stype stype-pmshri">PM SHRI</span>`;
-  if(t.includes('SAMAGRA'))
-    return `<span class="stype stype-samagra">SAMAGRA</span>`;
-  return `<span class="stype stype-other">${s||'—'}</span>`;
-}
-
-function formatDate(dateStr) {
-  if (!dateStr) return '—';
-  let cleanStr = dateStr.trim().split(' ')[0];
-  if (!cleanStr) return '—';
-  
-  let matchYMD = cleanStr.match(/^(\d{4})[-/. ](\d{1,2})[-/. ](\d{1,2})$/);
-  if (matchYMD) {
-    let y = matchYMD[1];
-    let m = matchYMD[2].padStart(2, '0');
-    let d = matchYMD[3].padStart(2, '0');
-    return `${d}-${m}-${y}`;
-  }
-  
-  let matchDMY = cleanStr.match(/^(\d{1,2})[-/. ](\d{1,2})[-/. ](\d{4})$/);
-  if (matchDMY) {
-    let d = matchDMY[1].padStart(2, '0');
-    let m = matchDMY[2].padStart(2, '0');
-    let y = matchDMY[3];
-    return `${d}-${m}-${y}`;
-  }
-
-  let matchDMY2 = cleanStr.match(/^(\d{1,2})[-/. ](\d{1,2})[-/. ](\d{2})$/);
-  if (matchDMY2) {
-    let d = matchDMY2[1].padStart(2, '0');
-    let m = matchDMY2[2].padStart(2, '0');
-    let y = matchDMY2[3];
-    let fullYear = parseInt(y) < 50 ? '20' + y : '19' + y;
-    return `${d}-${m}-${fullYear}`;
-  }
-  
-  return cleanStr;
-}
-
-const PP=25;let CUR=1;let FILTERED=[...VT];
-let mapInst=null, markers=[];
-
-
-// ── HS / HSS LEVEL MAPPING ──
-// HS  = Level 1 and Level 2 (9th class and 10th class)
-// HSS = Level 3 and Level 4 (11th class and 12th class)
-const UDISE_LEVEL_MAP = {
-  "36060301510":"HSS","36061100407":"HSS","36061601112":"HSS","36191200728":"HSS","36080500304":"HSS",
-  "36260400406":"HSS","36151000705":"HS","36151900201":"HS","36130200203":"HSS","36130500408":"HSS",
-  "36101200407":"HS","36170200307":"HSS","36170402002":"HS","36171701610":"HS","36171901803":"HS",
-  "36320403105":"HS","36280301503":"HS","36280302668":"HS","36280601217":"HSS","36281101906":"HS",
-  "36281202126":"HS","36281601404":"HS","36290401305":"HSS","36291000402":"HS","36291400910":"HSS",
-  "36291501013":"HSS","36291700827":"HSS","36292190264":"HS","36292200613":"HS","36292200624":"HSS",
-  "36330800516":"HSS","36050300402":"HS","36050390202":"HSS","36051001009":"HS","36051400513":"HS",
-  "36052190711":"HS","36052300307":"HSS","36141100507":"HSS","36230400303":"HS","36230500107":"HS",
-  "36230500706":"HS","36230801102":"HS","36230802713":"HS","36231801911":"HS","36231802706":"HS",
-  "36232000605":"HSS","36232202021":"HS","36232301111":"HS","36232502107":"HS","36232503310":"HS",
-  "36160201612":"HS","36160300906":"HS","36160403530":"HS","36160500416":"HSS","36160701512":"HSS",
-  "36160802103":"HS","36160902242":"HSS","36161000203":"HS","36161100205":"HSS","36161302403":"HSS",
-  "36161400104":"HSS","36161501303":"HS","36161502715":"HSS","36161600604":"HSS","36161703028":"HS",
-  "36161800302":"HS","36161800403":"HSS","36161900707":"HS","36162000205":"HS","36162100905":"HS",
-  "36162101104":"HS","36162201703":"HS","36162300608":"HSS","36162401621":"HSS","36162500302":"HS",
-  "36162600777":"HS","36180101404":"HSS","36180501510":"HSS","36180501608":"HSS","36180600223":"HS",
-  "36180801604":"HSS","36180900954":"HS","36180990226":"HSS","36181200203":"HSS","36181300303":"HS",
-  "36181500802":"HS","36181600606":"HS","36181701604":"HS","36181802602":"HS","36181902106":"HS",
-  "36182100629":"HSS","36182101208":"HSS","36182201410":"HSS","36300600313":"HS","36300701970":"HS",
-  "36301000808":"HS","36301200719":"HSS","36301300708":"HSS","36301501233":"HS","36302000604":"HSS",
-  "36302100629":"HS","36240200504":"HS","36240403247":"HSS","36240500203":"HSS","36240702006":"HS",
-  "36240802104":"HS","36241001509":"HS","36241490254":"HS","36241490257":"HSS","36241503108":"HS",
-  "36241700106":"HS","36241802408":"HS","36270200608":"HS","36270401709":"HSS","36270890160":"HS",
-  "36270902223":"HS","36271100733":"HSS","36110600507":"HS","36111300617":"HSS","36111400913":"HSS",
-  "36111500711":"HSS","36120900641":"HS","36200201006":"HS","36200300110":"HS","36200300621":"HS",
-  "36200300632":"HSS","36200501403":"HS","36200600502":"HS","36200602738":"HS","36200602741":"HSS",
-  "36200701009":"HS","36200802511":"HS","36200902315":"HS","36201000203":"HS","36201001718":"HSS",
-  "36201200207":"HS","36201400808":"HS","36201701211":"HSS","36091300409":"HSS","36091901114":"HSS",
-  "36220891157":"HSS","36221292074":"HS","36060200818":"HSS","36061300615":"HSS","36061501205":"HSS",
-  "36190900807":"HSS","36191200713":"HSS","36150102012":"HSS","36310401212":"HSS","36020101818":"HSS",
-  "36020606127":"HS","36020990180":"HSS","36021200707":"HSS","36021301312":"HSS","36100201908":"HSS",
-  "36101501802":"HS","36250300213":"HSS","36030601917":"HSS","36031101395":"HSS","36031390261":"HS",
-  "36031500310":"HSS","36031500806":"HS","36170901407":"HSS","36210490362":"HS","36210490365":"HS",
-  "36210500449":"HS","36320200105":"HSS","36280100906":"HS","36290600515":"HSS","36290701019":"HSS",
-  "36290890211":"HS","36292501014":"HSS","36292990229":"HS","36330501504":"HSS","36330800514":"HS",
-  "36041192809":"HSS","36052200104":"HS","36052200611":"HSS","36052701007":"HS","36070100408":"HSS",
-  "36141201405":"HSS","36230100433":"HSS","36230601453":"HS","36230601561":"HS","36230700624":"HS",
-  "36230800105":"HS","36230900754":"HSS","36231200305":"HS","36231300630":"HS","36231701819":"HSS",
-  "36231800405":"HS","36160701510":"HSS","36162002303":"HSS","36162201729":"HSS","36162201733":"HSS",
-  "36180200103":"HS","36180200710":"HSS","36181100615":"HSS","36181100618":"HSS","36181701815":"HSS",
-  "36181802749":"HSS","36182100506":"HS","36300100704":"HSS","36300300608":"HS","36300400805":"HSS",
-  "36301700915":"HSS","36240101911":"HSS","36240403276":"HSS","36240700415":"HSS","36241302606":"HS",
-  "36241501105":"HS","36241700736":"HSS","36270400810":"HS","36271200413":"HSS","36271300809":"HSS",
-  "36110701409":"HSS","36111200509":"HSS","36111300505":"HSS","36121001119":"HS","36200201904":"HS",
-  "36200701202":"HSS","36200701705":"HSS","36200800202":"HS","36200902333":"HSS","36201200904":"HSS",
-  "36201302502":"HSS","36201500118":"HS","36201600612":"HSS"
-};
-
-const SNO_OVERRIDE = {
-  225: "HSS", // TGRS thatipally (36061501205)
-  233: "HSS", // TGMS BOLLARAM (36162201733)
-  116: "HS",  // GOVT BOYS HIGH SCHOOL HUZURNAGAR (36302100629)
-  144: "HSS", // TGSWRS JC COE BOYS KONDAPUR (36161800403)
-  192: "HS",  // ZPHS BORGAON -P (36052200104)
-  251: "HS"   // E Vanamala, ZPHS Marikal (36330800514)
-};
-
-function getVTLevelInfo(v) {
-  let code = SNO_OVERRIDE[v.sno];
-  if (!code && v.udise) {
-    const clean = String(v.udise).replace(/\D/g, '');
-    code = UDISE_LEVEL_MAP[clean];
-  }
-  if (!code) {
-    // Default fallback based on school name
-    const nm = (v.school || '').toUpperCase();
-    if (nm.includes('JC') || nm.includes('JR') || nm.includes('KGBV') || nm.includes('TGMS') || nm.includes('TSMS') || nm.includes('TGRS') || nm.includes('TSWREIS') || nm.includes('TREIS')) {
-      code = 'HSS';
-    } else {
-      code = 'HS';
-    }
-  }
-  const isHSS = code === 'HSS';
-  return {
-    code: code,
-    levelName: isHSS ? 'HSS' : 'HS',
-    levels: isHSS ? 'Level 3 & 4' : 'Level 1 & 2',
-    classes: isHSS ? '11th & 12th' : '9th & 10th',
-    fullDesc: isHSS ? 'HSS · Level 3 & 4 (Class 11th & 12th)' : 'HS · Level 1 & 2 (Class 9th & 10th)',
-    badgeHtml: isHSS 
-      ? '<span class="lvl-badge lvl-hss" title="Higher Secondary School - Level 3 & 4 (11th & 12th Class)">🎓 HSS <span style="font-weight:500;opacity:.9">L3&4</span></span><span class="lvl-sub">Classes 11 &amp; 12</span>'
-      : '<span class="lvl-badge lvl-hs" title="High School - Level 1 & 2 (9th & 10th Class)">🏫 HS <span style="font-weight:500;opacity:.9">L1&2</span></span><span class="lvl-sub">Classes 9 &amp; 10</span>'
-  };
-}
-
-// Enrich each VT with level info
-VT.forEach(v => {
-  const info = getVTLevelInfo(v);
-  v.levelCode = info.code;
-  v.levelDesc = info.fullDesc;
-  v.classes = info.classes;
-  v.levels = info.levels;
-});
-
-// Tab switching
-window._activeTab = 'table';
-function switchTab(tab) {
-  window._activeTab = tab;
-  const isHS = tab === 'hs';
-  const isHSS = tab === 'hss';
-  const isTableLike = tab === 'table' || isHS || isHSS;
-
-  document.getElementById('tabTable').classList.toggle('active', tab === 'table');
-  document.getElementById('tabHS').classList.toggle('active', isHS);
-  document.getElementById('tabHSS').classList.toggle('active', isHSS);
-  document.getElementById('tabSchools').classList.toggle('active', tab === 'schools');
-  document.getElementById('tabMap').classList.toggle('active', tab === 'map');
-
-  document.getElementById('tableView').style.display = isTableLike ? 'block' : 'none';
-  document.getElementById('schoolsView').style.display = tab === 'schools' ? 'block' : 'none';
-  document.getElementById('mapView').style.display = tab === 'map' ? 'block' : 'none';
-
-  // Sync level dropdown with active tab
-  const lvlSelect = document.getElementById('lvlF');
-  if (lvlSelect) {
-    if (isHS) lvlSelect.value = 'HS';
-    else if (isHSS) lvlSelect.value = 'HSS';
-    else if (tab === 'table') lvlSelect.value = '';
-  }
-
-  if (isTableLike) {
-    filterAll();
-  } else if (tab === 'schools') {
-    renderSchoolsView();
-  } else if (tab === 'map') {
-    initMap();
-    setTimeout(() => {
-      if (mapInst) {
-        mapInst.invalidateSize();
-        fitMapToBounds();
-      }
-    }, 100);
-  }
-}
-
-function initMap() {
-  if(!mapInst) {
-    mapInst = L.map('theMap', { attributionControl: false }).setView([17.4,79.0], 7);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 18
-    }).addTo(mapInst);
-  }
-  renderMapMarkers();
-}
-
-function fitMapToBounds() {
-  if (!mapInst || markers.length === 0) return;
-  const group = L.featureGroup(markers);
-  mapInst.fitBounds(group.getBounds(), { padding: [40, 40] });
-}
-
-function renderMapMarkers() {
-  markers.forEach(m => mapInst.removeLayer(m));
-  markers = [];
-  const valid = FILTERED.filter(v => v.lat && v.lng);
-  valid.forEach(v => {
-    const color = SECTOR_COLORS[v.sector] || '#64748b';
-    const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 36" width="22" height="33">
-      <path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 24 12 24s12-15 12-24C24 5.4 18.6 0 12 0z" fill="${color}" stroke="white" stroke-width="1.5"/>
-      <circle cx="12" cy="12" r="5" fill="white"/>
-    </svg>`;
-    const icon = L.divIcon({
-      html: svgIcon,
-      className: '',
-      iconSize: [22, 33],
-      iconAnchor: [11, 33],
-      popupAnchor: [0, -33]
-    });
-    const m = L.marker([v.lat, v.lng], {icon})
-      .addTo(mapInst)
-      .bindPopup(`
-        <div style="font-family:DM Sans,sans-serif;min-width:200px">
-          <div style="font-weight:700;font-size:.9rem;color:#0f172a;margin-bottom:4px">${v.name}</div>
-          <div style="font-size:.75rem;color:#64748b;margin-bottom:6px">${v.phone}</div>
-          <div style="font-size:.72rem;margin-bottom:2px"><b>Sector:</b> ${v.sector}</div>
-          <div style="font-size:.72rem;margin-bottom:2px"><b>School:</b> ${v.school}</div>
-          <div style="font-size:.72rem;margin-bottom:6px"><b>District:</b> ${v.district}</div>
-          <button onclick="openModal(${v.sno})" style="padding:5px 12px;background:#0d9488;color:#fff;border:none;border-radius:6px;font-size:.75rem;font-weight:600;cursor:pointer;width:100%">View Details</button>
-        </div>
-      `, {maxWidth: 240});
-    markers.push(m);
-  });
-
-  // Update legend
-  const counts = {};
-  FILTERED.forEach(v => { counts[v.sector] = (counts[v.sector]||0)+1; });
-  const legDiv = document.getElementById('mapLegend');
-  legDiv.innerHTML = Object.entries(SECTOR_COLORS).filter(([s]) => counts[s]).map(([s,c]) =>
-    `<div class="leg"><div class="leg-dot" style="background:${c}"></div><span>${s} (${counts[s]||0})</span></div>`
-  ).join('');
-}
-
-function filterAll(){
-  const rawQ = document.getElementById('srch').value || '';
-  const q = rawQ.trim().toLowerCase();
-  const sec = document.getElementById('secF').value;
-  const scheme = document.getElementById('schemeF').value.toUpperCase();
-  const sort = document.getElementById('sortF').value;
-  let lvl = '';
-  if (window._activeTab === 'hs') lvl = 'HS';
-  else if (window._activeTab === 'hss') lvl = 'HSS';
-  else {
-    const lvlEl = document.getElementById('lvlF');
-    if (lvlEl) lvl = lvlEl.value;
-  }
-  const distF = document.getElementById('distF');
-  if (distF && distF.value !== undefined) {
-    window._curDistrict = distF.value;
-  }
-  const dist = (window._curDistrict || '').trim().toUpperCase();
-
-  const tokens = q ? q.split(/\s+/).filter(Boolean) : [];
-
-  FILTERED = VT.filter(v => {
-    // Dropdown filters
-    const lvlOk = !lvl || v.levelCode === lvl;
-    const secOk = !sec || v.sector === sec;
-    const schOk = !scheme || (v.scheme || '').toUpperCase().includes(scheme);
-    const distOk = !dist || (v.district || '').trim().toUpperCase() === dist;
-    if (!lvlOk || !secOk || !schOk || !distOk) return false;
-
-    if (!tokens.length) return true;
-
-    // Build comprehensive haystack for quick search:
-    // Name (First/Last name), Mobile No, School Name, Principal/HM Name, HM Mobile, HM Email,
-    // UDISE Code, District, Trade/Sector, Mandal, Block, YUG ID, Email, Aadhaar, PAN,
-    // Qualification, Scheme, School Type, Experience, Joining Date, DOB, S.No
-    const haystack = [
-      v.name,
-      v.phone,
-      v.school,
-      v.hm,
-      v.hmPhone,
-      v.hmEmail,
-      v.udise,
-      v.district,
-      v.mandal,
-      v.block,
-      v.sector,
-      v.yug,
-      v.email,
-      v.aadhar,
-      v.pan,
-      v.schoolType,
-      v.scheme,
-      v.qual,
-      v.expCurr||v.exp,
-      v.expTotal,
-      v.joining,
-      v.dob,
-      String(v.sno || '')
-    ].filter(Boolean).join(' ').toLowerCase();
-
-    // Every typed token must match somewhere in the record haystack
-    return tokens.every(token => haystack.includes(token));
-  });
-
-  if (sort === 'name') FILTERED.sort((a,b) => a.name.localeCompare(b.name));
-  else if (sort === 'sector') FILTERED.sort((a,b) => a.sector.localeCompare(b.sector));
-  else if (sort === 'district') FILTERED.sort((a,b) => (a.district || '').localeCompare(b.district || ''));
-  else FILTERED.sort((a,b) => a.sno - b.sno);
-
-  CUR = 1;
-  document.getElementById('countBadge').textContent = `${FILTERED.length} records`;
-  const elHShowing = document.getElementById('hShowing'); if(elHShowing) elHShowing.textContent = FILTERED.length;
-  render();
-  if (mapInst) renderMapMarkers();
-}
-
-function render(){
-  const start=(CUR-1)*PP,end=Math.min(start+PP,FILTERED.length);
-  const sl=FILTERED.slice(start,end);
-  document.getElementById('vtBody').innerHTML=sl.length?sl.map(v=>`
-    <tr onclick="openModal(${v.sno})" style="cursor:pointer">
-      <td class="sno">${v.sno}</td>
-      <td><strong>${v.name}</strong><br><span class="phone">${v.phone}</span></td>
-      <td>${secBadge(v.sector)}</td>
-      <td>${getVTLevelInfo(v).badgeHtml}</td>
-      <td class="school"><strong>${v.school}</strong></td>
-      <td class="district">${v.district||'—'}</td>
-      <td class="district">${v.mandal||'—'}</td>
-      <td>${schemeBadge(v.scheme)}</td>
-      <td><span class="udise">${v.udise||'—'}</span></td>
-      <td class="yug">${v.yug||'—'}</td>
-      <td class="joining">${formatDate(v.joining)}</td>
-      <td class="dob">${formatDate(v.dob)}</td>
-      <td class="qual">${v.qual||'—'}</td>
-      <td class="exp">${v.expCurr||v.exp||'—'}</td>
-      <td class="exp">${v.expTotal||'—'}</td>
-    </tr>`).join('')
-    :`<tr><td colspan="14"><div class="empty"><div class="ei">🔍</div><p>No records match your filters</p></div></td></tr>`;
-  makePgr();
-}
-
-function makePgr(){
-  const pages=Math.ceil(FILTERED.length/PP)||1;
-  if(pages<=1){document.getElementById('pgr').innerHTML='';return;}
-  let html='';
-  for(let i=1;i<=pages;i++)
-    html+=`<button class="pbn${i===CUR?' on':''}" onclick="CUR=${i};render()">${i}</button>`;
-  document.getElementById('pgr').innerHTML=html;
-}
-
-// ── NEARBY SCHOOLS FEATURE ──
-function getDistanceKm(lat1,lon1,lat2,lon2){
-  const R=6371,dLat=(lat2-lat1)*Math.PI/180,dLon=(lon2-lon1)*Math.PI/180;
-  const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
-  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
-}
-function getNearbySchoolsHTML(v,allVTs){
-  if(!v.lat||!v.lng)return '';
-  const RADIUS_KM=50,MAX_SCHOOLS=5;
-  const schoolMap={};
-  allVTs.forEach(o=>{
-    if(o.sno===v.sno||!o.lat||!o.lng)return;
-    if((o.school||'').trim().toUpperCase()===(v.school||'').trim().toUpperCase())return;
-    const dist=getDistanceKm(v.lat,v.lng,o.lat,o.lng);
-    if(dist>RADIUS_KM)return;
-    const key=(o.school||'Unknown').trim();
-    if(!schoolMap[key])schoolMap[key]={school:key,district:o.district||'',dist,vts:[]};
-    schoolMap[key].vts.push({sno:o.sno,name:o.name,sector:o.sector});
-    if(dist<schoolMap[key].dist)schoolMap[key].dist=dist;
-  });
-  const schools=Object.values(schoolMap).sort((a,b)=>a.dist-b.dist).slice(0,MAX_SCHOOLS);
-  if(!schools.length)return `<hr style="border:none;border-top:1px dashed var(--border);margin:10px 0"><div style="font-weight:700;color:var(--ink2);font-size:.82rem;margin-bottom:6px">🏫 Nearby Schools <span style="font-weight:400;color:var(--ink3);font-size:.75rem">(within ${RADIUS_KM}km)</span></div><div style="color:var(--ink3);font-size:.78rem;padding:8px;background:var(--bg);border-radius:8px;text-align:center">No other VT schools within ${RADIUS_KM}km</div>`;
-  let html=`<hr style="border:none;border-top:1px dashed var(--border);margin:10px 0"><div style="font-weight:700;color:var(--ink2);font-size:.82rem;margin-bottom:8px">🏫 Nearby Schools <span style="font-weight:400;color:var(--ink3);font-size:.75rem">(within ${RADIUS_KM}km)</span></div>`;
-  schools.forEach(s=>{
-    html+=`<div style="background:linear-gradient(135deg,#f0fdfa,#e0f2fe);border:1px solid #b2e0f7;border-radius:10px;padding:10px 12px;margin-bottom:7px">`;
-    html+=`<div style="font-weight:700;font-size:.83rem;color:var(--ink);margin-bottom:4px">📍 ${s.school}</div>`;
-    html+=`<div style="font-size:.74rem;color:var(--ink3);margin-bottom:5px">${s.district?s.district+' · ':''}${s.dist.toFixed(1)} km away</div>`;
-    s.vts.forEach(t=>{
-      html+=`<div onclick="openModal(${t.sno})" style="display:flex;align-items:center;gap:6px;font-size:.78rem;color:var(--ink2);margin-top:3px;cursor:pointer;padding:4px 0" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">👤 <strong>${t.name}</strong> <span style="background:#e0f2fe;color:#0369a1;padding:1px 6px;border-radius:20px;font-size:.7rem;font-weight:600">${t.sector}</span></div>`;
-    });
-    html+=`</div>`;
-  });
-  return html;
-}
-
-function openModal(sno){
-  const v=VT.find(x=>x.sno===sno);if(!v)return;
-  document.getElementById('mAvt').textContent=v.name[0];
-  document.getElementById('mName').textContent=v.name;
-  document.getElementById('mSub').innerHTML=`${secBadge(v.sector)} &nbsp; <span class="phone">${v.phone}</span>`;
-  document.getElementById('mBody').innerHTML=`
-    <div class="mrow"><span class="ml">S.No</span><span class="mv">${v.sno}</span></div>
-    <div class="mrow"><span class="ml">Full Name</span><span class="mv">${v.name}</span></div>
-    <div class="mrow"><span class="ml">Phone</span><span class="mv">${v.phone}</span></div>
-    <div class="mrow"><span class="ml">Email</span><span class="mv">${v.email||'—'}</span></div>
-    <div class="mrow"><span class="ml">Sector</span><span class="mv">${secBadge(v.sector)}</span></div>
-    <div class="mrow"><span class="ml">YUG Contract ID</span><span class="mv" style="font-family:monospace;font-size:.8rem">${v.yug||'—'}</span></div>
-    <div class="mrow"><span class="ml">Joining Date</span><span class="mv">${formatDate(v.joining)}</span></div>
-    <div class="mrow"><span class="ml">Date of Birth</span><span class="mv">${formatDate(v.dob)}</span></div>
-    <div class="mrow"><span class="ml">Qualification</span><span class="mv">${v.qual||'—'}</span></div>
-    <div class="mrow"><span class="ml">Current Exp</span><span class="mv">${v.expCurr||v.exp||'—'}</span></div>
-    <div class="mrow"><span class="ml">Total Exp</span><span class="mv">${v.expTotal||'—'}</span></div>
-    <div class="mrow"><span class="ml">Aadhar No.</span><span class="mv" style="font-family:monospace">${v.aadhar||'—'}</span></div>
-    <div class="mrow"><span class="ml">PAN No.</span><span class="mv" style="font-family:monospace">${v.pan||'—'}</span></div>
-    <hr style="border:none;border-top:1px dashed var(--border);margin:8px 0">
-    <div class="mrow"><span class="ml">School Level</span><span class="mv">${getVTLevelInfo(v).badgeHtml} &nbsp; <strong>${getVTLevelInfo(v).fullDesc}</strong></span></div>
-    <div class="mrow"><span class="ml">School</span><span class="mv"><strong>${v.school}</strong></span></div>
-    <div class="mrow"><span class="ml">District</span><span class="mv">${v.district||'—'}</span></div>
-    <div class="mrow"><span class="ml">Mandal</span><span class="mv">${v.mandal||'—'}</span></div>
-    <div class="mrow"><span class="ml">Block</span><span class="mv">${v.block||'—'}</span></div>
-    <div class="mrow"><span class="ml">UDISE Code</span><span class="mv"><span class="udise">${v.udise||'—'}</span></span></div>
-    <div class="mrow"><span class="ml">School Type</span><span class="mv">${v.schoolType||'—'}</span></div>
-    <div class="mrow"><span class="ml">Scheme</span><span class="mv">${schemeBadge(v.scheme)}</span></div>
-    ${v.lat&&v.lng?`<div class="mrow"><span class="ml">Coordinates</span><span class="mv" style="font-family:monospace;font-size:.75rem">${v.lat.toFixed(5)}, ${v.lng.toFixed(5)}</span></div>`:''}
-    <hr style="border:none;border-top:1px dashed var(--border);margin:8px 0">
-    <div class="mrow"><span class="ml">HM/Principal</span><span class="mv">${v.hm||'—'}</span></div>
-    <div class="mrow"><span class="ml">HM Phone</span><span class="mv">${v.hmPhone||'—'}</span></div>
-    <div class="mrow"><span class="ml">HM Email</span><span class="mv" style="font-size:.75rem">${v.hmEmail||'—'}</span></div>
-    ${getNearbySchoolsHTML(v,VT)}`;
-
-  const mapLink = v.lat&&v.lng ? `https://www.google.com/maps?q=${v.lat},${v.lng}` : `https://www.google.com/maps/search/${encodeURIComponent(v.school+', '+v.district+', Telangana')}`;
-  const trackLink = v.lat&&v.lng ? `https://www.google.com/maps/dir/?api=1&destination=${v.lat},${v.lng}` : `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(v.school+', '+v.district+', Telangana')}`;
-
-  document.getElementById('mActions').innerHTML = `
-    <a href="tel:${v.phone}" class="btn bp" style="padding:10px 15px;text-decoration:none;font-size:.84rem;font-weight:700;display:inline-flex;align-items:center;gap:6px;border-radius:10px">📞 Call</a>
-    <a href="mailto:${v.email}" class="btn bw" style="padding:10px 15px;text-decoration:none;font-size:.84rem;font-weight:700;display:inline-flex;align-items:center;gap:6px;border-radius:10px">✉️ Email</a>
-    <a href="${mapLink}" target="_blank" class="btn bo" style="padding:10px 15px;text-decoration:none;font-size:.84rem;font-weight:700;display:inline-flex;align-items:center;gap:6px;border-radius:10px">📍 Maps</a>
-    <button onclick="if(window.parent && window.parent.trackVTLive) { window.parent.trackVTLive('${v.sno}'); } else { window.open('${trackLink}', '_blank'); }" class="btn bs" style="padding:10px 15px;font-size:.84rem;font-weight:700;display:inline-flex;align-items:center;gap:6px;border:none;cursor:pointer;border-radius:10px">🛰️ Live Tracker</button>
-    <a href="https://wa.me/91${v.phone.replace(/\D/g,'')}" target="_blank" style="padding:10px 15px;text-decoration:none;display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#25d366,#128c7e);color:#fff;border-radius:10px;font-size:.84rem;font-weight:800;box-shadow:0 3px 12px rgba(37,211,102,.35);transition:all .22s">💬 WhatsApp</a>
-    <button id="vtd-shareBtn" onclick="shareVTDetails()" style="padding:10px 15px;display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#0b57d0,#1a73e8);color:#fff;border:none;border-radius:10px;font-size:.84rem;font-weight:800;cursor:pointer;box-shadow:0 3px 12px rgba(11,87,208,.35);transition:all .22s">📤 Share</button>
-  `;
-
-  window._vtShareData = v;
-  document.getElementById('detailModal').classList.add('open');
-  document.getElementById('detailModal').scrollTop = 0;
-  const mc = document.querySelector('#detailModal .modal');
-  if (mc) mc.scrollTop = 0;
-}
-function closeModal(){document.getElementById('detailModal').classList.remove('open')}
-document.getElementById('detailModal').addEventListener('click',function(e){if(e.target===this)closeModal()});
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
-
-function shareVTDetails() {
-  const v = window._vtShareData;
-  if (!v) return;
-  const mapLink = v.lat && v.lng 
-    ? `https://www.google.com/maps?q=${v.lat},${v.lng}` 
-    : `https://www.google.com/maps/search/${encodeURIComponent((v.school||'') + ', ' + (v.district||'') + ', Telangana')}`;
-  const text = `📌 VOCATIONAL TRAINER PROFILE\n` +
-    `\`\`\`\n` +
-    `VT Name      : ${v.name}\n` +
-    `Phone        : ${v.phone}\n` +
-    `Email        : ${v.email || '—'}\n` +
-    `Sector       : ${v.sector || '—'}\n` +
-    `YUG EMP ID   : ${v.yug || '—'}\n` +
-    `Joining Date : ${formatDate(v.joining)}\n\n` +
-    `School Name  : ${v.school}\n` +
-    `District     : ${v.district || '—'}\n` +
-    `Mandal       : ${v.mandal || '—'}\n` +
-    `UDISE Code   : ${v.udise || '—'}\n\n` +
-    `HM/Principal : ${v.hm || '—'}\n` +
-    `HM Phone     : ${v.hmPhone || '—'}\n` +
-    `\`\`\`\n` +
-    `🗺️ Maps: ${mapLink}\n\n` +
-    `— Yug Shakti Vocational Education Portal`;
-  const btn = document.getElementById('vtd-shareBtn');
-  if (navigator.share) {
-    navigator.share({ title: `VT: ${v.name}`, text: text })
-      .catch(() => {});
-  } else {
-    navigator.clipboard.writeText(text).then(() => {
-      const orig = btn.innerHTML;
-      btn.innerHTML = '✅ Copied!';
-      btn.style.background = 'linear-gradient(135deg,#1565c0,#0d47a1)';
-      setTimeout(() => { btn.innerHTML = orig; btn.style.background = ''; }, 2000);
-    }).catch(() => {
-      alert('Could not copy. Please select and copy manually.');
-    });
-  }
-}
-
-
-function populateDistrictDropdown() {
-  const distSelect = document.getElementById('distF');
-  if(!distSelect) return;
-  const currentVal = distSelect.value;
-  const dists = Array.from(new Set(VT.map(v => (v.district||'').trim().toUpperCase()).filter(Boolean))).sort();
-  let html = '<option value="">All Districts (' + dists.length + ')</option>';
-  dists.forEach(d => {
-    const cnt = VT.filter(v => (v.district||'').trim().toUpperCase() === d).length;
-    html += `<option value="${d}">${d} (${cnt} VTs)</option>`;
-  });
-  distSelect.innerHTML = html;
-  distSelect.value = currentVal;
-}
-
-function renderDistrictView() {
-  const container = document.getElementById('districtCardsContainer');
-  if (!container) return;
-
-  // Group FILTERED VTs by District -> School
-  const distMap = {};
-  FILTERED.forEach(v => {
-    const d = (v.district || 'UNASSIGNED').trim().toUpperCase();
-    const s = (v.school || 'Unknown School').trim();
-    if (!distMap[d]) distMap[d] = {};
-    if (!distMap[d][s]) distMap[d][s] = {
-      name: s,
-      mandal: v.mandal || '',
-      udise: v.udise || '',
-      scheme: v.scheme || '',
-      hm: v.hm || '',
-      hmPhone: v.hmPhone || '',
-      hmEmail: v.hmEmail || '',
-      vts: []
-    };
-    distMap[d][s].vts.push(v);
-  });
-
-  const sortedDists = Object.keys(distMap).sort();
-
-  if (sortedDists.length === 0) {
-    container.innerHTML = `<div class="empty" style="background:#fff;border-radius:12px;padding:30px;text-align:center"><div class="ei">🔍</div><p>No schools found matching your search/filters</p></div>`;
-    return;
-  }
-
-  let html = '';
-  sortedDists.forEach(distName => {
-    const schools = Object.values(distMap[distName]);
-    let totalVTs = 0;
-    schools.forEach(sch => totalVTs += sch.vts.length);
-
-    html += `
-    <div style="background:#fff;border-radius:16px;box-shadow:0 4px 18px rgba(0,0,0,.06);border:1px solid var(--border);overflow:hidden">
-      <!-- District Header -->
-      <div style="background:linear-gradient(135deg,#0b57d0,#1a73e8);color:#fff;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
-        <div style="display:flex;align-items:center;gap:10px">
-          <span style="font-size:1.4rem">📍</span>
-          <div>
-            <h2 style="font-size:1.1rem;font-weight:800;margin:0;letter-spacing:.3px">${distName} DISTRICT</h2>
-            <div style="font-size:.78rem;opacity:.9;margin-top:2px">${schools.length} Schools · ${totalVTs} Vocational Trainers</div>
-          </div>
-        </div>
-        <button onclick="filterByDistrict('${distName}')" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);padding:5px 12px;border-radius:20px;font-size:.75rem;font-weight:700;cursor:pointer">Filter Table by ${distName}</button>
-      </div>
-
-      <!-- Schools Grid inside District -->
-      <div style="padding:16px;display:grid;grid-template-columns:repeat(auto-fill, minmax(320px, 1fr));gap:14px">
-    `;
-
-    schools.forEach(sch => {
-      html += `
-        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:14px;display:flex;flex-direction:column;justify-space-between">
-          <div>
-            <div style="font-weight:800;font-size:.9rem;color:var(--ink);margin-bottom:6px;display:flex;align-items:flex-start;gap:6px">
-              <span>🏫</span>
-              <span>${sch.name}</span>
-            </div>
-            
-            <div style="display:flex;flex-wrap:wrap;gap:6px;font-size:.73rem;color:var(--ink2);margin-bottom:10px">
-              ${sch.mandal ? `<span style="background:#e2e8f0;padding:2px 8px;border-radius:6px;font-weight:600">📍 Mandal: ${sch.mandal}</span>` : ''}
-              ${sch.udise ? `<span style="background:#e0f2fe;color:#0369a1;padding:2px 8px;border-radius:6px;font-weight:700">📋 UDISE: ${sch.udise}</span>` : ''}
-              ${sch.scheme ? `<span style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:6px;font-weight:700">${sch.scheme}</span>` : ''}
-            </div>
-
-            ${sch.hm ? `
-            <div style="font-size:.76rem;background:#fff;border:1px solid #cbd5e1;padding:6px 10px;border-radius:8px;margin-bottom:10px;color:var(--ink2)">
-              <strong>👨‍🏫 HM:</strong> ${sch.hm} ${sch.hmPhone ? `· <a href="tel:${sch.hmPhone}" style="color:var(--p);font-weight:700">${sch.hmPhone}</a>` : ''}
-            </div>` : ''}
-
-            <!-- VTs in this School -->
-            <div style="font-size:.76rem;font-weight:800;color:var(--ink);margin-bottom:6px;border-bottom:1px solid #cbd5e1;padding-bottom:4px">
-              👥 Vocational Trainers (${sch.vts.length}):
-            </div>
-            <div style="display:flex;flex-direction:column;gap:6px">
-      `;
-
-      sch.vts.forEach(v => {
-        html += `
-              <div onclick="openModal(${v.sno})" style="background:#fff;border:1px solid #cbd5e1;border-radius:8px;padding:8px 10px;cursor:pointer;transition:all .18s;display:flex;align-items:center;justify-content:space-between;gap:8px" onmouseover="this.style.borderColor='#0b57d0';this.style.boxShadow='0 2px 8px rgba(11,87,208,.12)'" onmouseout="this.style.borderColor='#cbd5e1';this.style.boxShadow='none'">
-                <div>
-                  <div style="font-weight:800;font-size:.82rem;color:var(--p)">${v.name}</div>
-                  <div style="font-size:.73rem;color:var(--ink3)">📞 ${v.phone}</div>
-                </div>
-                <div>
-                  ${secBadge(v.sector)}
-                </div>
-              </div>
-        `;
-      });
-
-      html += `
-            </div>
-          </div>
-        </div>
-      `;
-    });
-
-    html += `
-      </div>
-    </div>
-    `;
-  });
-
-  container.innerHTML = html;
-}
-
-function buildTags(){
-  const counts={};
-  VT.forEach(v=>{counts[v.sector]=(counts[v.sector]||0)+1});
-  const tagMap={'APPAREL':'app','BEAUTY AND WELLNESS':'bw','HEALTH CARE':'hc','AUTOMOTIVE':'au','IT/ITES':'it','ELECTRONICS AND HARDWARE':'eh'};
-  let html=`<div class="stag all active" onclick="filterBySec(\'\')">All · ${VT.length}</div>`;
-  Object.entries(counts).forEach(([sec,cnt])=>{
-    html+=`<div class="stag ${tagMap[sec]||'app'}" onclick="filterBySec(\'${sec}\')">${sec} · ${cnt}</div>`;
-  });
-  document.getElementById('tagRow').innerHTML=html;
-  const dists=new Set(VT.map(v=>v.district).filter(Boolean));
-  document.getElementById('hDistricts').textContent=dists.size;
-  const schoolsSet=new Set(VT.map(v=>(v.school||'').trim()).filter(Boolean));
-  document.getElementById('hSchools').textContent=schoolsSet.size;
-  document.getElementById('hTotal').textContent=VT.length;
-}
-
-function filterBySec(s){
-  document.getElementById('secF').value=s;
-  document.querySelectorAll('.stag').forEach(t=>t.classList.remove('active'));
-  if(!s) document.querySelector('.stag.all').classList.add('active');
-  filterAll();
-}
-
-function exportCSV(){
-  const rows=[['S.No','Name','Phone','Aadhar','PAN','Sector','Level','Classes','School','District','Mandal','Block','UDISE','School Type','Scheme','Email','YUG Contract ID','Joining Date','DOB','Qualification','Exp (Current)','Exp (Total)','HM/Principal','HM Phone','HM Email','Latitude','Longitude']];
-  FILTERED.forEach(v=>{
-    const lvl = getVTLevelInfo(v);
-    rows.push([v.sno,v.name,v.phone,v.aadhar,v.pan,v.sector,lvl.levelName + ' (' + lvl.levels + ')',lvl.classes,v.school,v.district,v.mandal,v.block,v.udise,v.schoolType,v.scheme,v.email,v.yug,v.joining,v.dob,v.qual,v.expCurr,v.expTotal,v.hm,v.hmPhone,v.hmEmail,v.lat||'',v.lng||'']);
-  });
-  const csv=rows.map(r=>r.map(c=>`"${(c||'').toString().replace(/"/g,'\"')}"` ).join(',')).join('\n');
-  const a=document.createElement('a');
-  a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);
-  a.download='VT_Details_YugShakti_Telangana.csv';a.click();
-}
-
-function syncVTWithDB() {
-  try {
-    let teachers = [];
-    if (window.parent && window.parent.DB && typeof window.parent.DB.get === 'function') {
-      teachers = window.parent.DB.get('teachers', []);
-    } else {
-      const v = localStorage.getItem('yugg_teachers');
-      if (v) teachers = JSON.parse(v);
-    }
-    if (teachers && teachers.length) {
-      VT.forEach(v => {
-        const t = teachers.find(x => x.ph === v.phone || x.phone === v.phone);
-        if (t) {
-          if (t.name) v.name = t.name;
-          if (t.school) v.school = t.school;
-          if (t.sector) v.sector = t.sector;
-          if (t.udise !== undefined) v.udise = t.udise;
-          if (t.lat !== undefined) v.lat = parseFloat(t.lat) || v.lat;
-          if (t.lng !== undefined) v.lng = parseFloat(t.lng) || v.lng;
-        }
-      });
-    }
-  } catch (e) {
-    console.error("syncVTWithDB error:", e);
-  }
-}
-window.syncAndRender = function() {
-  syncVTWithDB();
-  populateDistrictDropdown();
-  buildTags();
-  filterAll();
-};
-
-loadProtectedVTData();
-
-// ── SCHOOLS VIEW ──
-var SCHOOLS_DATA = [];
-var SCHOOLS_FILTERED = [];
-var SCHOOLS_PAGE = 1;
-var SCHOOLS_PP = 30;
-
-function buildSchoolsData() {
-  const schoolMap = {};
-  VT.forEach(v => {
-    const key = (v.school || 'Unknown').trim();
-    if (!schoolMap[key]) {
-      schoolMap[key] = {
-        school: key,
-        district: v.district || '',
-        mandal: v.mandal || '',
-        udise: v.udise || '',
-        schoolType: v.schoolType || '',
-        scheme: v.scheme || '',
-        levelCode: v.levelCode || '',
-        levelDesc: v.levelDesc || '',
-        classes: v.classes || '',
-        levels: v.levels || '',
-        hm: v.hm || '',
-        hmPhone: v.hmPhone || '',
-        hmEmail: v.hmEmail || '',
-        vts: []
-      };
-    }
-    schoolMap[key].vts.push({ sno: v.sno, name: v.name, phone: v.phone, sector: v.sector });
-  });
-  SCHOOLS_DATA = Object.values(schoolMap).sort((a, b) => a.school.localeCompare(b.school));
-  SCHOOLS_FILTERED = SCHOOLS_DATA.slice();
-}
-
-function filterSchoolsView() {
-  const q = (document.getElementById('schoolSearch').value || '').trim().toLowerCase();
-  if (!q) {
-    SCHOOLS_FILTERED = SCHOOLS_DATA.slice();
-  } else {
-    const tokens = q.split(/\s+/).filter(Boolean);
-    SCHOOLS_FILTERED = SCHOOLS_DATA.filter(s => {
-      const hay = [s.school, s.district, s.mandal, s.udise, s.schoolType, s.scheme, s.levelCode, s.levelDesc, s.classes, s.levels, s.hm, s.hmPhone, s.vts.map(v => v.name).join(' ')].join(' ').toLowerCase();
-      return tokens.every(t => hay.includes(t));
-    });
-  }
-  SCHOOLS_PAGE = 1;
-  renderSchoolsTable();
-}
-
-function renderSchoolsView() {
-  buildSchoolsData();
-  SCHOOLS_FILTERED = SCHOOLS_DATA.slice();
-  SCHOOLS_PAGE = 1;
-  renderSchoolsTable();
-}
-
-function renderSchoolsTable() {
-  document.getElementById('schoolCountBadge').textContent = SCHOOLS_FILTERED.length + ' schools';
-  const start = (SCHOOLS_PAGE - 1) * SCHOOLS_PP;
-  const end = Math.min(start + SCHOOLS_PP, SCHOOLS_FILTERED.length);
-  const sl = SCHOOLS_FILTERED.slice(start, end);
-  document.getElementById('schoolsBody').innerHTML = sl.length ? sl.map((s, i) => {
-    const vtNames = s.vts.map(v => '<div style="margin:2px 0">' + secBadge(v.sector) + ' <strong style="cursor:pointer" onclick="openModal(' + v.sno + ')">' + v.name + '</strong> <span class="phone" style="font-size:.72rem">' + v.phone + '</span></div>').join('');
-    const isHSS = s.levelCode === 'HSS';
-    const lvlBadge = isHSS 
-      ? '<span class="lvl-badge lvl-hss">🎓 HSS</span><span class="lvl-sub">L3 & 4 (11th & 12th)</span>'
-      : '<span class="lvl-badge lvl-hs">🏫 HS</span><span class="lvl-sub">L1 & 2 (9th & 10th)</span>';
-    return '<tr>' +
-      '<td class="sno">' + (start + i + 1) + '</td>' +
-      '<td><strong style="font-size:.82rem">' + s.school + '</strong></td>' +
-      '<td>' + lvlBadge + '</td>' +
-      '<td class="district">' + (s.district || '\u2014') + '</td>' +
-      '<td class="district">' + (s.mandal || '\u2014') + '</td>' +
-      '<td><span class="udise">' + (s.udise || '\u2014') + '</span></td>' +
-      '<td style="font-size:.76rem">' + (s.schoolType || '\u2014') + '</td>' +
-      '<td>' + schemeBadge(s.scheme) + '</td>' +
-      '<td style="font-size:.78rem">' + (s.hm || '\u2014') + '</td>' +
-      '<td class="phone" style="font-size:.76rem">' + (s.hmPhone || '\u2014') + '</td>' +
-      '<td><span style="background:var(--teal2);color:var(--teal);padding:3px 10px;border-radius:20px;font-weight:700;font-size:.78rem">' + s.vts.length + '</span></td>' +
-      '<td style="font-size:.76rem">' + vtNames + '</td>' +
-    '</tr>';
-  }).join('') : '<tr><td colspan="11"><div class="empty"><div class="ei">\uD83D\uDD0D</div><p>No schools match your search</p></div></td></tr>';
-
-  // Pagination
-  const pages = Math.ceil(SCHOOLS_FILTERED.length / SCHOOLS_PP) || 1;
-  let phtml = '';
-  if (pages > 1) {
-    for (let i = 1; i <= pages; i++)
-      phtml += '<button class="pbn' + (i === SCHOOLS_PAGE ? ' on' : '') + '" onclick="SCHOOLS_PAGE=' + i + ';renderSchoolsTable()">' + i + '</button>';
-  }
-  document.getElementById('schoolsPgr').innerHTML = phtml;
-}
-
-</script>
-</body>
+  mb += getNearbySchoolsHTML(v, VT);
+  document.getElementById('mBody').innerHTML = mb;
+
+  const mapLink = v.lat&&v.lng ? `https://www.google.com/maps?q=${v.lat},${v.lng}` : `https://www.google.com/maps/search/${encodeURIComponent(v.school+', '+v.district+', Telangana')}`;
+  const trackLink = v.lat&&v.lng ? `https://www.google.com/maps/dir/?api=1&destination=${v.lat},${v.lng}` : `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(v.school+', '+v.district+', Telangana')}`;
+
+  document.getElementById('mActions').innerHTML = `
+    <a href="tel:${v.phone}" class="btn bp" style="padding:10px 15px;text-decoration:none;font-size:.84rem;font-weight:700;display:inline-flex;align-items:center;gap:6px;border-radius:10px">📞 Call</a>
+    <a href="mailto:${v.email}" class="btn bw" style="padding:10px 15px;text-decoration:none;font-size:.84rem;font-weight:700;display:inline-flex;align-items:center;gap:6px;border-radius:10px">✉️ Email</a>
+    <a href="${mapLink}" target="_blank" class="btn bo" style="padding:10px 15px;text-decoration:none;font-size:.84rem;font-weight:700;display:inline-flex;align-items:center;gap:6px;border-radius:10px">📍 Maps</a>
+    <button onclick="if(window.parent && window.parent.trackVTLive) { window.parent.trackVTLive('${v.sno}'); } else { window.open('${trackLink}', '_blank'); }" class="btn bs" style="padding:10px 15px;font-size:.84rem;font-weight:700;display:inline-flex;align-items:center;gap:6px;border:none;cursor:pointer;border-radius:10px">🛰️ Live Tracker</button>
+    <a href="https://wa.me/91${v.phone.replace(/\D/g,'')}" target="_blank" style="padding:10px 15px;text-decoration:none;display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#25d366,#128c7e);color:#fff;border-radius:10px;font-size:.84rem;font-weight:800;box-shadow:0 3px 12px rgba(37,211,102,.35);transition:all .22s">💬 WhatsApp</a>
+    <button id="vtd-shareBtn" onclick="shareVTDetails()" style="padding:10px 15px;display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#0b57d0,#1a73e8);color:#fff;border:none;border-radius:10px;font-size:.84rem;font-weight:800;cursor:pointer;box-shadow:0 3px 12px rgba(11,87,208,.35);transition:all .22s">📤 Share</button>
+  `;
+
+  window._vtShareData = v;
+  document.getElementById('detailModal').classList.add('open');
+  document.getElementById('detailModal').scrollTop = 0;
+  const mc = document.querySelector('#detailModal .modal');
+  if (mc) mc.scrollTop = 0;
+}
+function closeModal(){document.getElementById('detailModal').classList.remove('open')}
+document.getElementById('detailModal').addEventListener('click',function(e){if(e.target===this)closeModal()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
+
+function shareVTDetails() {
+  const v = window._vtShareData;
+  if (!v) return;
+  const mapLink = v.lat && v.lng 
+    ? `https://www.google.com/maps?q=${v.lat},${v.lng}` 
+    : `https://www.google.com/maps/search/${encodeURIComponent((v.school||'') + ', ' + (v.district||'') + ', Telangana')}`;
+  const text = `📌 VOCATIONAL TRAINER PROFILE\n` +
+    `\`\`\`\n` +
+    `VT Name      : ${v.name}\n` +
+    `Phone        : ${v.phone}\n` +
+    `Email        : ${v.email || '—'}\n` +
+    `Sector       : ${v.sector || '—'}\n` +
+    `YUG EMP ID   : ${v.yug || '—'}\n` +
+    `Joining Date : ${formatDate(v.joining)}\n\n` +
+    `School Name  : ${v.school}\n` +
+    `District     : ${v.district || '—'}\n` +
+    `Mandal       : ${v.mandal || '—'}\n` +
+    `UDISE Code   : ${v.udise || '—'}\n\n` +
+    `HM/Principal : ${v.hm || '—'}\n` +
+    `HM Phone     : ${v.hmPhone || '—'}\n` +
+    `\`\`\`\n` +
+    `🗺️ Maps: ${mapLink}\n\n` +
+    `— Yug Shakti Vocational Education Portal`;
+  const btn = document.getElementById('vtd-shareBtn');
+  if (navigator.share) {
+    navigator.share({ title: `VT: ${v.name}`, text: text })
+      .catch(() => {});
+  } else {
+    navigator.clipboard.writeText(text).then(() => {
+      const orig = btn.innerHTML;
+      btn.innerHTML = '✅ Copied!';
+      btn.style.background = 'linear-gradient(135deg,#1565c0,#0d47a1)';
+      setTimeout(() => { btn.innerHTML = orig; btn.style.background = ''; }, 2000);
+    }).catch(() => {
+      alert('Could not copy. Please select and copy manually.');
+    });
+  }
+}
+
+
+function populateDistrictDropdown() {
+  const distSelect = document.getElementById('distF');
+  if(!distSelect) return;
+  const currentVal = distSelect.value;
+  const dists = Array.from(new Set(VT.map(v => (v.district||'').trim().toUpperCase()).filter(Boolean))).sort();
+  let html = '<option value="">All Districts (' + dists.length + ')</option>';
+  dists.forEach(d => {
+    const cnt = VT.filter(v => (v.district||'').trim().toUpperCase() === d).length;
+    html += `<option value="${d}">${d} (${cnt} VTs)</option>`;
+  });
+  distSelect.innerHTML = html;
+  distSelect.value = currentVal;
+}
+
+function renderDistrictView() {
+  const container = document.getElementById('districtCardsContainer');
+  if (!container) return;
+
+  // Group FILTERED VTs by District -> School
+  const distMap = {};
+  FILTERED.forEach(v => {
+    const d = (v.district || 'UNASSIGNED').trim().toUpperCase();
+    const s = (v.school || 'Unknown School').trim();
+    if (!distMap[d]) distMap[d] = {};
+    if (!distMap[d][s]) distMap[d][s] = {
+      name: s,
+      mandal: v.mandal || '',
+      udise: v.udise || '',
+      scheme: v.scheme || '',
+      hm: v.hm || '',
+      hmPhone: v.hmPhone || '',
+      hmEmail: v.hmEmail || '',
+      vts: []
+    };
+    distMap[d][s].vts.push(v);
+  });
+
+  const sortedDists = Object.keys(distMap).sort();
+
+  if (sortedDists.length === 0) {
+    container.innerHTML = `<div class="empty" style="background:#fff;border-radius:12px;padding:30px;text-align:center"><div class="ei">🔍</div><p>No schools found matching your search/filters</p></div>`;
+    return;
+  }
+
+  let html = '';
+  sortedDists.forEach(distName => {
+    const schools = Object.values(distMap[distName]);
+    let totalVTs = 0;
+    schools.forEach(sch => totalVTs += sch.vts.length);
+
+    html += `
+    <div style="background:#fff;border-radius:16px;box-shadow:0 4px 18px rgba(0,0,0,.06);border:1px solid var(--border);overflow:hidden">
+      <!-- District Header -->
+      <div style="background:linear-gradient(135deg,#0b57d0,#1a73e8);color:#fff;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:1.4rem">📍</span>
+          <div>
+            <h2 style="font-size:1.1rem;font-weight:800;margin:0;letter-spacing:.3px">${distName} DISTRICT</h2>
+            <div style="font-size:.78rem;opacity:.9;margin-top:2px">${schools.length} Schools · ${totalVTs} Vocational Trainers</div>
+          </div>
+        </div>
+        <button onclick="filterByDistrict('${distName}')" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);padding:5px 12px;border-radius:20px;font-size:.75rem;font-weight:700;cursor:pointer">Filter Table by ${distName}</button>
+      </div>
+
+      <!-- Schools Grid inside District -->
+      <div style="padding:16px;display:grid;grid-template-columns:repeat(auto-fill, minmax(320px, 1fr));gap:14px">
+    `;
+
+    schools.forEach(sch => {
+      html += `
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:14px;display:flex;flex-direction:column;justify-space-between">
+          <div>
+            <div style="font-weight:800;font-size:.9rem;color:var(--ink);margin-bottom:6px;display:flex;align-items:flex-start;gap:6px">
+              <span>🏫</span>
+              <span>${sch.name}</span>
+            </div>
+            
+            <div style="display:flex;flex-wrap:wrap;gap:6px;font-size:.73rem;color:var(--ink2);margin-bottom:10px">
+              ${sch.mandal ? `<span style="background:#e2e8f0;padding:2px 8px;border-radius:6px;font-weight:600">📍 Mandal: ${sch.mandal}</span>` : ''}
+              ${sch.udise ? `<span style="background:#e0f2fe;color:#0369a1;padding:2px 8px;border-radius:6px;font-weight:700">📋 UDISE: ${sch.udise}</span>` : ''}
+              ${sch.scheme ? `<span style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:6px;font-weight:700">${sch.scheme}</span>` : ''}
+            </div>
+
+            ${sch.hm ? `
+            <div style="font-size:.76rem;background:#fff;border:1px solid #cbd5e1;padding:6px 10px;border-radius:8px;margin-bottom:10px;color:var(--ink2)">
+              <strong>👨‍🏫 HM:</strong> ${sch.hm} ${sch.hmPhone ? `· <a href="tel:${sch.hmPhone}" style="color:var(--p);font-weight:700">${sch.hmPhone}</a>` : ''}
+            </div>` : ''}
+
+            <!-- VTs in this School -->
+            <div style="font-size:.76rem;font-weight:800;color:var(--ink);margin-bottom:6px;border-bottom:1px solid #cbd5e1;padding-bottom:4px">
+              👥 Vocational Trainers (${sch.vts.length}):
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+      `;
+
+      sch.vts.forEach(v => {
+        html += `
+              <div onclick="openModal(${v.sno})" style="background:#fff;border:1px solid #cbd5e1;border-radius:8px;padding:8px 10px;cursor:pointer;transition:all .18s;display:flex;align-items:center;justify-content:space-between;gap:8px" onmouseover="this.style.borderColor='#0b57d0';this.style.boxShadow='0 2px 8px rgba(11,87,208,.12)'" onmouseout="this.style.borderColor='#cbd5e1';this.style.boxShadow='none'">
+                <div>
+                  <div style="font-weight:800;font-size:.82rem;color:var(--p)">${v.name}</div>
+                  <div style="font-size:.73rem;color:var(--ink3)">📞 ${v.phone}</div>
+                </div>
+                <div>
+                  ${secBadge(v.sector)}
+                </div>
+              </div>
+        `;
+      });
+
+      html += `
+            </div>
+          </div>
+        </div>
+      `;
+    });
+
+    html += `
+      </div>
+    </div>
+    `;
+  });
+
+  container.innerHTML = html;
+}
+
+function buildTags(){
+  const counts={};
+  VT.forEach(v=>{counts[v.sector]=(counts[v.sector]||0)+1});
+  const tagMap={'APPAREL':'app','BEAUTY AND WELLNESS':'bw','HEALTH CARE':'hc','AUTOMOTIVE':'au','IT/ITES':'it','ELECTRONICS AND HARDWARE':'eh'};
+  let html=`<div class="stag all active" onclick="filterBySec(\'\')">All · ${VT.length}</div>`;
+  Object.entries(counts).forEach(([sec,cnt])=>{
+    html+=`<div class="stag ${tagMap[sec]||'app'}" onclick="filterBySec(\'${sec}\')">${sec} · ${cnt}</div>`;
+  });
+  document.getElementById('tagRow').innerHTML=html;
+  const dists=new Set(VT.map(v=>v.district).filter(Boolean));
+  document.getElementById('hDistricts').textContent=dists.size;
+  const schoolsSet=new Set(VT.map(v=>(v.school||'').trim()).filter(Boolean));
+  document.getElementById('hSchools').textContent=schoolsSet.size;
+  document.getElementById('hTotal').textContent=VT.length;
+}
+
+function filterBySec(s){
+  document.getElementById('secF').value=s;
+  document.querySelectorAll('.stag').forEach(t=>t.classList.remove('active'));
+  if(!s) document.querySelector('.stag.all').classList.add('active');
+  filterAll();
+}
+
+function exportCSV(){
+  const rows=[['S.No','Name','Phone','Aadhar','PAN','Sector','Level','Classes','School','District','Mandal','Block','UDISE','School Type','Scheme','Email','YUG Contract ID','Joining Date','DOB','Qualification','Exp (Current)','Exp (Total)','HM/Principal','HM Phone','HM Email','Latitude','Longitude']];
+  FILTERED.forEach(v=>{
+    const lvl = getVTLevelInfo(v);
+    rows.push([v.sno,v.name,v.phone,v.aadhar,v.pan,v.sector,lvl.levelName + ' (' + lvl.levels + ')',lvl.classes,v.school,v.district,v.mandal,v.block,v.udise,v.schoolType,v.scheme,v.email,v.yug,v.joining,v.dob,v.qual,v.expCurr,v.expTotal,v.hm,v.hmPhone,v.hmEmail,v.lat||'',v.lng||'']);
+  });
+  const csv=rows.map(r=>r.map(c=>`"${(c||'').toString().replace(/"/g,'\"')}"` ).join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);
+  a.download='VT_Details_YugShakti_Telangana.csv';a.click();
+}
+
+function syncVTWithDB() {
+  try {
+    let teachers = [];
+    if (window.parent && window.parent.DB && typeof window.parent.DB.get === 'function') {
+      teachers = window.parent.DB.get('teachers', []);
+    } else {
+      const v = localStorage.getItem('yugg_teachers');
+      if (v) teachers = JSON.parse(v);
+    }
+    if (teachers && teachers.length) {
+      VT.forEach(v => {
+        const t = teachers.find(x => x.ph === v.phone || x.phone === v.phone);
+        if (t) {
+          if (t.name) v.name = t.name;
+          if (t.school) v.school = t.school;
+          if (t.sector) v.sector = t.sector;
+          if (t.udise !== undefined) v.udise = t.udise;
+          if (t.lat !== undefined) v.lat = parseFloat(t.lat) || v.lat;
+          if (t.lng !== undefined) v.lng = parseFloat(t.lng) || v.lng;
+        }
+      });
+    }
+  } catch (e) {
+    console.error("syncVTWithDB error:", e);
+  }
+}
+window.syncAndRender = function() {
+  syncVTWithDB();
+  populateDistrictDropdown();
+  buildTags();
+  filterAll();
+};
+
+loadProtectedVTData();
+
+// ── SCHOOLS VIEW ──
+var SCHOOLS_DATA = [];
+var SCHOOLS_FILTERED = [];
+var SCHOOLS_PAGE = 1;
+var SCHOOLS_PP = 30;
+
+function buildSchoolsData() {
+  const schoolMap = {};
+  VT.forEach(v => {
+    const key = (v.school || 'Unknown').trim();
+    if (!schoolMap[key]) {
+      schoolMap[key] = {
+        school: key,
+        district: v.district || '',
+        mandal: v.mandal || '',
+        udise: v.udise || '',
+        schoolType: v.schoolType || '',
+        scheme: v.scheme || '',
+        levelCode: v.levelCode || '',
+        levelDesc: v.levelDesc || '',
+        classes: v.classes || '',
+        levels: v.levels || '',
+        hm: v.hm || '',
+        hmPhone: v.hmPhone || '',
+        hmEmail: v.hmEmail || '',
+        vts: []
+      };
+    }
+    schoolMap[key].vts.push({ sno: v.sno, name: v.name, phone: v.phone, sector: v.sector });
+  });
+  SCHOOLS_DATA = Object.values(schoolMap).sort((a, b) => a.school.localeCompare(b.school));
+  SCHOOLS_FILTERED = SCHOOLS_DATA.slice();
+}
+
+function filterSchoolsView() {
+  const q = (document.getElementById('schoolSearch').value || '').trim().toLowerCase();
+  if (!q) {
+    SCHOOLS_FILTERED = SCHOOLS_DATA.slice();
+  } else {
+    const tokens = q.split(/\s+/).filter(Boolean);
+    SCHOOLS_FILTERED = SCHOOLS_DATA.filter(s => {
+      const hay = [s.school, s.district, s.mandal, s.udise, s.schoolType, s.scheme, s.levelCode, s.levelDesc, s.classes, s.levels, s.hm, s.hmPhone, s.vts.map(v => v.name).join(' ')].join(' ').toLowerCase();
+      return tokens.every(t => hay.includes(t));
+    });
+  }
+  SCHOOLS_PAGE = 1;
+  renderSchoolsTable();
+}
+
+function renderSchoolsView() {
+  buildSchoolsData();
+  SCHOOLS_FILTERED = SCHOOLS_DATA.slice();
+  SCHOOLS_PAGE = 1;
+  renderSchoolsTable();
+}
+
+function renderSchoolsTable() {
+  document.getElementById('schoolCountBadge').textContent = SCHOOLS_FILTERED.length + ' schools';
+  const start = (SCHOOLS_PAGE - 1) * SCHOOLS_PP;
+  const end = Math.min(start + SCHOOLS_PP, SCHOOLS_FILTERED.length);
+  const sl = SCHOOLS_FILTERED.slice(start, end);
+  document.getElementById('schoolsBody').innerHTML = sl.length ? sl.map((s, i) => {
+    const vtNames = s.vts.map(v => '<div style="margin:2px 0">' + secBadge(v.sector) + ' <strong style="cursor:pointer" onclick="openModal(' + v.sno + ')">' + v.name + '</strong> <span class="phone" style="font-size:.72rem">' + v.phone + '</span></div>').join('');
+    const isHSS = s.levelCode === 'HSS';
+    const lvlBadge = isHSS 
+      ? '<span class="lvl-badge lvl-hss">🎓 HSS</span><span class="lvl-sub">L3 & 4 (11th & 12th)</span>'
+      : '<span class="lvl-badge lvl-hs">🏫 HS</span><span class="lvl-sub">L1 & 2 (9th & 10th)</span>';
+    return '<tr>' +
+      '<td class="sno">' + (start + i + 1) + '</td>' +
+      '<td><strong style="font-size:.82rem">' + s.school + '</strong></td>' +
+      '<td>' + lvlBadge + '</td>' +
+      '<td class="district">' + (s.district || '\u2014') + '</td>' +
+      '<td class="district">' + (s.mandal || '\u2014') + '</td>' +
+      '<td><span class="udise">' + (s.udise || '\u2014') + '</span></td>' +
+      '<td style="font-size:.76rem">' + (s.schoolType || '\u2014') + '</td>' +
+      '<td>' + schemeBadge(s.scheme) + '</td>' +
+      '<td style="font-size:.78rem">' + (s.hm || '\u2014') + '</td>' +
+      '<td class="phone" style="font-size:.76rem">' + (s.hmPhone || '\u2014') + '</td>' +
+      '<td><span style="background:var(--teal2);color:var(--teal);padding:3px 10px;border-radius:20px;font-weight:700;font-size:.78rem">' + s.vts.length + '</span></td>' +
+      '<td style="font-size:.76rem">' + vtNames + '</td>' +
+    '</tr>';
+  }).join('') : '<tr><td colspan="11"><div class="empty"><div class="ei">\uD83D\uDD0D</div><p>No schools match your search</p></div></td></tr>';
+
+  // Pagination
+  const pages = Math.ceil(SCHOOLS_FILTERED.length / SCHOOLS_PP) || 1;
+  let phtml = '';
+  if (pages > 1) {
+    for (let i = 1; i <= pages; i++)
+      phtml += '<button class="pbn' + (i === SCHOOLS_PAGE ? ' on' : '') + '" onclick="SCHOOLS_PAGE=' + i + ';renderSchoolsTable()">' + i + '</button>';
+  }
+  document.getElementById('schoolsPgr').innerHTML = phtml;
+}
+
+</script>
+</body>
 </html>

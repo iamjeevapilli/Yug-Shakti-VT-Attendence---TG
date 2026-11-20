@@ -31,7 +31,7 @@
 <meta name="apple-mobile-web-app-title" content="YS Geo-FRS" />
 <link rel="apple-touch-icon" href="/logo.png" />
 <script src="https://unpkg.com/lucide@latest"></script>
-<script src="vts_data.js?v=20261118_2"></script>
+<script src="vts_data.js?v=20261121_2"></script>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
 <meta http-equiv="Expires" content="0" />
@@ -5657,33 +5657,36 @@ function vtdOpenModal(sno) {
   document.getElementById('vtd-mAvt').textContent = v.name[0];
   document.getElementById('vtd-mName').textContent = v.name;
   document.getElementById('vtd-mSub').innerHTML = `${vtdSecBadge(v.sector)} &nbsp; <span class="vtd-phone">${v.phone}</span>`;
-  document.getElementById('vtd-mBody').innerHTML = `
-    <div class="vtd-mrow"><span class="vtd-ml">S.No</span><span class="vtd-mv">${v.sno}</span></div>
-    <div class="vtd-mrow"><span class="vtd-ml">Full Name</span><span class="vtd-mv">${v.name}</span></div>
-    <div class="vtd-mrow"><span class="vtd-ml">Phone</span><span class="vtd-mv">${v.phone}</span></div>
-    <div class="vtd-mrow"><span class="vtd-ml">Email</span><span class="vtd-mv">${v.email || '—'}</span></div>
-    <div class="vtd-mrow"><span class="vtd-ml">Sector</span><span class="vtd-mv">${vtdSecBadge(v.sector)}</span></div>
-    <div class="vtd-mrow"><span class="vtd-ml">YUG Contract ID</span><span class="vtd-mv" style="font-family:monospace;font-size:.8rem">${v.yug || '—'}</span></div>
-    <div class="vtd-mrow"><span class="vtd-ml">Joining Date</span><span class="vtd-mv">${v.joining}</span></div>
-    <div class="vtd-mrow"><span class="vtd-ml">Date of Birth</span><span class="vtd-mv">${v.dob}</span></div>
-    <div class="vtd-mrow"><span class="vtd-ml">Qualification</span><span class="vtd-mv">${v.qual || '—'}</span></div>
-    <div class="vtd-mrow"><span class="vtd-ml">Current Exp</span><span class="vtd-mv">${v.expCurr || '—'}</span></div>
-    <div class="vtd-mrow"><span class="vtd-ml">Total Exp</span><span class="vtd-mv">${v.expTotal || '—'}</span></div>
-    <div class="vtd-mrow"><span class="vtd-ml">Aadhar No.</span><span class="vtd-mv" style="font-family:monospace">${v.aadhar || '—'}</span></div>
-    <div class="vtd-mrow"><span class="vtd-ml">PAN No.</span><span class="vtd-mv" style="font-family:monospace">${v.pan || '—'}</span></div>
-    <hr style="border:none;border-top:1px dashed var(--border);margin:8px 0">
-    <div class="vtd-mrow"><span class="vtd-ml">School</span><span class="vtd-mv">${v.school}</span></div>
-    <div class="vtd-mrow"><span class="vtd-ml">District</span><span class="vtd-mv">${v.district || '—'}</span></div>
-    <div class="vtd-mrow"><span class="vtd-ml">Mandal</span><span class="vtd-mv">${v.mandal || '—'}</span></div>
-    <div class="vtd-mrow"><span class="vtd-ml">Block</span><span class="vtd-mv">${v.block || '—'}</span></div>
-    <div class="vtd-mrow"><span class="vtd-ml">UDISE Code</span><span class="vtd-mv"><span class="vtd-udise">${displayUdise || '—'}</span></span></div>
-    <div class="vtd-mrow"><span class="vtd-ml">School Type</span><span class="vtd-mv">${v.schoolType || '—'}</span></div>
-    <div class="vtd-mrow"><span class="vtd-ml">Scheme</span><span class="vtd-mv">${vtdSchemeBadge(v.scheme)}</span></div>
-    <hr style="border:none;border-top:1px dashed var(--border);margin:8px 0">
-    <div class="vtd-mrow"><span class="vtd-ml">HM/Principal</span><span class="vtd-mv">${v.hm || '—'}</span></div>
-    <div class="vtd-mrow"><span class="vtd-ml">HM Phone</span><span class="vtd-mv">${v.hmPhone || '—'}</span></div>
-    <div class="vtd-mrow"><span class="vtd-ml">HM Email</span><span class="vtd-mv" style="font-size:.75rem">${v.hmEmail || '—'}</span></div>
-    ${getNearbySchoolsHTML(v, VTS_FULL)}`;
+  let mb = '';
+  mb += `<div class="vtd-mrow"><span class="vtd-ml">S.No</span><span class="vtd-mv">${v.sno}</span></div>`;
+  mb += `<div class="vtd-mrow"><span class="vtd-ml">Full Name</span><span class="vtd-mv">${v.name}</span></div>`;
+  mb += `<div class="vtd-mrow"><span class="vtd-ml">Phone</span><span class="vtd-mv">${v.phone}</span></div>`;
+  if (v.email) mb += `<div class="vtd-mrow"><span class="vtd-ml">Email</span><span class="vtd-mv">${v.email}</span></div>`;
+  mb += `<div class="vtd-mrow"><span class="vtd-ml">Sector</span><span class="vtd-mv">${vtdSecBadge(v.sector)}</span></div>`;
+  if (v.yug) mb += `<div class="vtd-mrow"><span class="vtd-ml">YUG Contract ID</span><span class="vtd-mv" style="font-family:monospace;font-size:.8rem">${v.yug}</span></div>`;
+  if (v.joining) mb += `<div class="vtd-mrow"><span class="vtd-ml">Joining Date</span><span class="vtd-mv">${v.joining}</span></div>`;
+  if (v.dob) mb += `<div class="vtd-mrow"><span class="vtd-ml">Date of Birth</span><span class="vtd-mv">${v.dob}</span></div>`;
+  if (v.qual) mb += `<div class="vtd-mrow"><span class="vtd-ml">Qualification</span><span class="vtd-mv">${v.qual}</span></div>`;
+  if (v.expCurr || v.exp) mb += `<div class="vtd-mrow"><span class="vtd-ml">Current Exp</span><span class="vtd-mv">${v.expCurr || v.exp}</span></div>`;
+  if (v.expTotal) mb += `<div class="vtd-mrow"><span class="vtd-ml">Total Exp</span><span class="vtd-mv">${v.expTotal}</span></div>`;
+  if (v.aadhar) mb += `<div class="vtd-mrow"><span class="vtd-ml">Aadhar No.</span><span class="vtd-mv" style="font-family:monospace">${v.aadhar}</span></div>`;
+  if (v.pan) mb += `<div class="vtd-mrow"><span class="vtd-ml">PAN No.</span><span class="vtd-mv" style="font-family:monospace">${v.pan}</span></div>`;
+  mb += '<hr style="border:none;border-top:1px dashed var(--border);margin:8px 0">';
+  mb += `<div class="vtd-mrow"><span class="vtd-ml">School</span><span class="vtd-mv">${v.school}</span></div>`;
+  if (v.district) mb += `<div class="vtd-mrow"><span class="vtd-ml">District</span><span class="vtd-mv">${v.district}</span></div>`;
+  if (v.mandal) mb += `<div class="vtd-mrow"><span class="vtd-ml">Mandal</span><span class="vtd-mv">${v.mandal}</span></div>`;
+  if (v.block) mb += `<div class="vtd-mrow"><span class="vtd-ml">Block</span><span class="vtd-mv">${v.block}</span></div>`;
+  if (displayUdise) mb += `<div class="vtd-mrow"><span class="vtd-ml">UDISE Code</span><span class="vtd-mv"><span class="vtd-udise">${displayUdise}</span></span></div>`;
+  if (v.schoolType) mb += `<div class="vtd-mrow"><span class="vtd-ml">School Type</span><span class="vtd-mv">${v.schoolType}</span></div>`;
+  if (v.scheme) mb += `<div class="vtd-mrow"><span class="vtd-ml">Scheme</span><span class="vtd-mv">${vtdSchemeBadge(v.scheme)}</span></div>`;
+  if (v.hm || v.hmPhone || v.hmEmail) {
+    mb += '<hr style="border:none;border-top:1px dashed var(--border);margin:8px 0">';
+    if (v.hm) mb += `<div class="vtd-mrow"><span class="vtd-ml">HM/Principal</span><span class="vtd-mv">${v.hm}</span></div>`;
+    if (v.hmPhone) mb += `<div class="vtd-mrow"><span class="vtd-ml">HM Phone</span><span class="vtd-mv">${v.hmPhone}</span></div>`;
+    if (v.hmEmail) mb += `<div class="vtd-mrow"><span class="vtd-ml">HM Email</span><span class="vtd-mv" style="font-size:.75rem">${v.hmEmail}</span></div>`;
+  }
+  mb += getNearbySchoolsHTML(v, VTS_FULL);
+  document.getElementById('vtd-mBody').innerHTML = mb;
 
   // Always-visible action buttons in sticky footer (never hidden by scroll)
   document.getElementById('vtd-mActions').innerHTML = `
@@ -5780,7 +5783,7 @@ function vtdExportCSV() {
 
 async function openVtsInNewTab() {
   const token = await ensureAdminToken();
-  const url = 'vts.html' + (token ? ('?token=' + encodeURIComponent(token)) : '');
+  const url = 'vts.html?v=20261121_2' + (token ? ('&token=' + encodeURIComponent(token)) : '');
   window.open(url, '_blank');
 }
 
@@ -5791,7 +5794,7 @@ async function rVtsData() {
   }
   const iframe = document.getElementById("vtsFrame") || document.querySelector("#pg-vtsdata iframe");
   if (iframe) {
-    const targetUrl = "vts.html" + (token ? ("?token=" + encodeURIComponent(token)) : "");
+    const targetUrl = "vts.html?v=20261121_2" + (token ? ("&token=" + encodeURIComponent(token)) : "");
     const currentSrc = iframe.getAttribute("src") || "";
     if (!currentSrc || currentSrc === "about:blank" || !currentSrc.startsWith("vts.html")) {
       iframe.setAttribute("src", targetUrl);
@@ -8827,11 +8830,11 @@ let yugAIMicActive = false;
 let yugAIMonitorTimer = null;
 let yugAIFullData = null; // cached full VTS data from /api/vts or SEED
 
-// ── Load Full VTS Data — rich fields from bundled vts_data.js?v=20261115_1 ──
+// ── Load Full VTS Data — rich fields from bundled vts_data.js?v=20261121_2 ──
 async function yugAILoadFullData() {
   if (yugAIFullData) return yugAIFullData;
 
-  // 1. Best source: bundled vts_data.js?v=20261114_4 (all 254 VTs, all fields)
+  // 1. Best source: bundled vts_data.js?v=20261121_2 (all 254 VTs, all fields)
   if (window.MASTER_VTS_DATA && window.MASTER_VTS_DATA.length) {
     yugAIFullData = window.MASTER_VTS_DATA;
     return yugAIFullData;
